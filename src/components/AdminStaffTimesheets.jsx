@@ -67,9 +67,6 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
   });
   const [overrideLoading, setOverrideLoading] = useState(false);
 
-  // Day Work Done Detail Dialog
-  const [selectedDayTasks, setSelectedDayTasks] = useState(null);
-
   // Load employees list if not passed from parent
   useEffect(() => {
     if (localEmployees.length === 0) {
