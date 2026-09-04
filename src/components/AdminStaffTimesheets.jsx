@@ -67,6 +67,9 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
   });
   const [overrideLoading, setOverrideLoading] = useState(false);
 
+  // Day Work Done Detail Dialog
+  const [selectedDayTasks, setSelectedDayTasks] = useState(null);
+
   // Load employees list if not passed from parent
   useEffect(() => {
     if (localEmployees.length === 0) {
@@ -639,19 +642,38 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                           </TableCell>
 
                           <TableCell sx={{ textAlign: 'right' }}>
-                            {!day.is_future && (
-                              <Tooltip title="Manual Attendance Override">
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  startIcon={<OverrideIcon sx={{ fontSize: '13px !important' }} />}
-                                  onClick={() => handleOpenQuickOverride(day)}
-                                  sx={{ fontSize: '0.7rem', py: 0.2, px: 1, borderRadius: '4px', fontWeight: 700 }}
-                                >
-                                  Override
-                                </Button>
-                              </Tooltip>
-                            )}
+                            <Box sx={{ display: 'flex', gap: 0.8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                              {day.task_count > 0 && (
+                                <Tooltip title={`View ${day.task_count} work done task(s) for this day`}>
+                                  <Button
+                                    size="small"
+                                    variant="contained"
+                                    startIcon={<TaskIcon sx={{ fontSize: '13px !important' }} />}
+                                    onClick={() => setSelectedDayTasks(day)}
+                                    sx={{
+                                      fontSize: '0.7rem', py: 0.2, px: 1, borderRadius: '4px', fontWeight: 700,
+                                      bgcolor: '#133829', color: '#fff',
+                                      '&:hover': { bgcolor: '#0f291e' }
+                                    }}
+                                  >
+                                    Work Done
+                                  </Button>
+                                </Tooltip>
+                              )}
+                              {!day.is_future && (
+                                <Tooltip title="Manual Attendance Override">
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    startIcon={<OverrideIcon sx={{ fontSize: '13px !important' }} />}
+                                    onClick={() => handleOpenQuickOverride(day)}
+                                    sx={{ fontSize: '0.7rem', py: 0.2, px: 1, borderRadius: '4px', fontWeight: 700 }}
+                                  >
+                                    Override
+                                  </Button>
+                                </Tooltip>
+                              )}
+                            </Box>
                           </TableCell>
                         </TableRow>
                       );
