@@ -1,108 +1,128 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Tooltip, IconButton } from '@mui/material';
-import { GetApp as DownloadIcon, CheckCircle as InstalledIcon } from '@mui/icons-material';
-import toast from '../utils/muiToast';
+import {
+  Box, Button, Typography, IconButton, Slide, Paper
+} from '@mui/material';
+import {
+  GetApp as DownloadIcon,
+  Close as CloseIcon,
+  PhoneAndroid as PhoneIcon
+} from '@mui/icons-material';
 
-export default function PWAInstallButton({ compact = false }) {
+const DISMISSED_KEY = 'pwa_install_dismissed';
+
+export default function PWAInstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Check if app is already running in standalone mode (installed)
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-      setIsInstalled(true);
-    }
+    // Don't show if already installed (standalone mode)
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+    if (isStandalone) return;
+
+    // Don't show if user already dismissed
+    const dismissed = sessionStorage.getItem(DISMISSED_KEY);
+    if (dismissed) return;
 
     const handleBeforeInstallPrompt = (e) => {
-      // Prevent browser's default banner
       e.preventDefault();
-      // Stash event so it can be triggered later
       setDeferredPrompt(e);
-    };
-
-    const handleAppInstalled = () => {
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-      toast.success('Shazusoft HRMS installed successfully as a desktop/mobile app!');
+      setShow(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('appinstalled', () => setShow(false));
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
-  const handleInstallClick = async () => {
-    if (isInstalled) {
-      toast.info('Shazusoft HRMS is already installed and ready on your device.');
-      return;
-    }
-
-    if (!deferredPrompt) {
-      // If browser doesn't support or prompt is not yet ready, check iOS or show helpful instructions
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      if (isIOS) {
-        toast.info('To install on iOS: Tap the Share button (square with arrow) and select "Add to Home Screen".');
-      } else {
-        toast.info('To install: Click the install icon in your browser address bar (top right) or menu -> "Install Shazusoft HRMS".');
-      }
-      return;
-    }
-
-    // Show native prompt
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      toast.success('Installing Shazusoft HRMS...');
-    }
+    await deferredPrompt.userChoice;
     setDeferredPrompt(null);
+    setShow(false);
   };
 
-  if (compact) {
-    return (
-      <Tooltip title={isInstalled ? 'App Installed (Standalone)' : 'Download / Install PWA App'}>
-        <IconButton
-          size="small"
-          onClick={handleInstallClick}
-          sx={{
-            bgcolor: isInstalled ? '#f0fdf4' : '#133829',
-            color: isInstalled ? '#166534' : '#ffffff',
-            borderRadius: '4px',
-            p: 0.8,
-            '&:hover': { bgcolor: isInstalled ? '#dcfce7' : '#0f291e' }
-          }}
-        >
-          {isInstalled ? <InstalledIcon sx={{ fontSize: 18 }} /> : <DownloadIcon sx={{ fontSize: 18 }} />}
-        </IconButton>
-      </Tooltip>
-    );
-  }
+  const handleDismiss = () => {
+    sessionStorage.setItem(DISMISSED_KEY, '1');
+    setShow(false);
+  };
 
   return (
-    <Button
-      size="small"
-      variant="contained"
-      startIcon={isInstalled ? <InstalledIcon /> : <DownloadIcon />}
-      onClick={handleInstallClick}
-      sx={{
-        fontWeight: 700,
-        fontSize: '0.8rem',
-        borderRadius: '4px',
-        bgcolor: isInstalled ? '#f0fdf4' : '#133829',
-        color: isInstalled ? '#166534' : '#ffffff',
-        border: isInstalled ? '1px solid #bbf7d0' : 'none',
-        textTransform: 'none',
-        py: 0.6,
-        px: 1.5,
-        '&:hover': {
-          bgcolor: isInstalled ? '#dcfce7' : '#0f291e'
-        }
-      }}
-    >
-      {isInstalled ? 'App Installed' : 'Download / Install App'}
-    </Button>
+    <Slide direction="up" in={show} mountOnEnter unmountOnExit>
+      <Paper
+        elevation={8}
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          borderRadius: '16px 16px 0 0',
+          background: 'linear-gradient(135deg, #0f291e 0%, #1a3d2b 100%)',
+          color: '#fff',
+          p: { xs: 2.5, sm: 3 },
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+        }}
+      >
+        {/* Icon */}
+        <Box
+          sx={{
+            width: 48, height: 48, flexShrink: 0,
+            borderRadius: '12px',
+            bgcolor: 'rgba(255,255,255,0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <PhoneIcon sx={{ fontSize: 26, color: '#4ade80' }} />
+        </Box>
+
+        {/* Text */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography fontWeight={700} fontSize="0.95rem" noWrap>
+            Install Shazusoft HRMS
+          </Typography>
+          <Typography fontSize="0.78rem" sx={{ color: 'rgba(255,255,255,0.65)' }} noWrap>
+            Add to home screen for quick access
+          </Typography>
+        </Box>
+
+        {/* Install button */}
+        <Button
+          size="small"
+          variant="contained"
+          startIcon={<DownloadIcon />}
+          onClick={handleInstall}
+          sx={{
+            flexShrink: 0,
+            bgcolor: '#4ade80',
+            color: '#0f291e',
+            fontWeight: 700,
+            fontSize: '0.8rem',
+            textTransform: 'none',
+            borderRadius: '8px',
+            px: 2,
+            '&:hover': { bgcolor: '#22c55e' },
+          }}
+        >
+          Install
+        </Button>
+
+        {/* Dismiss */}
+        <IconButton
+          size="small"
+          onClick={handleDismiss}
+          sx={{ color: 'rgba(255,255,255,0.5)', flexShrink: 0, ml: -0.5 }}
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Paper>
+    </Slide>
   );
 }

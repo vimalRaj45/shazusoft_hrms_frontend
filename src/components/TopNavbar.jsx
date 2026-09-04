@@ -19,7 +19,6 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import toast, { muiToast } from '../utils/muiToast';
-import PWAInstallButton from './PWAInstallButton';
 
 export default function TopNavbar({ onMobileDrawerToggle, activeView, onSelectView, onOpenSearch }) {
   const { user, isAdmin, logout } = useAuth();
@@ -135,10 +134,8 @@ export default function TopNavbar({ onMobileDrawerToggle, activeView, onSelectVi
           />
         </Box>
 
-        {/* Right Side: PWA Download, Role Badge & Logged In User Avatar */}
+        {/* Right Side: Role Badge & Logged In User Avatar */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {/* PWA Install Button */}
-          <PWAInstallButton />
 
           {/* Role Indicator Badge */}
           <Box

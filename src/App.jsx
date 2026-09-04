@@ -57,6 +57,8 @@ import WeeklyCheckInModal from './components/WeeklyCheckInModal';
 import WeeklyReportsViewer from './components/WeeklyReportsViewer';
 import GlobalSearchModal from './components/GlobalSearchModal';
 import SplashScreen from './components/SplashScreen';
+import PWAInstallBanner from './components/PWAInstallButton';
+
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import AIReports from './pages/AIReports';
@@ -821,6 +823,7 @@ function AppContent() {
           </Button>
         </DialogActions>
       </Dialog>
+      <PWAInstallBanner />
       </AlertConfirmProvider>
     </ThemeProvider>
   );
