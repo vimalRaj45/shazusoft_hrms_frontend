@@ -64,6 +64,7 @@ import TaskTrackerBoard from '../components/TaskTrackerBoard';
 import AdminStaffTimesheets from '../components/AdminStaffTimesheets';
 import { MetricCardsSkeleton, TableRowsSkeleton, DocumentViewerSkeleton } from '../components/SkeletonLoaders';
 import { format } from 'date-fns';
+import { formatTime12h } from '../utils/timeUtils';
 
 const REJECTION_TEMPLATES = [
   'Operational crunch / critical project sprint milestone in progress',
@@ -141,6 +142,32 @@ export default function AdminDashboard({ initialTab = 0 }) {
   const [holidayForm, setHolidayForm] = useState({ date: '', name: '', type: 'Public Holiday' });
   const [addingHoliday, setAddingHoliday] = useState(false);
 
+  // Monthly Leave Quotas & Permission Policy state
+  const [leavePolicy, setLeavePolicy] = useState({
+    casual_leave: 1,
+    sick_leave: 1,
+    paid_leave: 1,
+    monthly_permission_limit: 2,
+    max_permission_hours: 2,
+    updated_at: null,
+    updated_by: ''
+  });
+  const [savingPolicy, setSavingPolicy] = useState(false);
+
+  const handleSaveLeavePolicy = async (e) => {
+    e.preventDefault();
+    setSavingPolicy(true);
+    try {
+      const res = await adminAPI.updateLeavePolicy(leavePolicy);
+      toast.success(res.data?.message || 'Monthly leave policy updated successfully!');
+      if (res.data?.policy) setLeavePolicy(res.data.policy);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update leave policy.');
+    } finally {
+      setSavingPolicy(false);
+    }
+  };
+
   const handleToggleWorkMode = async (empId, currentMode) => {
     const newMode = currentMode === 'wfh' ? 'office' : 'wfh';
     setActionLoading(true);
@@ -197,7 +224,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [liveRes, tasksRes, leavesRes, permsRes, empRes, evalRes, settingsRes, regRes, logsRes, weeklyRes, holidaysRes] = await Promise.all([
+      const [liveRes, tasksRes, leavesRes, permsRes, empRes, evalRes, settingsRes, regRes, logsRes, weeklyRes, holidaysRes, policyRes] = await Promise.all([
         adminAPI.getLiveStatus().catch(() => ({ data: null })),
         workDoneAPI.getAllTasks().catch(() => ({ data: { tasks: [] } })),
         leavesAPI.getAllLeaves().catch(() => ({ data: { leaves: [] } })),
@@ -208,13 +235,15 @@ export default function AdminDashboard({ initialTab = 0 }) {
         communicationsAPI.getRequests().catch(() => ({ data: { requests: [] } })),
         communicationsAPI.getLogs().catch(() => ({ data: { logs: [] } })),
         evaluationsAPI.getAllWeekly().catch(() => ({ data: { reports: [] } })),
-        adminAPI.getHolidays().catch(() => ({ data: { holidays: [] } }))
+        adminAPI.getHolidays().catch(() => ({ data: { holidays: [] } })),
+        adminAPI.getLeavePolicy().catch(() => ({ data: { policy: null } }))
       ]);
 
       if (liveRes?.data) setLiveData(liveRes.data);
       if (tasksRes?.data?.tasks) setAllTasks(tasksRes.data.tasks);
       if (leavesRes?.data?.leaves) setAllLeaves(leavesRes.data.leaves);
       if (permsRes?.data?.permissions) setAllPermissions(permsRes.data.permissions);
+      if (policyRes?.data?.policy) setLeavePolicy(policyRes.data.policy);
       if (empRes?.data?.employees) {
         setEmployees(empRes.data.employees);
         if (!manualForm.employee_id && empRes.data.employees.length > 0) {
@@ -548,8 +577,8 @@ export default function AdminDashboard({ initialTab = 0 }) {
                         <Typography variant="caption" sx={{ color: 'text.secondary' }}>{emp.department}</Typography>
                       </TableCell>
                       <TableCell>{getStatusChip(emp.statusToday)}</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>{emp.loginTime || '--:--'}</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>{emp.logoutTime || '--:--'}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{formatTime12h(emp.loginTime)}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{formatTime12h(emp.logoutTime)}</TableCell>
                       <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
                         {emp.netHours ? `${emp.netHours} hrs` : '--'}
                       </TableCell>
@@ -605,7 +634,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                         <TableCell sx={{ fontWeight: 700 }}>{r.employee_name || r.employee_id}</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>{r.date}</TableCell>
                         <TableCell>
-                          <strong>{r.requested_login_time}</strong> to <strong>{r.requested_logout_time || 'End of Day'}</strong>
+                          <strong>{formatTime12h(r.requested_login_time)}</strong> to <strong>{r.requested_logout_time ? formatTime12h(r.requested_logout_time) : 'End of Day'}</strong>
                         </TableCell>
                         <TableCell sx={{ maxWidth: 280, color: '#475569', fontSize: 13 }}>
                           {r.reason}
@@ -728,6 +757,12 @@ export default function AdminDashboard({ initialTab = 0 }) {
                     label={`Short 2-Hour Passes (${allPermissions.filter(p => p.status === 'Pending').length} Pending)`}
                     sx={{ textTransform: 'none', fontWeight: 700 }}
                   />
+                  <Tab
+                    icon={<SettingsIcon sx={{ fontSize: 18 }} />}
+                    iconPosition="start"
+                    label="Monthly Quotas & Policy Settings"
+                    sx={{ textTransform: 'none', fontWeight: 700 }}
+                  />
                 </Tabs>
               </Box>
 
@@ -844,6 +879,144 @@ export default function AdminDashboard({ initialTab = 0 }) {
                       </TableBody>
                     </Table>
                   )}
+                </Box>
+              )}
+
+              {/* Subtab 2: Monthly Quotas & Policy Settings */}
+              {leaveSubTab === 2 && (
+                <Box sx={{ maxWidth: 880, mx: 'auto', py: 1 }}>
+                  <Alert severity="info" sx={{ mb: 3, borderRadius: '4px' }}>
+                    <strong>Monthly Leave Quota Policy:</strong> All leave quotas are configured on a <strong>monthly-wise</strong> basis. Unused allowances refresh each month. Changes apply immediately to all active staff portals and timesheet calculations.
+                  </Alert>
+
+                  {/* Live Preview of Employee KPI Cards */}
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', mb: 1.5, letterSpacing: '0.04em' }}>
+                    PORTAL DISPLAY PREVIEW (AS SEEN BY STAFF):
+                  </Typography>
+                  <Grid container spacing={2} sx={{ mb: 4 }}>
+                    <Grid item xs={6} sm={3}>
+                      <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>CASUAL LEAVE (CL)</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#3b82f6', mt: 0.5 }}>
+                          {leavePolicy.casual_leave} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {leavePolicy.casual_leave}d</span>
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>0 days used this month</Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                      <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>SICK LEAVE (SL)</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
+                          {leavePolicy.sick_leave} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {leavePolicy.sick_leave}d</span>
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>0 days used this month</Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                      <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>PAID ANNUAL LEAVE (PL)</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0284c7', mt: 0.5 }}>
+                          {leavePolicy.paid_leave} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {leavePolicy.paid_leave}d</span>
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>0 days used this month</Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                      <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>MONTHLY PERMISSION PASS</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#f59e0b', mt: 0.5 }}>
+                          {leavePolicy.monthly_permission_limit} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {leavePolicy.monthly_permission_limit} left</span>
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>0 used this month</Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+
+                  {/* Settings Form Card */}
+                  <Card sx={{ p: 3, borderRadius: '4px', border: '1.5px solid #e2e8f0', bgcolor: '#ffffff' }}>
+                    <form onSubmit={handleSaveLeavePolicy}>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
+                        Edit Company Monthly Quotas & Permissions
+                      </Typography>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} sm={4}>
+                          <TextField
+                            fullWidth
+                            type="number"
+                            inputProps={{ min: 0, max: 15, step: 0.5 }}
+                            label="Casual Leave (CL) Monthly Quota"
+                            required
+                            value={leavePolicy.casual_leave}
+                            onChange={(e) => setLeavePolicy({ ...leavePolicy, casual_leave: parseFloat(e.target.value) || 0 })}
+                            helperText="Days per employee per month (e.g. 1.0)"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <TextField
+                            fullWidth
+                            type="number"
+                            inputProps={{ min: 0, max: 15, step: 0.5 }}
+                            label="Sick Leave (SL) Monthly Quota"
+                            required
+                            value={leavePolicy.sick_leave}
+                            onChange={(e) => setLeavePolicy({ ...leavePolicy, sick_leave: parseFloat(e.target.value) || 0 })}
+                            helperText="Days per employee per month (e.g. 1.0)"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                          <TextField
+                            fullWidth
+                            type="number"
+                            inputProps={{ min: 0, max: 15, step: 0.5 }}
+                            label="Paid Leave (PL) Monthly Quota"
+                            required
+                            value={leavePolicy.paid_leave}
+                            onChange={(e) => setLeavePolicy({ ...leavePolicy, paid_leave: parseFloat(e.target.value) || 0 })}
+                            helperText="Days per employee per month (e.g. 1.0)"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth
+                            type="number"
+                            inputProps={{ min: 0, max: 10, step: 1 }}
+                            label="Monthly Permission Pass Limit"
+                            required
+                            value={leavePolicy.monthly_permission_limit}
+                            onChange={(e) => setLeavePolicy({ ...leavePolicy, monthly_permission_limit: parseInt(e.target.value, 10) || 0 })}
+                            helperText="Max short permission requests allowed per month"
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            fullWidth
+                            type="number"
+                            inputProps={{ min: 0.5, max: 4, step: 0.5 }}
+                            label="Max Hours Per Permission Pass"
+                            required
+                            value={leavePolicy.max_permission_hours}
+                            onChange={(e) => setLeavePolicy({ ...leavePolicy, max_permission_hours: parseFloat(e.target.value) || 2 })}
+                            helperText="Allowed duration per permission (e.g. 2.0 hours)"
+                          />
+                        </Grid>
+                      </Grid>
+
+                      <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>
+                          {leavePolicy.updated_at ? `Last updated by ${leavePolicy.updated_by || 'Admin'} at ${leavePolicy.updated_at.slice(0, 19).replace('T', ' ')}` : 'Active Default Policy'}
+                        </Typography>
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          color="primary"
+                          disabled={savingPolicy}
+                          sx={{ fontWeight: 700, borderRadius: '4px', px: 3 }}
+                        >
+                          {savingPolicy ? 'Saving Policy...' : 'Save Monthly Leave Policy'}
+                        </Button>
+                      </Box>
+                    </form>
+                  </Card>
                 </Box>
               )}
             </Box>
@@ -1070,7 +1243,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                     {auditLogs.map((l) => (
                       <TableRow key={l.id} hover>
                         <TableCell sx={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>
-                          {l.created_at ? format(new Date(l.created_at), 'dd MMM yyyy, HH:mm') : '--'}
+                          {l.created_at ? format(new Date(l.created_at), 'dd MMM yyyy, hh:mm a') : '--'}
                         </TableCell>
                         <TableCell>
                           <Chip
@@ -1504,7 +1677,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                   {selectedReq.employee_name} ({selectedReq.employee_id})
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 1 }}>
-                  Date: <strong>{selectedReq.date}</strong> • Requested: <strong>{selectedReq.requested_login_time}</strong> to <strong>{selectedReq.requested_logout_time || '--'}</strong>
+                  Date: <strong>{selectedReq.date}</strong> • Requested: <strong>{formatTime12h(selectedReq.requested_login_time)}</strong> to <strong>{selectedReq.requested_logout_time ? formatTime12h(selectedReq.requested_logout_time) : '--'}</strong>
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#334155', fontStyle: 'italic', bgcolor: '#ffffff', p: 1, border: '1px solid #e2e8f0', borderRadius: '4px' }}>
                   "{selectedReq.reason}"
@@ -1605,8 +1778,8 @@ export default function AdminDashboard({ initialTab = 0 }) {
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
                   {rejectionTarget.type === 'leave' && `Leave Request: ${rejectionTarget.item.leave_type} (${rejectionTarget.item.start_date} to ${rejectionTarget.item.end_date} • ${rejectionTarget.item.total_days} days)`}
-                  {rejectionTarget.type === 'permission' && `Permission Pass: ${rejectionTarget.item.date} (${rejectionTarget.item.start_time} - ${rejectionTarget.item.end_time} • ${rejectionTarget.item.duration_hours} hrs)`}
-                  {rejectionTarget.type === 'regularization' && `Attendance Regularization: ${rejectionTarget.item.date} (${rejectionTarget.item.requested_login_time} to ${rejectionTarget.item.requested_logout_time || 'EOD'})`}
+                  {rejectionTarget.type === 'permission' && `Permission Pass: ${rejectionTarget.item.date} (${formatTime12h(rejectionTarget.item.start_time)} - ${formatTime12h(rejectionTarget.item.end_time)} • ${rejectionTarget.item.duration_hours} hrs)`}
+                  {rejectionTarget.type === 'regularization' && `Attendance Regularization: ${rejectionTarget.item.date} (${formatTime12h(rejectionTarget.item.requested_login_time)} to ${rejectionTarget.item.requested_logout_time ? formatTime12h(rejectionTarget.item.requested_logout_time) : 'EOD'})`}
                 </Typography>
                 {rejectionTarget.item.reason && (
                   <Typography variant="body2" sx={{ mt: 1, color: '#475569', fontSize: 13, fontStyle: 'italic', bgcolor: '#ffffff', p: 1, border: '1px solid #e2e8f0', borderRadius: '4px' }}>
@@ -1750,7 +1923,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                   </Typography>
                   <Typography variant="caption" sx={{ color: selectedComplianceEmp.documents_frozen ? '#b91c1c' : '#15803d', display: 'block', mt: 0.3 }}>
                     {selectedComplianceEmp.documents_frozen
-                      ? `Locked & verified on ${selectedComplianceEmp.frozen_at ? format(new Date(selectedComplianceEmp.frozen_at), 'dd MMM yyyy, HH:mm') : 'Company Records'}. Staff cannot edit or delete documents while locked.`
+                      ? `Locked & verified on ${selectedComplianceEmp.frozen_at ? format(new Date(selectedComplianceEmp.frozen_at), 'dd MMM yyyy, hh:mm a') : 'Company Records'}. Staff cannot edit or delete documents while locked.`
                       : 'Staff can upload, replace, or update compliance documents and statutory records.'}
                   </Typography>
                 </Box>

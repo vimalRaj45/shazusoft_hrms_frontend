@@ -70,11 +70,49 @@ import { format } from 'date-fns';
 
 function AppContent() {
   const { user, loading, isAdmin, themeMode } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam) return tabParam;
+    } catch (e) {}
+    return 'dashboard';
+  });
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     return localStorage.getItem('hrms_sidebar_collapsed') === 'true';
   });
+
+  // Handle Service Worker notification click deep linking
+  useEffect(() => {
+    const handleSwMessage = (e) => {
+      if (e.data && e.data.type === 'NAVIGATE_TAB' && e.data.tab) {
+        setActiveTab(e.data.tab);
+        setMobileDrawerOpen(false);
+      }
+    };
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleSwMessage);
+    }
+    return () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleSwMessage);
+      }
+    };
+  }, []);
+
+  // Synchronize URL query parameter with active tab for smooth PWA deep navigation
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (activeTab && activeTab !== 'dashboard') {
+        url.searchParams.set('tab', activeTab);
+      } else {
+        url.searchParams.delete('tab');
+      }
+      window.history.replaceState({}, '', url.toString());
+    } catch (e) {}
+  }, [activeTab]);
 
   const toggleSidebar = () => {
     setSidebarCollapsed((prev) => {
@@ -278,7 +316,9 @@ function AppContent() {
             component="main"
             sx={{
               flexGrow: 1,
-              p: { xs: 2, sm: 2.5, md: 3 },
+              pt: { xs: '76px', md: 3 },
+              px: { xs: 2, sm: 2.5, md: 3 },
+              pb: { xs: 2, sm: 2.5, md: 3 },
               maxWidth: '100%',
               overflowX: 'hidden',
               boxSizing: 'border-box'

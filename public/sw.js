@@ -58,22 +58,46 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// NotificationClick Event: Handle user clicking on a notification
+// NotificationClick Event: Handle user clicking on a notification (Deep link to specific section/tab)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/';
+  const notifData = event.notification.data || {};
+  let targetTab = notifData.tab || '';
+  let targetUrl = notifData.url || '/';
+
+  // Extract ?tab= query parameter if not directly provided in data
+  if (!targetTab && targetUrl) {
+    try {
+      const urlObj = new URL(targetUrl, self.location.origin);
+      targetTab = urlObj.searchParams.get('tab') || '';
+    } catch (e) {}
+  }
+
+  // Ensure targetUrl contains ?tab= if targetTab is present
+  if (targetTab && !targetUrl.includes('tab=')) {
+    targetUrl = `/?tab=${encodeURIComponent(targetTab)}`;
+  }
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // If the app is already open, focus it and navigate
+      // If the app is already open, focus it and instantly switch tab via postMessage
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.focus();
-          if ('navigate' in client) client.navigate(targetUrl);
+          if (targetTab && 'postMessage' in client) {
+            client.postMessage({
+              type: 'NAVIGATE_TAB',
+              tab: targetTab,
+              url: targetUrl
+            });
+          }
+          if ('navigate' in client && (!targetTab || !client.url.includes(`tab=${targetTab}`))) {
+            client.navigate(targetUrl);
+          }
           return;
         }
       }
-      // Otherwise open a new tab
+      // Otherwise open a new tab with the target section URL
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }

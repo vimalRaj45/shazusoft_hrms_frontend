@@ -36,6 +36,7 @@ import MonthlySelfEvaluationModal from '../components/MonthlySelfEvaluationModal
 import SelfEvaluationViewer from '../components/SelfEvaluationViewer';
 import { DocumentViewerSkeleton } from '../components/SkeletonLoaders';
 import { format } from 'date-fns';
+import { formatTime12h } from '../utils/timeUtils';
 
 export default function EmployeeDashboard() {
   const { user } = useAuth();
@@ -228,8 +229,8 @@ export default function EmployeeDashboard() {
                 {historyRecords.map((r) => (
                   <TableRow key={r.id} hover>
                     <TableCell sx={{ fontWeight: 600 }}>{r.date}</TableCell>
-                    <TableCell>{r.login_time || '--'}</TableCell>
-                    <TableCell>{r.logout_time || 'Active / Not punched out'}</TableCell>
+                    <TableCell>{formatTime12h(r.login_time)}</TableCell>
+                    <TableCell>{r.logout_time ? formatTime12h(r.logout_time) : 'Active / Not punched out'}</TableCell>
                     <TableCell>{r.total_hours || '0'}h</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>{r.net_hours || '0'}h</TableCell>
                     <TableCell>

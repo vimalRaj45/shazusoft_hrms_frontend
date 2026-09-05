@@ -45,9 +45,10 @@ import {
   WorkOutline as WorkIcon
 } from '@mui/icons-material';
 import { format, addMonths, subMonths } from 'date-fns';
-import { attendanceAPI, adminAPI } from '../services/api';
+import { attendanceAPI, adminAPI, reportsAPI } from '../services/api';
 import toast from '../utils/muiToast';
 import { generateExecutivePDFReport } from '../utils/pdfReportGenerator';
+import { formatTime12h } from '../utils/timeUtils';
 
 export default function AdminStaffTimesheets({ initialEmployeeId, employees = [], onRefreshParent }) {
   const [selectedEmpId, setSelectedEmpId] = useState(initialEmployeeId || '');
@@ -226,8 +227,8 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
       d.date,
       d.day_name,
       d.status,
-      d.login_time || '',
-      d.logout_time || '',
+      d.login_time ? formatTime12h(d.login_time) : '',
+      d.logout_time ? formatTime12h(d.logout_time) : '',
       d.net_hours || '0',
       d.task_count || 0,
       d.task_hours || '0',
@@ -671,11 +672,11 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                           </TableCell>
 
                           <TableCell sx={{ fontWeight: 700, color: day.login_time && day.login_time !== '--' ? '#0f172a' : '#94a3b8' }}>
-                            {day.login_time || '--:--'}
+                            {formatTime12h(day.login_time)}
                           </TableCell>
 
                           <TableCell sx={{ fontWeight: 700, color: day.logout_time && day.logout_time !== '--' ? '#0f172a' : '#94a3b8' }}>
-                            {day.logout_time || '--:--'}
+                            {formatTime12h(day.logout_time)}
                           </TableCell>
 
                           <TableCell sx={{ fontWeight: 800, color: day.net_hours && day.net_hours !== '0' ? '#133829' : '#94a3b8' }}>

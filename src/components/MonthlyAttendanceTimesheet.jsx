@@ -33,6 +33,7 @@ import {
   TrendingUp as MetricIcon
 } from '@mui/icons-material';
 import { attendanceAPI } from '../services/api';
+import { formatTime12h } from '../utils/timeUtils';
 import toast from '../utils/muiToast';
 import AttendanceRegularizationModal from './AttendanceRegularizationModal';
 import { format } from 'date-fns';
@@ -313,7 +314,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
                               <TimeIcon sx={{ fontSize: 16, color: row.status === 'Late' ? '#d97706' : '#15803d' }} />
                               <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                {row.login_time}
+                                {formatTime12h(row.login_time)}
                               </Typography>
                             </Box>
                           ) : (
@@ -337,7 +338,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                                 color: row.logout_time === 'In Progress' ? '#0284c7' : 'inherit'
                               }}
                             >
-                              {row.logout_time}
+                              {row.logout_time === 'In Progress' ? 'In Progress' : formatTime12h(row.logout_time)}
                             </Typography>
                           ) : (
                             <Typography variant="body2" sx={{ color: '#94a3b8' }}>

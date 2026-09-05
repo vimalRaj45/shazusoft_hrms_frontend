@@ -38,6 +38,7 @@ import {
 } from '@mui/icons-material';
 import { generateCorporatePDFReport } from '../utils/pdfReportGenerator';
 import toast from '../utils/muiToast';
+import { formatTime12h } from '../utils/timeUtils';
 
 export default function EmployeeReportViewer({ reportData }) {
   const [activeTab, setActiveTab] = useState(0);
@@ -460,8 +461,8 @@ export default function EmployeeReportViewer({ reportData }) {
                     {details.attendanceLogs.map((att) => (
                       <TableRow key={att.id} hover>
                         <TableCell sx={{ fontWeight: 600 }}>{att.date}</TableCell>
-                        <TableCell>{att.login_time || '--'}</TableCell>
-                        <TableCell>{att.logout_time || 'Not punched out'}</TableCell>
+                        <TableCell>{formatTime12h(att.login_time)}</TableCell>
+                        <TableCell>{att.logout_time ? formatTime12h(att.logout_time) : 'Not punched out'}</TableCell>
                         <TableCell>{att.total_hours || '0'} hrs</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
                           {att.net_hours || '0'} hrs

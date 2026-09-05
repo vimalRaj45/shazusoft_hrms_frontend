@@ -77,6 +77,7 @@ export const workDoneAPI = {
 
 export const leavesAPI = {
   getBalances: (params) => api.get('/leaves/balances', { params }),
+  getPolicy: () => api.get('/leaves/policy'),
   apply: (leaveData) => api.post('/leaves/apply', leaveData),
   applyPermission: (data) => api.post('/leaves/apply-permission', data),
   getMyLeaves: () => api.get('/leaves/my-leaves'),
@@ -114,6 +115,8 @@ export const adminAPI = {
   updateWorkMode: (id, work_mode) => api.patch(`/admin/employees/${id}/work-mode`, { work_mode }),
   freezeDocuments: (id, data) => api.post(`/admin/employees/${id}/freeze-documents`, data),
   getSettings: () => api.get('/admin/settings'),
+  getLeavePolicy: () => api.get('/admin/leave-policy'),
+  updateLeavePolicy: (data) => api.put('/admin/leave-policy', data),
   // Geofence is read-only (ENV only) — no updateGeofence
   getHolidays: () => api.get('/admin/holidays'),
   addHoliday: (data) => api.post('/admin/holidays', data),

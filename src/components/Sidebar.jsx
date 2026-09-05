@@ -132,8 +132,8 @@ export default function Sidebar({ activeTab, onSelectTab, onCloseMobile, isColla
         transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
-      <Box>
-        {/* Top Brand Logo Banner + Collapse Toggle */}
+      <Box sx={{ pt: '64px' }}>
+        {/* Top Brand Logo Banner + Collapse Toggle (Fixed on Mobile & Desktop Scroll) */}
         <Box
           sx={{
             display: 'flex',
@@ -143,7 +143,15 @@ export default function Sidebar({ activeTab, onSelectTab, onCloseMobile, isColla
             py: 1.5,
             height: 64,
             borderBottom: '1px solid #e5e7eb',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: isCollapsed ? 72 : 260,
+            zIndex: 1200,
+            bgcolor: '#ffffff',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+            transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
           <Box
@@ -152,9 +160,29 @@ export default function Sidebar({ activeTab, onSelectTab, onCloseMobile, isColla
               alignItems: 'center',
               gap: 1.2,
               cursor: 'pointer',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              p: 0.6,
+              borderRadius: '6px',
+              transition: 'all 0.15s ease',
+              '&:hover': {
+                bgcolor: 'rgba(19, 56, 41, 0.05)'
+              },
+              '&:active': {
+                transform: 'scale(0.98)'
+              }
             }}
-            onClick={() => onToggleCollapse && isCollapsed && onToggleCollapse()}
+            onClick={() => {
+              if (isCollapsed && onToggleCollapse) {
+                onToggleCollapse();
+              }
+              if (onSelectTab) {
+                onSelectTab('dashboard');
+              }
+              if (onCloseMobile) {
+                onCloseMobile();
+              }
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           >
             <Box
               component="img"
@@ -203,21 +231,40 @@ export default function Sidebar({ activeTab, onSelectTab, onCloseMobile, isColla
 
         {/* Navigation Links */}
         <Box sx={{ p: isCollapsed ? 1 : 2 }}>
-          {/* Category 1: OVERVIEW */}
+          {/* Category 1: OVERVIEW (Clickable to Dashboard) */}
           {!isCollapsed ? (
-            <Typography
-              variant="subtitle2"
+            <Box
+              onClick={() => {
+                if (onSelectTab) onSelectTab('dashboard');
+                if (onCloseMobile) onCloseMobile();
+              }}
               sx={{
-                color: '#64748b',
-                fontWeight: 800,
-                fontSize: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 px: 1.5,
-                mb: 0.8,
-                letterSpacing: '0.06em'
+                py: 0.6,
+                mb: 0.6,
+                borderRadius: '4px',
+                cursor: 'pointer',
+                transition: 'background-color 0.15s ease',
+                '&:hover': {
+                  bgcolor: '#f1f5f9'
+                }
               }}
             >
-              OVERVIEW
-            </Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: activeTab === 'dashboard' ? '#133829' : '#64748b',
+                  fontWeight: 800,
+                  fontSize: 10,
+                  letterSpacing: '0.06em'
+                }}
+              >
+                OVERVIEW
+              </Typography>
+            </Box>
           ) : (
             <Divider sx={{ my: 1, borderColor: '#e2e8f0' }} />
           )}
@@ -229,21 +276,40 @@ export default function Sidebar({ activeTab, onSelectTab, onCloseMobile, isColla
             {renderNavItem('guide', 'User Guide', GuideIcon)}
           </List>
 
-          {/* Category 2: STAFF PORTAL */}
+          {/* Category 2: STAFF PORTAL (Clickable to Task Tracker) */}
           {!isCollapsed ? (
-            <Typography
-              variant="subtitle2"
+            <Box
+              onClick={() => {
+                if (onSelectTab) onSelectTab('task-tracker');
+                if (onCloseMobile) onCloseMobile();
+              }}
               sx={{
-                color: '#64748b',
-                fontWeight: 800,
-                fontSize: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 px: 1.5,
-                mb: 0.8,
-                letterSpacing: '0.06em'
+                py: 0.6,
+                mb: 0.6,
+                borderRadius: '4px',
+                cursor: 'pointer',
+                transition: 'background-color 0.15s ease',
+                '&:hover': {
+                  bgcolor: '#f1f5f9'
+                }
               }}
             >
-              {isAdmin ? 'OPERATIONS & STAFF' : 'STAFF PORTAL'}
-            </Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: '#64748b',
+                  fontWeight: 800,
+                  fontSize: 10,
+                  letterSpacing: '0.06em'
+                }}
+              >
+                {isAdmin ? 'OPERATIONS & STAFF' : 'STAFF PORTAL'}
+              </Typography>
+            </Box>
           ) : (
             <Divider sx={{ my: 1, borderColor: '#e2e8f0' }} />
           )}
@@ -259,23 +325,42 @@ export default function Sidebar({ activeTab, onSelectTab, onCloseMobile, isColla
             {renderNavItem('my-report', 'Individual Full Report', ReportIcon)}
           </List>
 
-          {/* Category 3: ADMIN MANAGEMENT (Only if Admin) */}
+          {/* Category 3: ADMIN MANAGEMENT (Only if Admin, Clickable to Live Board) */}
           {isAdmin && (
             <>
               {!isCollapsed ? (
-                <Typography
-                  variant="subtitle2"
+                <Box
+                  onClick={() => {
+                    if (onSelectTab) onSelectTab('admin-live');
+                    if (onCloseMobile) onCloseMobile();
+                  }}
                   sx={{
-                    color: '#64748b',
-                    fontWeight: 800,
-                    fontSize: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                     px: 1.5,
-                    mb: 0.8,
-                    letterSpacing: '0.06em'
+                    py: 0.6,
+                    mb: 0.6,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.15s ease',
+                    '&:hover': {
+                      bgcolor: '#f1f5f9'
+                    }
                   }}
                 >
-                  MANAGEMENT SUITE
-                </Typography>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      color: '#64748b',
+                      fontWeight: 800,
+                      fontSize: 10,
+                      letterSpacing: '0.06em'
+                    }}
+                  >
+                    MANAGEMENT SUITE
+                  </Typography>
+                </Box>
               ) : (
                 <Divider sx={{ my: 1, borderColor: '#e2e8f0' }} />
               )}

@@ -26,6 +26,7 @@ import toast from '../utils/muiToast';
 import { attendanceAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AttendanceRegularizationModal from './AttendanceRegularizationModal';
+import { formatTime12h } from '../utils/timeUtils';
 
 export default function GeofencePunch({ todayData, onRefresh }) {
   const { user } = useAuth();
@@ -333,7 +334,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 opacity: attendance ? 0.6 : 1
               }}
             >
-              {attendance ? `Punched In at ${attendance.login_time}` : isWfh ? 'Punch In (WFH Home)' : 'Punch In (Office GPS)'}
+              {attendance ? `Punched In at ${formatTime12h(attendance.login_time)}` : isWfh ? 'Punch In (WFH Home)' : 'Punch In (Office GPS)'}
             </Button>
           </Grid>
 
@@ -354,7 +355,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 '&:hover': { borderWidth: 2 }
               }}
             >
-              {isPunchedOut ? `Punched Out at ${attendance.logout_time}` : isWfh ? 'Punch Out (WFH Home)' : 'Punch Out (Office GPS)'}
+              {isPunchedOut ? `Punched Out at ${formatTime12h(attendance.logout_time)}` : isWfh ? 'Punch Out (WFH Home)' : 'Punch Out (Office GPS)'}
             </Button>
           </Grid>
         </Grid>
@@ -377,7 +378,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 LOGIN TIME
               </Typography>
               <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'primary.main' }}>
-                {attendance.login_time || '--:--'}
+                {formatTime12h(attendance.login_time)}
               </Typography>
             </Box>
             <Box>

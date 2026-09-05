@@ -133,11 +133,11 @@ export default function TopNavbar({
 
   return (
     <AppBar
-      position="sticky"
       elevation={0}
       sx={{
         top: 0,
-        position: 'sticky',
+        position: { xs: 'fixed', md: 'sticky' },
+        width: { xs: '100%', md: '100%' },
         backgroundColor: '#ffffff',
         borderBottom: '1px solid #e5e7eb',
         color: '#0f172a',
@@ -157,6 +157,66 @@ export default function TopNavbar({
           >
             <MenuIcon />
           </IconButton>
+
+          {/* Mobile Brand Logo & Active Section Tag (Clickable to Dashboard) */}
+          <Box
+            onClick={() => {
+              if (onSelectView) onSelectView('dashboard');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            sx={{
+              display: { xs: 'flex', md: 'none' },
+              alignItems: 'center',
+              gap: 0.8,
+              cursor: 'pointer',
+              p: 0.5,
+              borderRadius: '4px',
+              transition: 'all 0.15s ease',
+              '&:hover': { bgcolor: '#f1f5f9' },
+              '&:active': { transform: 'scale(0.97)' }
+            }}
+          >
+            <Box
+              component="img"
+              src="/logo.png"
+              alt="Shazu Soft Logo"
+              sx={{
+                width: 28,
+                height: 28,
+                objectFit: 'contain',
+                borderRadius: '4px',
+                flexShrink: 0
+              }}
+            />
+            <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 800,
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
+                  color: '#0f172a',
+                  fontSize: '0.82rem',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                SHAZU SOFT
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: '#133829',
+                  fontWeight: 800,
+                  letterSpacing: '0.04em',
+                  fontSize: 9,
+                  whiteSpace: 'nowrap',
+                  display: 'block'
+                }}
+              >
+                {activeView === 'dashboard' ? 'OVERVIEW' : activeView.toUpperCase().replace('-', ' ')}
+              </Typography>
+            </Box>
+          </Box>
 
           {/* Desktop Sidebar Collapse / Expand Toggle Button */}
           <Tooltip
@@ -231,9 +291,9 @@ export default function TopNavbar({
             display: 'flex',
             alignItems: 'center',
             gap: 1.2,
-            px: 2,
+            px: { xs: 1.2, sm: 2 },
             py: 0.7,
-            width: { xs: 160, sm: 240, md: 360, lg: 420 },
+            width: { xs: 120, sm: 220, md: 360, lg: 420 },
             bgcolor: '#f8fafc',
             border: '1.5px solid #e2e8f0',
             borderRadius: '4px',

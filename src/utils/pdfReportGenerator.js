@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import { formatTime12h } from './timeUtils.js';
 
 /**
  * Loads an image URL into an HTMLImageElement and converts to base64 DataURL
@@ -83,7 +84,7 @@ export async function generateCorporatePDFReport(reportData) {
   doc.text('HUMAN RESOURCES MANAGEMENT SYSTEM', headerTextLeft, currentY + 9.5);
 
   // Document Reference & Generation Timestamp on Top Right
-  const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+  const timestamp = format(new Date(), 'yyyy-MM-dd hh:mm:ss a');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(17, 24, 39);
@@ -233,8 +234,8 @@ export async function generateCorporatePDFReport(reportData) {
     return [
       day.date,
       dayName,
-      day.loginTime || '—',
-      day.logoutTime || '—',
+      day.loginTime ? formatTime12h(day.loginTime) : '—',
+      day.logoutTime ? formatTime12h(day.logoutTime) : '—',
       day.netHours ? `${parseFloat(day.netHours).toFixed(1)} hrs` : '0.0 hrs',
       (day.workMode || 'Office').toUpperCase(),
       day.attendanceStatus || 'Absent'
