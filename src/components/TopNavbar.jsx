@@ -26,7 +26,8 @@ import {
   NotificationsActive as NotificationsActiveIcon,
   NotificationsOff as NotificationsOffIcon,
   Notifications as NotificationsIcon,
-  HelpOutline as HelpOutlineIcon
+  HelpOutline as HelpOutlineIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
@@ -302,6 +303,22 @@ export default function TopNavbar({
 
         {/* Right Side: Push Notification Bell + User Profile */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+
+          {/* Quick Refresh Page Button */}
+          <Tooltip title="Refresh Application Data (F5 / Reload)" placement="bottom" arrow>
+            <IconButton
+              onClick={() => window.location.reload()}
+              sx={{
+                color: '#64748b',
+                borderRadius: '8px',
+                p: 0.9,
+                transition: 'all 0.15s ease',
+                '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
+              }}
+            >
+              <RefreshIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          </Tooltip>
 
           {/* System Guide & Feature Showcase Button */}
           <Tooltip title="System Guide & Feature Showcase" placement="bottom" arrow>

@@ -307,7 +307,7 @@ const baseTheme = (mode = 'light') =>
           'html, body, #root': {
             touchAction: 'pan-x pan-y',
             WebkitTextSizeAdjust: '100%',
-            overscrollBehaviorY: 'none',
+            overscrollBehaviorY: 'auto',
             WebkitTapHighlightColor: 'transparent'
           },
           'button, a, input, select, textarea, [role="button"]': {

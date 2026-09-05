@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
-      // Prevent accidental pinch-to-zoom and double-tap zoom on mobile devices for native app feel
+      // Prevent accidental multi-touch pinch-to-zoom on mobile devices while allowing pull-to-refresh
       document.addEventListener('gesturestart', function (e) {
         e.preventDefault();
       }, { passive: false });
@@ -27,15 +27,6 @@
       }, { passive: false });
       document.addEventListener('gestureend', function (e) {
         e.preventDefault();
-      }, { passive: false });
-
-      var lastTouchEnd = 0;
-      document.addEventListener('touchend', function (event) {
-        var now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-          event.preventDefault();
-        }
-        lastTouchEnd = now;
       }, { passive: false });
     </script>
   </head>
