@@ -257,31 +257,61 @@ export default function SystemGuide() {
         }}
       >
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-            <Chip
-              label="Welcome to Our New Software • 2026 Edition"
-              size="small"
+          <Box sx={{ display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, mb: 2 }}>
+            <Box
+              component="img"
+              src="/logo.png"
+              alt="Shazusoft Logo"
               sx={{
-                bgcolor: 'rgba(255, 255, 255, 0.15)',
-                color: '#86efac',
-                fontWeight: 700,
-                fontSize: '0.72rem',
-                border: '1px solid rgba(255, 255, 255, 0.25)'
+                width: { xs: 50, sm: 62 },
+                height: { xs: 50, sm: 62 },
+                objectFit: 'contain',
+                borderRadius: '12px',
+                bgcolor: '#ffffff',
+                p: '6px',
+                boxShadow: '0 6px 16px rgba(0,0,0,0.3)',
+                flexShrink: 0,
+                border: '2px solid rgba(255,255,255,0.3)'
               }}
             />
-          </Box>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75, flexWrap: 'wrap' }}>
+                <Chip
+                  label="Welcome to Our New Software • 2026 Edition"
+                  size="small"
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.15)',
+                    color: '#86efac',
+                    fontWeight: 700,
+                    fontSize: '0.72rem',
+                    border: '1px solid rgba(255, 255, 255, 0.25)'
+                  }}
+                />
+                <Chip
+                  label="Shazu Soft HRMS"
+                  size="small"
+                  sx={{
+                    bgcolor: '#22c55e',
+                    color: '#092317',
+                    fontWeight: 800,
+                    fontSize: '0.72rem'
+                  }}
+                />
+              </Box>
 
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 800,
-              fontSize: { xs: '1.5rem', sm: '2.1rem' },
-              letterSpacing: '-0.02em',
-              mb: 1
-            }}
-          >
-            Shazusoft HRMS Enterprise User Guide & Feature Showcase
-          </Typography>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 800,
+                  fontSize: { xs: '1.4rem', sm: '2.1rem' },
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.2
+                }}
+              >
+                Enterprise User Guide & Feature Showcase
+              </Typography>
+            </Box>
+          </Box>
 
           <Typography
             variant="body1"

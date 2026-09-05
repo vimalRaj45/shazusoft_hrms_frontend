@@ -112,14 +112,18 @@
           <i class="bi bi-x-lg text-lg"></i>
         </button>
 
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-brand-300 text-xs font-bold uppercase tracking-wider mb-3">
-          <i class="bi bi-stars"></i> Official Launch • 2026 Edition
+        <div class="flex items-center gap-3 mb-3">
+          <img src="/logo.png" alt="Shazusoft Logo" class="w-12 h-12 object-contain bg-white rounded-xl p-1 shadow-md" />
+          <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/15 border border-white/25 text-brand-300 text-[11px] font-bold uppercase tracking-wider">
+              <i class="bi bi-stars"></i> Official Launch • 2026 Edition
+            </div>
+            <h3 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight mt-0.5">
+              Welcome to Shazusoft HRMS!
+            </h3>
+          </div>
         </div>
-
-        <h3 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
-          Welcome to Shazusoft HRMS!
-        </h3>
-        <p class="mt-2 text-slate-200 text-sm sm:text-base leading-relaxed max-w-lg">
+        <p class="text-slate-200 text-sm sm:text-base leading-relaxed max-w-lg">
           We're excited to introduce our new enterprise workplace portal. Built for speed, transparency, and seamless collaboration.
         </p>
       </div>
@@ -223,9 +227,7 @@
       
       <!-- Brand Logo & Title -->
       <a href="/?tab=dashboard" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 rounded-xl bg-white text-brand-800 flex items-center justify-center font-display font-black text-xl shadow-md group-hover:scale-105 transition-transform">
-          S
-        </div>
+        <img src="/logo.png" alt="Shazusoft Logo" class="w-10 h-10 object-contain rounded-xl bg-white p-1 shadow-md group-hover:scale-105 transition-transform" />
         <div>
           <div class="flex items-center gap-2">
             <h1 class="font-display font-black text-lg tracking-tight leading-tight">Shazusoft HRMS</h1>
@@ -257,32 +259,52 @@
   <section class="hero-mesh text-white pt-12 pb-20 px-4 sm:px-8 relative overflow-hidden">
     <div class="max-w-7xl mx-auto relative z-10" data-aos="fade-up">
       
-      <div class="max-w-3xl">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-brand-300 text-xs font-bold uppercase tracking-wider mb-4">
-          <i class="bi bi-shield-check"></i> Enterprise Suite 2026 • Verified Production Ready
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
+        <div class="max-w-3xl">
+          <div class="flex items-center gap-3 mb-4">
+            <img src="/logo.png" alt="Shazusoft Logo" class="w-12 h-12 object-contain bg-white rounded-xl p-1.5 shadow-md ring-2 ring-brand-400/40" />
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/10 border border-white/20 text-brand-300 text-xs font-bold uppercase tracking-wider">
+                <i class="bi bi-shield-check"></i> Enterprise Suite 2026 • Verified
+              </div>
+              <div class="text-xs text-brand-200 font-semibold mt-0.5">Shazu Soft Technologies</div>
+            </div>
+          </div>
+
+          <h2 class="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+            Next-Gen Workplace Operations & Intelligence
+          </h2>
+
+          <p class="mt-4 text-slate-200 text-base sm:text-lg leading-relaxed font-normal">
+            Welcome to the official Shazusoft HRMS documentation and interactive feature manual. 
+            Discover how our GPS Geofencing, multi-staff team collaboration, instant @mention issue tracking, 
+            and zero-zoom native mobile PWA power everyday workforce productivity.
+          </p>
+
+          <!-- Hero Action Buttons -->
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <a href="#modules" class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-brand-950 font-extrabold text-sm transition flex items-center gap-2 shadow-lg">
+              <span>Explore All 10 Modules</span>
+              <i class="bi bi-arrow-down-short text-lg"></i>
+            </a>
+
+            <a href="#quickstart" class="px-6 py-3 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold text-sm transition flex items-center gap-2">
+              <i class="bi bi-rocket-takeoff-fill text-brand-300"></i>
+              <span>First-Day Quick Start</span>
+            </a>
+          </div>
         </div>
 
-        <h2 class="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
-          Next-Gen Workplace Operations & Intelligence
-        </h2>
-
-        <p class="mt-4 text-slate-200 text-base sm:text-lg leading-relaxed font-normal">
-          Welcome to the official Shazusoft HRMS documentation and interactive feature manual. 
-          Discover how our GPS Geofencing, multi-staff team collaboration, instant @mention issue tracking, 
-          and zero-zoom native mobile PWA power everyday workforce productivity.
-        </p>
-
-        <!-- Hero Action Buttons -->
-        <div class="mt-8 flex flex-wrap items-center gap-3">
-          <a href="#modules" class="px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-brand-950 font-extrabold text-sm transition flex items-center gap-2 shadow-lg">
-            <span>Explore All 10 Modules</span>
-            <i class="bi bi-arrow-down-short text-lg"></i>
-          </a>
-
-          <a href="#quickstart" class="px-6 py-3 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-bold text-sm transition flex items-center gap-2">
-            <i class="bi bi-rocket-takeoff-fill text-brand-300"></i>
-            <span>First-Day Quick Start</span>
-          </a>
+        <!-- Hero Brand Card with Company Logo -->
+        <div class="hidden lg:flex flex-col items-center justify-center p-8 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl text-center min-w-[280px]">
+          <div class="w-28 h-28 rounded-2xl bg-white p-3 shadow-xl flex items-center justify-center mb-4 ring-4 ring-brand-400/30 hover:scale-105 transition-transform">
+            <img src="/logo.png" alt="Shazusoft Logo" class="w-full h-full object-contain" />
+          </div>
+          <h4 class="font-display font-extrabold text-xl text-white">Shazu Soft</h4>
+          <p class="text-xs text-brand-200 mt-1 font-medium">Enterprise HRMS & Operations</p>
+          <div class="mt-4 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-[11px] font-bold border border-brand-400/30">
+            Version 2026.1 Active
+          </div>
         </div>
       </div>
 
@@ -846,7 +868,7 @@
   <footer class="bg-brand-950 text-slate-400 py-10 px-4 sm:px-8 border-t border-brand-900">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
       <div class="flex items-center gap-2">
-        <span class="w-6 h-6 rounded bg-brand-800 text-brand-300 font-bold flex items-center justify-center text-xs">S</span>
+        <img src="/logo.png" alt="Shazusoft Logo" class="w-6 h-6 object-contain rounded bg-white p-0.5" />
         <span class="text-slate-300 font-semibold">© 2026 Shazusoft Technologies. Enterprise HRMS Platform.</span>
       </div>
       <div class="flex items-center gap-4">
