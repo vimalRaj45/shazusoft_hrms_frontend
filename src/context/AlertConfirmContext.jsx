@@ -35,7 +35,7 @@ export const muiToast = {
   error: (message, title) => globalNotifyHandler?.({ message, title, severity: 'error' }),
   warning: (message, title) => globalNotifyHandler?.({ message, title, severity: 'warning' }),
   info: (message, title) => globalNotifyHandler?.({ message, title, severity: 'info' }),
-  confirm: (options) => globalConfirmHandler ? globalConfirmHandler(options) : Promise.resolve(window.confirm(options.message || options.title || 'Are you sure?'))
+  confirm: (options) => globalConfirmHandler ? globalConfirmHandler(options) : Promise.resolve(false)
 };
 
 function SlideTransition(props) {

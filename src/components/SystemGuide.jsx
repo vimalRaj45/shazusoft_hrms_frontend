@@ -20,7 +20,12 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton
 } from '@mui/material';
 import {
   HelpOutline as GuideIcon,
@@ -41,7 +46,11 @@ import {
   Keyboard as KeyboardIcon,
   AdminPanelSettings as AdminIcon,
   Smartphone as PhoneIcon,
-  Group as GroupIcon
+  Group as GroupIcon,
+  Close as CloseIcon,
+  AutoAwesome as SparkleIcon,
+  Launch as LaunchIcon,
+  InfoOutlined as InfoModalIcon
 } from '@mui/icons-material';
 
 const MODULES = [
@@ -226,6 +235,27 @@ export default function SystemGuide() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleView, setRoleView] = useState('employee'); // 'employee' | 'admin'
 
+  // MUI Welcome Dialog State (opens automatically on initial visit)
+  const [welcomeOpen, setWelcomeOpen] = useState(() => {
+    try {
+      return !sessionStorage.getItem('shazu_guide_welcome_dismissed');
+    } catch {
+      return false;
+    }
+  });
+
+  // MUI Module Details Dialog State
+  const [activeModuleModal, setActiveModuleModal] = useState(null);
+
+  const handleCloseWelcome = () => {
+    try {
+      sessionStorage.setItem('shazu_guide_welcome_dismissed', 'true');
+    } catch {
+      // ignore
+    }
+    setWelcomeOpen(false);
+  };
+
   const filteredModules = useMemo(() => {
     return MODULES.filter((m) => {
       const matchesCategory = selectedCategory === 'all' || m.category === selectedCategory;
@@ -327,6 +357,25 @@ export default function SystemGuide() {
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Button
+              variant="contained"
+              onClick={() => setWelcomeOpen(true)}
+              startIcon={<SparkleIcon sx={{ color: '#fef08a' }} />}
+              sx={{
+                bgcolor: 'rgba(255, 255, 255, 0.16)',
+                color: '#ffffff',
+                fontWeight: 700,
+                textTransform: 'none',
+                px: 2,
+                py: 1,
+                fontSize: '0.85rem',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.25)' }
+              }}
+            >
+              Welcome Tour & Highlights
+            </Button>
+
             <Button
               variant="contained"
               color="success"
@@ -570,6 +619,32 @@ export default function SystemGuide() {
                         {m.subtitle}
                       </Typography>
                     </Box>
+
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveModuleModal(m);
+                      }}
+                      startIcon={<InfoModalIcon sx={{ fontSize: '14px !important' }} />}
+                      sx={{
+                        display: { xs: 'none', sm: 'inline-flex' },
+                        fontSize: '0.72rem',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        py: 0.25,
+                        px: 1,
+                        minHeight: 28,
+                        color: '#133829',
+                        borderColor: '#cbd5e1',
+                        borderRadius: '6px',
+                        flexShrink: 0,
+                        '&:hover': { borderColor: '#133829', bgcolor: '#f0fdf4' }
+                      }}
+                    >
+                      Guide Modal
+                    </Button>
                   </Box>
                 </AccordionSummary>
 
@@ -661,6 +736,379 @@ export default function SystemGuide() {
           ))}
         </Grid>
       </Paper>
+
+      {/* 1. WELCOME TO OUR NEW SOFTWARE MUI DIALOG */}
+      <Dialog
+        open={welcomeOpen}
+        onClose={handleCloseWelcome}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+            border: '1px solid #e2e8f0'
+          }
+        }}
+      >
+        {/* Top Accent Header */}
+        <Box
+          sx={{
+            p: { xs: 2.5, sm: 3.5 },
+            background: 'linear-gradient(135deg, #133829 0%, #1e563f 60%, #0d281e 100%)',
+            color: '#ffffff',
+            position: 'relative'
+          }}
+        >
+          <IconButton
+            onClick={handleCloseWelcome}
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 14,
+              right: 14,
+              color: 'rgba(255, 255, 255, 0.8)',
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)', color: '#ffffff' }
+            }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, pr: 5 }}>
+            <Box
+              component="img"
+              src="/logo.png"
+              alt="Shazusoft Logo"
+              sx={{
+                width: { xs: 46, sm: 56 },
+                height: { xs: 46, sm: 56 },
+                objectFit: 'contain',
+                borderRadius: '12px',
+                bgcolor: '#ffffff',
+                p: '6px',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+                border: '2px solid rgba(255,255,255,0.3)',
+                flexShrink: 0
+              }}
+            />
+            <Box>
+              <Chip
+                label="Official Release • 2026 Edition"
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.15)',
+                  color: '#86efac',
+                  fontWeight: 700,
+                  fontSize: '0.7rem',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  mb: 0.5
+                }}
+              />
+              <Typography variant="h5" sx={{ fontWeight: 800, fontSize: { xs: '1.25rem', sm: '1.6rem' }, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                Welcome to Shazu Soft HRMS
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#cbd5e1', mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.88rem' } }}>
+                Your next-generation enterprise workforce portal is live with enhanced speed, precision, and collaboration.
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Content Highlights */}
+        <DialogContent sx={{ p: { xs: 2.5, sm: 3 } }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
+            Key Platform Capabilities & Architecture:
+          </Typography>
+
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12} sm={4}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  height: '100%',
+                  bgcolor: '#ecfdf5',
+                  border: '1px solid #a7f3d0',
+                  borderRadius: '10px'
+                }}
+              >
+                <Box sx={{ width: 36, height: 36, borderRadius: '8px', bgcolor: '#059669', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1.5 }}>
+                  <GpsIcon fontSize="small" />
+                </Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#065f46', mb: 0.5 }}>
+                  GPS Geofencing
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#047857', display: 'block', lineHeight: 1.4 }}>
+                  Tamper-proof punch in and out strictly within a 150m perimeter of office coordinates with live break deduction.
+                </Typography>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  height: '100%',
+                  bgcolor: '#eef2ff',
+                  border: '1px solid #c7d2fe',
+                  borderRadius: '10px'
+                }}
+              >
+                <Box sx={{ width: 36, height: 36, borderRadius: '8px', bgcolor: '#4f46e5', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1.5 }}>
+                  <GroupIcon fontSize="small" />
+                </Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#3730a3', mb: 0.5 }}>
+                  Multi-Staff Tasks
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#4338ca', display: 'block', lineHeight: 1.4 }}>
+                  Assign collaborative tasks to multiple staff members simultaneously with individual progress updates.
+                </Typography>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 2,
+                  height: '100%',
+                  bgcolor: '#fdf4ff',
+                  border: '1px solid #f5d0fe',
+                  borderRadius: '10px'
+                }}
+              >
+                <Box sx={{ width: 36, height: 36, borderRadius: '8px', bgcolor: '#c026d3', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1.5 }}>
+                  <ChatIcon fontSize="small" />
+                </Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#86198f', mb: 0.5 }}>
+                  @Mention Push Alerts
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#a21caf', display: 'block', lineHeight: 1.4 }}>
+                  Tag coworkers using @Name in issues for instant web push alerts and automatic inclusion into ticket access.
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', p: 1.5, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', alignItems: 'center' }}>
+            <Chip
+              icon={<PhoneIcon sx={{ fontSize: '15px !important', color: '#16a34a !important' }} />}
+              label="Zero-Zoom Mobile PWA Active"
+              size="small"
+              sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 700, fontSize: '0.75rem' }}
+            />
+            <Chip
+              icon={<SecurityIcon sx={{ fontSize: '15px !important', color: '#2563eb !important' }} />}
+              label="Real OTP Production Authentication"
+              size="small"
+              sx={{ bgcolor: '#dbeafe', color: '#1d4ed8', fontWeight: 700, fontSize: '0.75rem' }}
+            />
+            <Chip
+              icon={<CheckIcon sx={{ fontSize: '15px !important', color: '#0f766e !important' }} />}
+              label="10 Core Modules Ready"
+              size="small"
+              sx={{ bgcolor: '#ccfbf1', color: '#0f766e', fontWeight: 700, fontSize: '0.75rem' }}
+            />
+          </Box>
+        </DialogContent>
+
+        {/* Actions */}
+        <DialogActions sx={{ px: { xs: 2.5, sm: 3 }, pb: { xs: 2.5, sm: 3 }, pt: 0, justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+          <Button
+            variant="text"
+            href="/system-guide.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            endIcon={<OpenInNewIcon fontSize="small" />}
+            sx={{ textTransform: 'none', color: '#133829', fontWeight: 700, fontSize: '0.85rem' }}
+          >
+            Standalone HTML Showcase
+          </Button>
+
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseWelcome}
+              sx={{ textTransform: 'none', borderColor: '#cbd5e1', color: '#475569', fontWeight: 700, fontSize: '0.85rem' }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleCloseWelcome}
+              sx={{
+                textTransform: 'none',
+                bgcolor: '#133829',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                px: 2.5,
+                '&:hover': { bgcolor: '#1e563f' }
+              }}
+            >
+              Explore Feature Guide
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      {/* 2. MODULE DETAIL PREVIEW MUI DIALOG */}
+      <Dialog
+        open={Boolean(activeModuleModal)}
+        onClose={() => setActiveModuleModal(null)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '14px',
+            overflow: 'hidden',
+            border: '1px solid #e2e8f0'
+          }
+        }}
+      >
+        {activeModuleModal && (
+          <>
+            <Box
+              sx={{
+                p: 2.5,
+                background: 'linear-gradient(135deg, #133829 0%, #1e563f 100%)',
+                color: '#ffffff',
+                position: 'relative'
+              }}
+            >
+              <IconButton
+                onClick={() => setActiveModuleModal(null)}
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  top: 12,
+                  right: 12,
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)', color: '#ffffff' }
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pr: 4 }}>
+                <Box
+                  sx={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: '10px',
+                    bgcolor: 'rgba(255, 255, 255, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1px solid rgba(255,255,255,0.25)'
+                  }}
+                >
+                  <activeModuleModal.icon sx={{ color: '#ffffff', fontSize: 24 }} />
+                </Box>
+                <Box>
+                  <Chip
+                    label={activeModuleModal.badge}
+                    size="small"
+                    color={activeModuleModal.badgeColor || 'success'}
+                    sx={{ fontWeight: 700, fontSize: '0.68rem', height: 20, mb: 0.5 }}
+                  />
+                  <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.2, color: '#ffffff' }}>
+                    {activeModuleModal.title}
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#cbd5e1', display: 'block', mt: 1 }}>
+                {activeModuleModal.subtitle}
+              </Typography>
+            </Box>
+
+            <DialogContent sx={{ p: 2.5 }}>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Button
+                  size="small"
+                  variant={roleView === 'employee' ? 'contained' : 'outlined'}
+                  onClick={() => setRoleView('employee')}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    bgcolor: roleView === 'employee' ? '#133829' : 'transparent',
+                    color: roleView === 'employee' ? '#ffffff' : '#133829',
+                    borderColor: '#133829',
+                    '&:hover': { bgcolor: roleView === 'employee' ? '#1e563f' : '#f0fdf4' }
+                  }}
+                >
+                  Staff View
+                </Button>
+                <Button
+                  size="small"
+                  variant={roleView === 'admin' ? 'contained' : 'outlined'}
+                  onClick={() => setRoleView('admin')}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.78rem',
+                    bgcolor: roleView === 'admin' ? '#133829' : 'transparent',
+                    color: roleView === 'admin' ? '#ffffff' : '#133829',
+                    borderColor: '#133829',
+                    '&:hover': { bgcolor: roleView === 'admin' ? '#1e563f' : '#f0fdf4' }
+                  }}
+                >
+                  Admin View
+                </Button>
+              </Box>
+
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {roleView === 'employee' ? 'Standard Employee Workflow:' : 'Management Controls & Rules:'}
+              </Typography>
+
+              <List dense sx={{ mt: 1, mb: 2 }}>
+                {(roleView === 'employee' ? activeModuleModal.employeeGuide : activeModuleModal.adminGuide).map((step, idx) => (
+                  <ListItem key={idx} sx={{ px: 0, py: 0.5, alignItems: 'flex-start' }}>
+                    <ListItemIcon sx={{ minWidth: 26, mt: 0.25 }}>
+                      <CheckIcon sx={{ color: '#16a34a', fontSize: 18 }} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={step}
+                      primaryTypographyProps={{
+                        variant: 'body2',
+                        sx: { color: '#334155', fontSize: '0.85rem', lineHeight: 1.4 }
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+
+              <Alert
+                icon={<TipIcon sx={{ color: '#15803d' }} />}
+                sx={{
+                  bgcolor: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  color: '#14532d',
+                  fontSize: '0.8rem',
+                  py: 0.5
+                }}
+              >
+                <strong>Pro Tip:</strong> {activeModuleModal.proTip}
+              </Alert>
+            </DialogContent>
+
+            <DialogActions sx={{ p: 2, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc' }}>
+              <Button
+                variant="outlined"
+                onClick={() => setActiveModuleModal(null)}
+                sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.82rem', borderColor: '#cbd5e1', color: '#475569' }}
+              >
+                Close
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 }

@@ -454,7 +454,13 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   };
 
   const handleReactivateEmployee = async (emp) => {
-    if (!window.confirm(`Are you sure you want to restore "${emp.name}" (${emp.id}) to ACTIVE status?`)) {
+    const confirmed = await muiToast.confirm({
+      title: 'Restore Employee to Active Status',
+      message: `Are you sure you want to restore "${emp.name}" (${emp.id}) to ACTIVE status? This will restore their system login privileges.`,
+      confirmText: 'Restore to Active',
+      severity: 'success'
+    });
+    if (!confirmed) {
       return;
     }
     setActionLoading(true);
