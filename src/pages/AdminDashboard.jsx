@@ -1254,7 +1254,13 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           {activeTab === 4 && (
             <Box>
               <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-                <Tabs value={leaveSubTab} onChange={(e, val) => setLeaveSubTab(val)}>
+                <Tabs
+                  value={leaveSubTab}
+                  onChange={(e, val) => setLeaveSubTab(val)}
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  allowScrollButtonsMobile
+                >
                   <Tab
                     label={`Full Day Leaves (${allLeaves.filter(l => l.status === 'Pending').length} Pending)`}
                     sx={{ textTransform: 'none', fontWeight: 700 }}

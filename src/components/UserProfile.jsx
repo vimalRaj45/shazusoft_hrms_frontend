@@ -716,6 +716,7 @@ export default function UserProfile() {
           onChange={(e, val) => setActiveTab(val)}
           variant="scrollable"
           scrollButtons="auto"
+          allowScrollButtonsMobile
           sx={{
             borderBottom: '1px solid #e2e8f0',
             bgcolor: '#f8fafc',

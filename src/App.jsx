@@ -921,28 +921,6 @@ function AppContent() {
           )}
           {activeTab === 'ai-reports' && isAdmin && <AIReports />}
 
-          {/* TAB: ANNOUNCEMENTS */}
-          {activeTab === 'announcements' && (
-            <Box sx={{ maxWidth: 900 }}>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
-                Company Notices & Announcements
-              </Typography>
-              <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '4px', mb: 2 }}>
-                <CardContent sx={{ p: 2.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                    <AnnouncementIcon color="primary" />
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                      August 2026 Self-Evaluation Appraisal Window Open
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.6 }}>
-                    All staff members are kindly requested to complete their August Monthly Self-Evaluation Appraisal sheet. The evaluation contains 13 detailed sections including tasks, self-ratings, and professional development milestones.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Box>
-          )}
-
           {/* TAB: USER GUIDE */}
           {activeTab === 'guide' && (
             <Box sx={{ maxWidth: 900 }}>

@@ -198,6 +198,7 @@ export default function LeavesSection() {
   };
 
   const balances = balanceData?.balances || {};
+  const policy = balanceData?.policy || {};
   const permPolicy = balanceData?.permissionPolicy || { monthlyLimit: 2, usedThisMonth: 0, remainingThisMonth: 2 };
 
   return (
@@ -303,7 +304,13 @@ export default function LeavesSection() {
 
         {/* Sub Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-          <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)}>
+          <Tabs
+            value={activeTab}
+            onChange={(e, v) => setActiveTab(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+          >
             <Tab label={`Leave Applications (${leaves.length})`} icon={<LeaveIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
             <Tab label={`Short Permissions (${permissions.length})`} icon={<PermissionIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
           </Tabs>
@@ -489,9 +496,9 @@ export default function LeavesSection() {
                   value={leaveForm.leave_type}
                   onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })}
                 >
-                  <MenuItem value="Casual Leave">Casual Leave ({balances['Casual Leave']?.remainingDays ?? (policy.casual_leave ?? 1)} days left this month)</MenuItem>
-                  <MenuItem value="Sick Leave">Sick Leave ({balances['Sick Leave']?.remainingDays ?? (policy.sick_leave ?? 1)} days left this month)</MenuItem>
-                  <MenuItem value="Paid Leave">Paid Annual Leave ({balances['Paid Leave']?.remainingDays ?? (policy.paid_leave ?? 1)} days left this month)</MenuItem>
+                  <MenuItem value="Casual Leave">Casual Leave ({balances['Casual Leave']?.remainingDays ?? (policy?.casual_leave ?? 1)} days left this month)</MenuItem>
+                  <MenuItem value="Sick Leave">Sick Leave ({balances['Sick Leave']?.remainingDays ?? (policy?.sick_leave ?? 1)} days left this month)</MenuItem>
+                  <MenuItem value="Paid Leave">Paid Annual Leave ({balances['Paid Leave']?.remainingDays ?? (policy?.paid_leave ?? 1)} days left this month)</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>

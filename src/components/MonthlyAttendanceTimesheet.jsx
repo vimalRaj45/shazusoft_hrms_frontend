@@ -237,6 +237,9 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
           <Tabs
             value={filterType}
             onChange={(e, v) => setFilterType(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{ minHeight: 40, '& .MuiTab-root': { minHeight: 40, textTransform: 'none', fontWeight: 700, fontSize: 13 } }}
           >
             <Tab label={`All Days (${days.length})`} value="ALL" />

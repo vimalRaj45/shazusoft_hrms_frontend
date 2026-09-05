@@ -257,6 +257,50 @@ const baseTheme = (mode = 'light') =>
             }
           }
         }
+      },
+      MuiTabs: {
+        defaultProps: {
+          variant: 'scrollable',
+          scrollButtons: 'auto',
+          allowScrollButtonsMobile: true
+        },
+        styleOverrides: {
+          root: {
+            minHeight: '44px',
+            '& .MuiTabs-scrollButtons': {
+              width: 32,
+              '&.Mui-disabled': {
+                opacity: 0.15
+              }
+            }
+          },
+          scroller: {
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehaviorX: 'contain',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': {
+              display: 'none'
+            }
+          },
+          flexContainer: {
+            gap: '2px'
+          }
+        }
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            minHeight: '44px',
+            textTransform: 'none',
+            fontWeight: 600,
+            fontSize: '0.84rem',
+            whiteSpace: 'nowrap',
+            padding: '8px 14px',
+            '&.Mui-selected': {
+              fontWeight: 700
+            }
+          }
+        }
       }
     }
   });

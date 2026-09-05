@@ -44,6 +44,15 @@ export default function Login() {
     return () => clearInterval(timer);
   }, [countdown]);
 
+  // Alert user if auto-logged out due to deactivation
+  useEffect(() => {
+    const deactMsg = sessionStorage.getItem('shazusoft_deactivated_msg');
+    if (deactMsg) {
+      toast.error(deactMsg, { duration: 7000 });
+      sessionStorage.removeItem('shazusoft_deactivated_msg');
+    }
+  }, []);
+
   // Handle Send OTP
   const handleSendOTP = async (e) => {
     if (e) e.preventDefault();

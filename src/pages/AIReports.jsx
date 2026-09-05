@@ -143,8 +143,14 @@ export default function AIReports() {
 
       {/* Main Mode Switcher */}
       <Card sx={{ mb: 3 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-          <Tabs value={reportMode} onChange={(e, v) => setReportMode(v)}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 1, sm: 2 } }}>
+          <Tabs
+            value={reportMode}
+            onChange={(e, v) => setReportMode(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+          >
             <Tab
               label="Standard Employee Timesheet Report"
               icon={<ReportIcon />}

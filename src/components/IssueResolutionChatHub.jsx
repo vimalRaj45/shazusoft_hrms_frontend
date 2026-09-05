@@ -22,6 +22,10 @@ import {
   Badge,
   Tooltip,
   Alert,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
   useTheme,
   useMediaQuery
 } from '@mui/material';
@@ -40,7 +44,8 @@ import {
   Info as InfoIcon,
   WarningAmber as WarningIcon,
   AccessTime as AccessTimeIcon,
-  Flag as FlagIcon
+  Flag as FlagIcon,
+  AlternateEmail as AlternateEmailIcon
 } from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
 import { ticketsAPI } from '../services/api';
@@ -84,6 +89,13 @@ export default function IssueResolutionChatHub({ user }) {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
+  
+  // @Mention state
+  const [staffList, setStaffList] = useState([]);
+  const [mentionOpen, setMentionOpen] = useState(false);
+  const [mentionSearch, setMentionSearch] = useState('');
+  const [taggedUserIds, setTaggedUserIds] = useState(new Set());
+  const inputRef = useRef(null);
   
   // Broadcasts
   const [broadcasts, setBroadcasts] = useState([]);
@@ -167,6 +179,20 @@ export default function IssueResolutionChatHub({ user }) {
     }
   };
 
+  // Fetch active staff members for @mention autocomplete
+  const fetchStaffList = async () => {
+    try {
+      const res = await ticketsAPI.getStaffList();
+      setStaffList(res.data?.staff || []);
+    } catch (err) {
+      console.error('Error fetching staff list for mentions:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchStaffList();
+  }, []);
+
   useEffect(() => {
     fetchTickets();
     fetchBroadcasts();
@@ -193,17 +219,177 @@ export default function IssueResolutionChatHub({ user }) {
     return () => clearInterval(interval);
   }, [selectedTicket?.id, statusFilter, categoryFilter, priorityFilter, searchQuery]);
 
-  // Handle Send Message
+  // Handle @Mention text change
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setInputMessage(val);
+
+    const cursorPos = e.target.selectionStart ?? val.length;
+    const textBeforeCursor = val.slice(0, cursorPos);
+    const atMatch = textBeforeCursor.match(/(?:^|\s)@([a-zA-Z0-9_\s]*)$/);
+
+    if (atMatch) {
+      setMentionSearch(atMatch[1].trim().toLowerCase());
+      setMentionOpen(true);
+    } else {
+      setMentionOpen(false);
+    }
+  };
+
+  // Toggle @ mention menu from icon button
+  const handleToggleMentionClick = () => {
+    if (!mentionOpen) {
+      const needsLeadingSpace = inputMessage.length > 0 && !inputMessage.endsWith(' ');
+      const newText = inputMessage.endsWith('@')
+        ? inputMessage
+        : needsLeadingSpace
+        ? `${inputMessage} @`
+        : `${inputMessage}@`;
+      setInputMessage(newText);
+      setMentionSearch('');
+      setMentionOpen(true);
+    } else {
+      setMentionOpen(false);
+    }
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+  };
+
+  // Select staff member from autocomplete
+  const handleSelectMention = (staff) => {
+    const cursorPos = inputRef.current ? inputRef.current.selectionStart : inputMessage.length;
+    const textBeforeCursor = inputMessage.slice(0, cursorPos);
+    const textAfterCursor = inputMessage.slice(cursorPos);
+
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    let newText = '';
+    if (lastAtIndex !== -1) {
+      newText = textBeforeCursor.slice(0, lastAtIndex) + `@${staff.name} ` + textAfterCursor;
+    } else {
+      newText = inputMessage ? `${inputMessage} @${staff.name} ` : `@${staff.name} `;
+    }
+
+    setInputMessage(newText);
+    setTaggedUserIds(prev => new Set(prev).add(staff.id));
+    setMentionOpen(false);
+
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 50);
+  };
+
+  // Filter staff list according to query
+  const filteredStaff = staffList.filter(s => {
+    if (!mentionSearch) return true;
+    const q = mentionSearch.toLowerCase();
+    return (
+      s.name.toLowerCase().includes(q) ||
+      (s.department && s.department.toLowerCase().includes(q)) ||
+      (s.email && s.email.toLowerCase().includes(q)) ||
+      (s.designation && s.designation.toLowerCase().includes(q))
+    );
+  });
+
+  // Render message text with highlighted @Mention pills
+  const renderMessageWithMentions = (text, isMe) => {
+    if (!text) return null;
+
+    const sortedStaff = [...staffList].sort((a, b) => b.name.length - a.name.length);
+    const namesPattern = sortedStaff
+      .map(s => s.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .filter(Boolean)
+      .join('|');
+
+    const regex = namesPattern
+      ? new RegExp(`(@(?:${namesPattern})|@[a-zA-Z0-9_]+)`, 'gi')
+      : /(@[a-zA-Z0-9_]+)/gi;
+
+    const parts = text.split(regex);
+
+    return parts.map((part, i) => {
+      if (part && part.startsWith('@')) {
+        const rawName = part.substring(1).trim().toLowerCase();
+        const matchedStaff = sortedStaff.find(
+          s => s.name.toLowerCase() === rawName || s.name.toLowerCase().startsWith(rawName)
+        );
+        const isSelf = matchedStaff && (matchedStaff.id === user?.id || matchedStaff.email === user?.email);
+
+        return (
+          <Box
+            component="span"
+            key={i}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.3,
+              px: 0.75,
+              py: 0.15,
+              mx: 0.2,
+              borderRadius: '4px',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              verticalAlign: 'middle',
+              ...(isMe
+                ? {
+                    bgcolor: 'rgba(255, 255, 255, 0.22)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255, 255, 255, 0.35)'
+                  }
+                : isSelf
+                ? {
+                    bgcolor: '#fef3c7',
+                    color: '#92400e',
+                    border: '1px solid #fde68a',
+                    fontWeight: 800
+                  }
+                : {
+                    bgcolor: '#e0f2fe',
+                    color: '#0369a1',
+                    border: '1px solid #bae6fd'
+                  })
+            }}
+          >
+            <AlternateEmailIcon sx={{ fontSize: 13, opacity: 0.85 }} />
+            {part.substring(1)}
+          </Box>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
+  // Handle Send Message (With Automatic @Mention PWA Push Dispatch)
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
     if (!inputMessage.trim() || !selectedTicket?.id || sending) return;
 
     const messageText = inputMessage.trim();
+
+    // Auto-detect any @Name mentioned in the text + explicit tag clicks
+    const mentionsSet = new Set(taggedUserIds);
+    staffList.forEach(emp => {
+      const fullNameRegex = new RegExp(`@${emp.name}\\b`, 'i');
+      const firstName = emp.name.split(' ')[0];
+      const firstNameRegex = firstName && firstName.length >= 3 ? new RegExp(`@${firstName}\\b`, 'i') : null;
+      if (fullNameRegex.test(messageText) || (firstNameRegex && firstNameRegex.test(messageText))) {
+        mentionsSet.add(emp.id);
+      }
+    });
+
+    const mentionsArray = Array.from(mentionsSet);
     setInputMessage('');
+    setTaggedUserIds(new Set());
+    setMentionOpen(false);
     setSending(true);
 
     try {
-      await ticketsAPI.sendMessage(selectedTicket.id, { message: messageText });
+      await ticketsAPI.sendMessage(selectedTicket.id, {
+        message: messageText,
+        mentions: mentionsArray
+      });
       await fetchMessages(selectedTicket.id, true);
       fetchTickets(true);
     } catch (err) {
@@ -772,7 +958,7 @@ export default function IssueResolutionChatHub({ user }) {
                             }}
                           >
                             <Typography variant="body2" sx={{ fontSize: '0.84rem', whiteSpace: 'pre-wrap', lineHeight: 1.45 }}>
-                              {msg.message}
+                              {renderMessageWithMentions(msg.message, isMe)}
                             </Typography>
                           </Paper>
 
@@ -832,7 +1018,7 @@ export default function IssueResolutionChatHub({ user }) {
                   </Box>
                 )}
 
-                {/* Chat Input Bar */}
+                {/* Chat Input Bar & @Mention Autocomplete */}
                 <Box
                   component="form"
                   onSubmit={handleSendMessage}
@@ -842,20 +1028,132 @@ export default function IssueResolutionChatHub({ user }) {
                     bgcolor: '#ffffff',
                     borderTop: '1px solid',
                     borderColor: 'divider',
+                    position: 'relative',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1
                   }}
                 >
+                  {/* Mention Autocomplete Popover */}
+                  {mentionOpen && filteredStaff.length > 0 && (
+                    <Paper
+                      elevation={4}
+                      sx={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: { xs: 8, sm: 16 },
+                        right: { xs: 8, sm: 16 },
+                        maxHeight: 230,
+                        overflowY: 'auto',
+                        zIndex: 1300,
+                        mb: 1,
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                        bgcolor: '#ffffff'
+                      }}
+                    >
+                      <Box sx={{ px: 1.5, py: 0.75, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#334155', textTransform: 'uppercase', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <AlternateEmailIcon sx={{ fontSize: 14, color: 'primary.main' }} />
+                          Mention Colleague / Management ({filteredStaff.length})
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.65rem' }}>
+                          Tap to tag • Sends PWA Push Notification
+                        </Typography>
+                      </Box>
+                      <List dense sx={{ p: 0.5 }}>
+                        {filteredStaff.map((staff) => (
+                          <ListItem
+                            key={staff.id}
+                            button
+                            onClick={() => handleSelectMention(staff)}
+                            sx={{
+                              borderRadius: '4px',
+                              py: 0.6,
+                              px: 1,
+                              '&:hover': { bgcolor: '#f1f5f9' }
+                            }}
+                          >
+                            <ListItemAvatar sx={{ minWidth: 34 }}>
+                              <Avatar
+                                sx={{
+                                  width: 26,
+                                  height: 26,
+                                  fontSize: '0.72rem',
+                                  fontWeight: 700,
+                                  bgcolor: staff.role === 'admin' ? '#133829' : '#0284c7',
+                                  color: '#ffffff'
+                                }}
+                              >
+                                {staff.name.charAt(0).toUpperCase()}
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText
+                              primary={
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#0f172a' }}>
+                                    {staff.name}
+                                  </Typography>
+                                  <Chip
+                                    label={staff.designation || (staff.role === 'admin' ? 'Administrator' : 'Staff')}
+                                    size="small"
+                                    sx={{
+                                      height: 18,
+                                      fontSize: '0.62rem',
+                                      fontWeight: 700,
+                                      bgcolor: staff.role === 'admin' ? '#fee2e2' : '#f1f5f9',
+                                      color: staff.role === 'admin' ? '#991b1b' : '#475569'
+                                    }}
+                                  />
+                                </Box>
+                              }
+                              secondary={
+                                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.7rem' }}>
+                                  {staff.email} • {staff.department || 'General'}
+                                </Typography>
+                              }
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Paper>
+                  )}
+
+                  {/* @ Mention Shortcut Button */}
+                  <Tooltip title="Mention colleague or management (@)">
+                    <IconButton
+                      size="small"
+                      onClick={handleToggleMentionClick}
+                      sx={{
+                        color: mentionOpen ? 'primary.main' : '#64748b',
+                        bgcolor: mentionOpen ? 'rgba(19, 56, 41, 0.08)' : 'transparent',
+                        borderRadius: '4px',
+                        p: 0.75,
+                        flexShrink: 0,
+                        '&:hover': { bgcolor: 'rgba(19, 56, 41, 0.08)' }
+                      }}
+                    >
+                      <AlternateEmailIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+
                   <TextField
+                    inputRef={inputRef}
                     size="small"
-                    placeholder="Type your message or resolution note (Press Enter to send)..."
+                    placeholder="Type message or @name to mention (notifies via PWA Push)..."
                     value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
+                    onChange={handleInputChange}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
+                      if (e.key === 'Escape' && mentionOpen) {
+                        setMentionOpen(false);
+                      } else if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        handleSendMessage();
+                        if (mentionOpen && filteredStaff.length > 0) {
+                          handleSelectMention(filteredStaff[0]);
+                        } else {
+                          handleSendMessage();
+                        }
                       }
                     }}
                     multiline
@@ -875,6 +1173,7 @@ export default function IssueResolutionChatHub({ user }) {
                       borderRadius: '4px',
                       p: 0,
                       bgcolor: '#133829',
+                      flexShrink: 0,
                       '&:hover': { bgcolor: '#0b2319' }
                     }}
                   >

@@ -18,13 +18,27 @@ api.interceptors.request.use((config) => {
   return config;
 }, (error) => Promise.reject(error));
 
-// Response Interceptor: Handle 401
+// Response Interceptor: Handle 401 & 403 Account Deactivation
 api.interceptors.response.use((response) => response, (error) => {
-  if (error.response && error.response.status === 401) {
-    localStorage.removeItem('shazusoft_token');
-    localStorage.removeItem('shazusoft_user');
-    if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
+  if (error.response) {
+    const is401 = error.response.status === 401;
+    const isDeactivated = error.response.status === 403 && (
+      error.response.data?.code === 'ACCOUNT_DEACTIVATED' ||
+      (typeof error.response.data?.error === 'string' && (
+        error.response.data.error.toLowerCase().includes('deactivated') ||
+        error.response.data.error.toLowerCase().includes('resigned')
+      ))
+    );
+
+    if (is401 || isDeactivated) {
+      localStorage.removeItem('shazusoft_token');
+      localStorage.removeItem('shazusoft_user');
+      if (isDeactivated) {
+        sessionStorage.setItem('shazusoft_deactivated_msg', error.response.data?.error || 'Your account has been deactivated or marked as resigned. You have been automatically logged out. Please contact company administration.');
+      }
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
   }
   return Promise.reject(error);
@@ -137,7 +151,8 @@ export const ticketsAPI = {
   sendMessage: (id, data) => api.post(`/tickets/${id}/messages`, data),
   updateStatus: (id, data) => api.patch(`/tickets/${id}/status`, data),
   getBroadcasts: () => api.get('/tickets/broadcasts/all'),
-  createBroadcast: (data) => api.post('/tickets/broadcasts', data)
+  createBroadcast: (data) => api.post('/tickets/broadcasts', data),
+  getStaffList: () => api.get('/tickets/staff-list')
 };
 
 export const uploadsAPI = {

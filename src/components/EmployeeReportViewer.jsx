@@ -315,8 +315,14 @@ export default function EmployeeReportViewer({ reportData }) {
 
       {/* Detail Breakdown Tabs */}
       <Card>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-          <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 1, sm: 2 } }}>
+          <Tabs
+            value={activeTab}
+            onChange={(e, v) => setActiveTab(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+          >
             <Tab label={`Daily Activity Timeline (${dailyActivityTimeline.length} Days)`} icon={<TimelineIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
             <Tab label={`Detailed Work Done (${details?.workDoneLogs?.length || 0})`} icon={<TaskIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
             <Tab label={`Attendance Timesheet (${details?.attendanceLogs?.length || 0})`} icon={<PresentIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />

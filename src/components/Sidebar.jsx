@@ -14,8 +14,7 @@ import {
 import {
   Dashboard as DashboardIcon,
   PersonOutline as ProfileIcon,
-  CampaignOutlined as AnnouncementIcon,
-  MenuBookOutlined as GuideIcon,
+  HelpOutline as GuideIcon,
   LocationOnOutlined as GpsIcon,
   AssignmentOutlined as TaskIcon,
   EventBusyOutlined as LeaveIcon,
@@ -282,7 +281,6 @@ export default function Sidebar({
           <List dense sx={{ p: 0, mb: isCollapsed ? 1 : 2 }}>
             {renderNavItem('dashboard', 'Dashboard', DashboardIcon)}
             {renderNavItem('profile', 'My Profile', ProfileIcon)}
-            {renderNavItem('announcements', 'Announcements', AnnouncementIcon)}
             {renderNavItem('guide', 'User Guide', GuideIcon)}
           </List>
 
