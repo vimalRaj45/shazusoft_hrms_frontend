@@ -38,6 +38,7 @@ import {
   Check as ApproveIcon,
   Close as RejectIcon,
   LocationSearching as GpsIcon,
+  LocationOn as LocationIcon,
   Assessment as ReportIcon,
   AssignmentTurnedIn as EvalIcon,
   EditCalendar as ManualAttendanceIcon,
@@ -118,7 +119,8 @@ export default function AdminDashboard({ initialTab = 0 }) {
     email: '',
     role: 'employee',
     department: 'Software Engineering',
-    designation: 'Software Developer'
+    designation: 'Software Developer',
+    work_mode: 'office'
   });
 
   // Settings (read-only geofence from ENV)
@@ -132,6 +134,20 @@ export default function AdminDashboard({ initialTab = 0 }) {
   const [holidays, setHolidays] = useState([]);
   const [holidayForm, setHolidayForm] = useState({ date: '', name: '', type: 'Public Holiday' });
   const [addingHoliday, setAddingHoliday] = useState(false);
+
+  const handleToggleWorkMode = async (empId, currentMode) => {
+    const newMode = currentMode === 'wfh' ? 'office' : 'wfh';
+    setActionLoading(true);
+    try {
+      const res = await adminAPI.updateWorkMode(empId, newMode);
+      toast.success(res.data.message || `Work mode changed to ${newMode.toUpperCase()}`);
+      setEmployees(prev => prev.map(e => e.id === empId ? { ...e, work_mode: newMode } : e));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update work mode.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Individual Employee Full Report Modal (Without AI)
   const [openEmpReportModal, setOpenEmpReportModal] = useState(false);
@@ -874,14 +890,15 @@ export default function AdminDashboard({ initialTab = 0 }) {
 
           {/* TAB 8: Staff Directory */}
           {activeTab === 8 && (
-            <Box sx={{ overflowX: 'auto' }}>
-              <Table>
+            <Box sx={{ overflowX: 'auto', width: '100%' }}>
+              <Table size="small">
                 <TableHead>
                   <TableRow>
                     <TableCell>Emp ID</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Email</TableCell>
                     <TableCell>Role</TableCell>
+                    <TableCell>Work Mode</TableCell>
                     <TableCell>Department</TableCell>
                     <TableCell>Designation</TableCell>
                     <TableCell align="right">Actions</TableCell>
@@ -902,10 +919,33 @@ export default function AdminDashboard({ initialTab = 0 }) {
                           sx={{ fontWeight: 700, borderRadius: '4px' }}
                         />
                       </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={e.work_mode === 'wfh' ? '🏠 WFH (Remote)' : '🏢 In-Office'}
+                          size="small"
+                          color={e.work_mode === 'wfh' ? 'secondary' : 'default'}
+                          sx={{
+                            fontWeight: 700,
+                            borderRadius: '4px',
+                            bgcolor: e.work_mode === 'wfh' ? '#e0f2fe' : '#f1f5f9',
+                            color: e.work_mode === 'wfh' ? '#0369a1' : '#475569'
+                          }}
+                        />
+                      </TableCell>
                       <TableCell>{e.department}</TableCell>
                       <TableCell>{e.designation}</TableCell>
                       <TableCell align="right">
-                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color={e.work_mode === 'wfh' ? 'primary' : 'secondary'}
+                            onClick={() => handleToggleWorkMode(e.id, e.work_mode)}
+                            disabled={actionLoading}
+                            sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                          >
+                            {e.work_mode === 'wfh' ? 'Switch to Office' : 'Switch to WFH'}
+                          </Button>
                           <Button
                             size="small"
                             variant="contained"
@@ -944,7 +984,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
 
           {/* TAB 9: Audit & Communications Trail */}
           {activeTab === 9 && (
-            <Box sx={{ overflowX: 'auto' }}>
+            <Box sx={{ overflowX: 'auto', width: '100%' }}>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
                   Management & Staff Communications Audit Trail
@@ -995,164 +1035,176 @@ export default function AdminDashboard({ initialTab = 0 }) {
               )}
             </Box>
           )}
+
+          {/* TAB 10: System Settings & Holidays */}
+          {activeTab === 10 && (
+            <Box>
+              {/* Geofence Info (Read-Only) */}
+              <Box sx={{ mb: 4, p: 2.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <LocationIcon color="primary" />
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>Office Geofencing Perimeter (Configured in .env)</Typography>
+                </Box>
+                <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2 }}>
+                  Geofence boundary is permanently configured via environment variables (.env) on the production server.
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>OFFICE LATITUDE</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeLatitude || '--'}</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>OFFICE LONGITUDE</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeLongitude || '--'}</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>ALLOWED RADIUS</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeRadiusMeters || 150}m</Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Holiday & Calendar Manager */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>Company Holidays & Sunday Overrides</Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b' }}>Configure official holidays or mark specific Sundays as active working days.</Typography>
+                </Box>
+              </Box>
+
+              {/* Add Holiday Form */}
+              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                <TextField
+                  size="small"
+                  type="date"
+                  label="Date"
+                  InputLabelProps={{ shrink: true }}
+                  value={holidayForm.date}
+                  onChange={e => setHolidayForm(p => ({ ...p, date: e.target.value }))}
+                  sx={{ minWidth: 160 }}
+                />
+                <TextField
+                  size="small"
+                  label="Name / Reason"
+                  placeholder="e.g. Diwali, Compensatory Shift, Working Sunday"
+                  value={holidayForm.name}
+                  onChange={e => setHolidayForm(p => ({ ...p, name: e.target.value }))}
+                  sx={{ minWidth: 220, flex: 1 }}
+                />
+                <TextField
+                  size="small"
+                  select
+                  label="Day Type"
+                  value={holidayForm.type}
+                  onChange={e => setHolidayForm(p => ({ ...p, type: e.target.value }))}
+                  sx={{ minWidth: 200 }}
+                >
+                  <MenuItem value="Public Holiday">Public Holiday (Off)</MenuItem>
+                  <MenuItem value="Company Off-Day">Company Off-Day (Off)</MenuItem>
+                  <MenuItem value="Working Sunday">💼 Working Sunday (Shift Open)</MenuItem>
+                  <MenuItem value="Restricted Holiday">Restricted Holiday</MenuItem>
+                </TextField>
+                <Button
+                  variant="contained"
+                  startIcon={addingHoliday ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
+                  disabled={addingHoliday || !holidayForm.date || !holidayForm.name.trim()}
+                  onClick={async () => {
+                    setAddingHoliday(true);
+                    try {
+                      const res = await adminAPI.addHoliday(holidayForm);
+                      toast.success(res.data.message);
+                      setHolidays(prev => [...prev, res.data.holiday].sort((a, b) => a.date > b.date ? 1 : -1));
+                      setHolidayForm({ date: '', name: '', type: 'Public Holiday' });
+                    } catch (err) {
+                      toast.error(err.response?.data?.error || 'Failed to add calendar entry.');
+                    } finally { setAddingHoliday(false); }
+                  }}
+                  sx={{ fontWeight: 700, borderRadius: '4px', bgcolor: '#133829', whiteSpace: 'nowrap' }}
+                >
+                  Save Calendar Entry
+                </Button>
+              </Box>
+
+              {/* Sunday info chip */}
+              <Alert severity="info" sx={{ mb: 2, borderRadius: '4px', fontWeight: 600 }}>
+                📅 <strong>Sundays</strong> are non-working by default. To make a specific Sunday an official working day, select <strong>"Working Sunday (Shift Open)"</strong> above.
+              </Alert>
+
+              {/* Holidays Table */}
+              {holidays.length === 0 ? (
+                <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>No custom holidays or Sunday overrides defined yet. Add one above.</Typography>
+              ) : (
+                <Box sx={{ overflowX: 'auto', width: '100%' }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                        <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Title / Description</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Configured By</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {holidays.map(h => {
+                        const isWorking = h.type === 'Working Sunday' || h.name?.toLowerCase().includes('working');
+                        return (
+                          <TableRow key={h.id || h.date} hover>
+                            <TableCell sx={{ fontWeight: 700 }}>{h.date}</TableCell>
+                            <TableCell>
+                              <Chip
+                                label={h.name}
+                                size="small"
+                                sx={{
+                                  fontWeight: 700,
+                                  bgcolor: isWorking ? '#dcfce7' : '#ede9fe',
+                                  color: isWorking ? '#15803d' : '#6d28d9',
+                                  borderRadius: '4px'
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell sx={{ color: '#64748b', fontSize: 13, fontWeight: isWorking ? 700 : 400 }}>
+                              {h.type}
+                            </TableCell>
+                            <TableCell sx={{ color: '#64748b', fontSize: 13 }}>{h.created_by || '--'}</TableCell>
+                            <TableCell align="right">
+                              <Tooltip title={`Remove ${h.name}`}>
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={async () => {
+                                      try {
+                                        await adminAPI.deleteHoliday(h.date);
+                                        toast.success(`Entry "${h.name}" removed.`);
+                                        setHolidays(prev => prev.filter(x => x.date !== h.date));
+                                      } catch (err) {
+                                        toast.error(err.response?.data?.error || 'Failed to remove entry.');
+                                      }
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </Box>
+              )}
+            </Box>
+          )}
         </CardContent>
       </Card>
-
-      {/* TAB 10: Holiday & Calendar Manager */}
-      {activeTab === 10 && (
-        <Card sx={{ mb: 4, borderRadius: '4px' }}>
-          <CardContent sx={{ p: 3 }}>
-
-            {/* Read-Only Geofence Info */}
-            <Box sx={{ mb: 4, p: 2.5, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                <LockIcon sx={{ fontSize: 18, color: '#6d28d9' }} />
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>Office Geofence (Read-Only)</Typography>
-                <Chip label="Configured via .env only" size="small" sx={{ fontWeight: 700, bgcolor: '#ede9fe', color: '#6d28d9', borderRadius: '4px', fontSize: 11 }} />
-              </Box>
-              <Typography variant="caption" sx={{ color: '#64748b', mb: 2, display: 'block' }}>
-                Geofence coordinates can only be changed by editing <strong>OFFICE_LATITUDE</strong>, <strong>OFFICE_LONGITUDE</strong>, and <strong>OFFICE_RADIUS_METERS</strong> in the backend <code>.env</code> file and restarting the server.
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>LATITUDE</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeLatitude || '--'}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>LONGITUDE</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeLongitude || '--'}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>ALLOWED RADIUS</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeRadiusMeters || 150}m</Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* Holiday Manager */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>Holidays & Non-Working Days</Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>All Sundays are automatically non-working. Add public holidays or company off-days below.</Typography>
-              </Box>
-            </Box>
-
-            {/* Add Holiday Form */}
-            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
-              <TextField
-                size="small"
-                type="date"
-                label="Date"
-                InputLabelProps={{ shrink: true }}
-                value={holidayForm.date}
-                onChange={e => setHolidayForm(p => ({ ...p, date: e.target.value }))}
-                sx={{ minWidth: 160 }}
-              />
-              <TextField
-                size="small"
-                label="Holiday Name"
-                placeholder="e.g. Diwali, Independence Day"
-                value={holidayForm.name}
-                onChange={e => setHolidayForm(p => ({ ...p, name: e.target.value }))}
-                sx={{ minWidth: 220, flex: 1 }}
-              />
-              <TextField
-                size="small"
-                select
-                label="Type"
-                value={holidayForm.type}
-                onChange={e => setHolidayForm(p => ({ ...p, type: e.target.value }))}
-                sx={{ minWidth: 160 }}
-              >
-                <MenuItem value="Public Holiday">Public Holiday</MenuItem>
-                <MenuItem value="Company Off-Day">Company Off-Day</MenuItem>
-                <MenuItem value="Restricted Holiday">Restricted Holiday</MenuItem>
-              </TextField>
-              <Button
-                variant="contained"
-                startIcon={addingHoliday ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
-                disabled={addingHoliday || !holidayForm.date || !holidayForm.name.trim()}
-                onClick={async () => {
-                  setAddingHoliday(true);
-                  try {
-                    const res = await adminAPI.addHoliday(holidayForm);
-                    toast.success(res.data.message);
-                    setHolidays(prev => [...prev, res.data.holiday].sort((a, b) => a.date > b.date ? 1 : -1));
-                    setHolidayForm({ date: '', name: '', type: 'Public Holiday' });
-                  } catch (err) {
-                    toast.error(err.response?.data?.error || 'Failed to add holiday.');
-                  } finally { setAddingHoliday(false); }
-                }}
-                sx={{ fontWeight: 700, borderRadius: '4px', bgcolor: '#133829', whiteSpace: 'nowrap' }}
-              >
-                Add Holiday
-              </Button>
-            </Box>
-
-            {/* Sunday info chip */}
-            <Alert severity="info" sx={{ mb: 2, borderRadius: '4px', fontWeight: 600 }}>
-              📅 <strong>All Sundays</strong> are automatically treated as non-working days — they appear as "Sunday" in timesheets and block check-in.
-            </Alert>
-
-            {/* Holidays Table */}
-            {holidays.length === 0 ? (
-              <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>No custom holidays defined yet. Add one above.</Typography>
-            ) : (
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                    <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Holiday Name</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Added By</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {holidays.map(h => (
-                    <TableRow key={h.id || h.date} hover>
-                      <TableCell sx={{ fontWeight: 700 }}>{h.date}</TableCell>
-                      <TableCell>
-                        <Chip label={h.name} size="small" sx={{ fontWeight: 700, bgcolor: '#ede9fe', color: '#6d28d9', borderRadius: '4px' }} />
-                      </TableCell>
-                      <TableCell sx={{ color: '#64748b', fontSize: 13 }}>{h.type}</TableCell>
-                      <TableCell sx={{ color: '#64748b', fontSize: 13 }}>{h.created_by || '--'}</TableCell>
-                      <TableCell align="right">
-                        <Tooltip title={`Remove ${h.name}`}>
-                          <span>
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={async () => {
-                                try {
-                                  await adminAPI.deleteHoliday(h.date);
-                                  toast.success(`Holiday "${h.name}" removed.`);
-                                  setHolidays(prev => prev.filter(x => x.date !== h.date));
-                                } catch (err) {
-                                  toast.error(err.response?.data?.error || 'Failed to remove holiday.');
-                                }
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-
-          </CardContent>
-        </Card>
-      )}
 
       {/* Add Employee Modal */}
       <Dialog open={openEmpModal} onClose={() => setOpenEmpModal(false)} maxWidth="sm" fullWidth>
@@ -1169,16 +1221,22 @@ export default function AdminDashboard({ initialTab = 0 }) {
               <Grid item xs={12} sm={6}>
                 <TextField fullWidth type="email" label="Email Address" required value={empForm.email} onChange={(e) => setEmpForm({ ...empForm, email: e.target.value })} />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <TextField fullWidth select label="System Role" value={empForm.role} onChange={(e) => setEmpForm({ ...empForm, role: e.target.value })}>
                   <MenuItem value="employee">Employee / Staff</MenuItem>
                   <MenuItem value="admin">Admin / HR Manager</MenuItem>
                 </TextField>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth select label="Attendance & Work Mode" value={empForm.work_mode || 'office'} onChange={(e) => setEmpForm({ ...empForm, work_mode: e.target.value })}>
+                  <MenuItem value="office">🏢 In-Office (GPS Perimeter Required)</MenuItem>
+                  <MenuItem value="wfh">🏠 Work From Home (WFH - GPS Bypassed)</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
                 <TextField fullWidth label="Department" value={empForm.department} onChange={(e) => setEmpForm({ ...empForm, department: e.target.value })} />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6}>
                 <TextField fullWidth label="Designation" value={empForm.designation} onChange={(e) => setEmpForm({ ...empForm, designation: e.target.value })} />
               </Grid>
             </Grid>

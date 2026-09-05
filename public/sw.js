@@ -37,8 +37,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Do NOT cache API requests
-  if (url.pathname.startsWith('/api') || request.method !== 'GET') {
+  // Do NOT cache API requests, non-GET methods, or unsupported schemes (e.g. chrome-extension://)
+  if (!request.url.startsWith('http') || url.pathname.startsWith('/api') || request.method !== 'GET') {
     return;
   }
 

@@ -41,7 +41,8 @@ import {
   Download as ExportIcon,
   FilterAlt as FilterIcon,
   Cancel as AbsentIcon,
-  Assignment as TaskIcon
+  Assignment as TaskIcon,
+  WorkOutline as WorkIcon
 } from '@mui/icons-material';
 import { format, addMonths, subMonths } from 'date-fns';
 import { attendanceAPI, adminAPI } from '../services/api';
@@ -218,6 +219,15 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
             size="small"
             label="Half-Day"
             sx={{ bgcolor: '#ffedd5', color: '#c2410c', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+          />
+        );
+      case 'Working Sunday':
+        return (
+          <Chip
+            size="small"
+            icon={<WorkIcon sx={{ fontSize: '13px !important' }} />}
+            label="Working Sunday"
+            sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
           />
         );
       case 'Sunday':

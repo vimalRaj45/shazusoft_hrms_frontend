@@ -35,7 +35,8 @@ import {
   CorporateFare as OfficeIcon,
   VpnKey as KeyIcon,
   CheckCircle as CheckIcon,
-  PlaylistAddCheck as TrackerIcon
+  PlaylistAddCheck as TrackerIcon,
+  EventBusy as LeaveIcon
 } from '@mui/icons-material';
 import toast from './utils/muiToast';
 import { AlertConfirmProvider } from './context/AlertConfirmContext';
@@ -58,6 +59,8 @@ import WeeklyReportsViewer from './components/WeeklyReportsViewer';
 import GlobalSearchModal from './components/GlobalSearchModal';
 import SplashScreen from './components/SplashScreen';
 import PWAInstallBanner from './components/PWAInstallButton';
+import IssueResolutionChatHub from './components/IssueResolutionChatHub';
+import UserProfile from './components/UserProfile';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -69,6 +72,17 @@ function AppContent() {
   const { user, loading, isAdmin, themeMode } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('hrms_sidebar_collapsed') === 'true';
+  });
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('hrms_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
 
   // Core employee state
   const [todayData, setTodayData] = useState(null);
@@ -86,12 +100,16 @@ function AppContent() {
   const [openSearchModal, setOpenSearchModal] = useState(false);
   const [selectedEvaluation, setSelectedEvaluation] = useState(null);
 
-  // Global Ctrl+K / Cmd+K shortcut listener
+  // Global Ctrl+K (Search) & Ctrl+B (Sidebar Toggle) shortcut listeners
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
         setOpenSearchModal((prev) => !prev);
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        toggleSidebar();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -188,7 +206,8 @@ function AppContent() {
           component="aside"
           sx={{
             display: { xs: 'none', md: 'block' },
-            width: 260,
+            width: sidebarCollapsed ? 72 : 260,
+            minWidth: sidebarCollapsed ? 72 : 260,
             flexShrink: 0,
             bgcolor: '#ffffff',
             borderRight: '1px solid #e5e7eb',
@@ -198,10 +217,16 @@ function AppContent() {
             overflowY: 'auto',
             scrollbarWidth: 'none',
             '&::-webkit-scrollbar': { display: 'none' },
-            zIndex: 1200
+            zIndex: 1200,
+            transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
-          <Sidebar activeTab={activeTab} onSelectTab={setActiveTab} />
+          <Sidebar
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            isCollapsed={sidebarCollapsed}
+            onToggleCollapse={toggleSidebar}
+          />
         </Box>
 
         {/* Mobile Drawer Sidebar */}
@@ -230,11 +255,12 @@ function AppContent() {
           sx={{
             flexGrow: 1,
             minWidth: 0,
-            width: { xs: '100%', md: 'calc(100% - 260px)' },
+            width: { xs: '100%', md: sidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 260px)' },
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100vh',
-            overflowX: 'hidden'
+            overflowX: 'hidden',
+            transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
           {/* Top Navbar with User Avatar at Right Top */}
@@ -243,6 +269,8 @@ function AppContent() {
             activeView={activeTab}
             onSelectView={setActiveTab}
             onOpenSearch={() => setOpenSearchModal(true)}
+            isSidebarCollapsed={sidebarCollapsed}
+            onToggleSidebar={toggleSidebar}
           />
 
           {/* Main Content Area */}
@@ -399,22 +427,182 @@ function AppContent() {
                 </CardContent>
               </Card>
 
-              {/* Geofence Punch Hero */}
+              {/* Geofence / WFH Punch Card */}
               <Box sx={{ mb: 3 }}>
                 <GeofencePunch todayData={todayData} onRefresh={fetchDashboardMetrics} />
               </Box>
 
-              {/* Task Assign & Track Hub */}
-              <Box sx={{ mt: 3 }}>
-                <TaskTrackerBoard />
-              </Box>
+              {/* Quick Hub: 2-Column Overview (Eliminates duplication from dedicated tabs) */}
+              <Grid container spacing={2.5} sx={{ mb: 3 }}>
+                {/* Column 1: Tasks & Workflow Snapshot */}
+                <Grid item xs={12} md={6}>
+                  <Card sx={{ height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <TrackerIcon color="primary" />
+                          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                            My Tasks & Workflow
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label={`${myTasks.length} Active`}
+                          size="small"
+                          color="primary"
+                          sx={{ fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 11 }}
+                        />
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2 }}>
+                        Quick preview of tasks assigned to you. Full board and status updates available in Task Hub.
+                      </Typography>
 
-              {/* Work Done Activity Section */}
-              <WorkDoneSection />
+                      {myTasks.length === 0 ? (
+                        <Box sx={{ p: 2.5, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+                          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
+                            No pending tasks assigned right now.
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {myTasks.slice(0, 3).map(t => (
+                            <Box
+                              key={t.id}
+                              sx={{
+                                p: 1.2,
+                                bgcolor: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '4px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: 1
+                              }}
+                            >
+                              <Box sx={{ minWidth: 0, flex: 1 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {t.task_title}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>
+                                  {t.project_name || 'General Project'} • Due: {t.due_date || 'No deadline'}
+                                </Typography>
+                              </Box>
+                              <Chip
+                                label={t.status || 'Pending'}
+                                size="small"
+                                sx={{
+                                  height: 20,
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  borderRadius: '4px',
+                                  bgcolor: t.status === 'Completed' ? '#dcfce7' : '#e0f2fe',
+                                  color: t.status === 'Completed' ? '#15803d' : '#0369a1'
+                                }}
+                              />
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+                    </CardContent>
 
-              {/* Leaves & Permissions Section */}
-              <LeavesSection />
+                    <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => setActiveTab('task-tracker')}
+                        sx={{ fontWeight: 700, borderRadius: '4px', textTransform: 'none' }}
+                      >
+                        Open Full Task Hub →
+                      </Button>
+                    </Box>
+                  </Card>
+                </Grid>
+
+                {/* Column 2: Quick Operations & Leave Summary */}
+                <Grid item xs={12} md={6}>
+                  <Card sx={{ height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LeaveIcon sx={{ color: '#0284c7' }} />
+                          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                            Leave & Shift Hub
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label="Live Quota"
+                          size="small"
+                          sx={{ fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 11, bgcolor: '#e0f2fe', color: '#0369a1' }}
+                        />
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2 }}>
+                        Current available balance and quick operational shortcuts.
+                      </Typography>
+
+                      <Grid container spacing={1.5} sx={{ mb: 2 }}>
+                        <Grid item xs={6}>
+                          <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px', textAlign: 'center' }}>
+                            <Typography variant="caption" sx={{ color: '#166534', fontWeight: 700, display: 'block' }}>
+                              CASUAL LEAVE
+                            </Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: '#15803d' }}>
+                              {leaveBalances?.casual?.remaining ?? 12} Days
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Box sx={{ p: 1.5, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '4px', textAlign: 'center' }}>
+                            <Typography variant="caption" sx={{ color: '#0369a1', fontWeight: 700, display: 'block' }}>
+                              SICK LEAVE
+                            </Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0284c7' }}>
+                              {leaveBalances?.sick?.remaining ?? 6} Days
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+
+                    <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1, flexDirection: 'column' }}>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        sx={{
+                          bgcolor: '#133829',
+                          color: '#fff',
+                          fontWeight: 700,
+                          borderRadius: '4px',
+                          textTransform: 'none',
+                          '&:hover': { bgcolor: '#0b2319' }
+                        }}
+                        onClick={() => setActiveTab('leaves')}
+                      >
+                        Apply for Leave / Short Permission →
+                      </Button>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        color="inherit"
+                        onClick={() => setActiveTab('attendance')}
+                        sx={{ fontWeight: 600, borderRadius: '4px', textTransform: 'none', borderColor: '#cbd5e1' }}
+                      >
+                        View Full Monthly Timesheet →
+                      </Button>
+                    </Box>
+                  </Card>
+                </Grid>
+              </Grid>
             </>
+          )}
+
+          {/* TAB: MY PROFILE & COMPANY DATA UPLOAD */}
+          {activeTab === 'profile' && (
+            <UserProfile />
+          )}
+
+          {/* TAB: ISSUE RESOLUTION & CHAT HUB */}
+          {activeTab === 'chat-hub' && (
+            <IssueResolutionChatHub user={user} />
           )}
 
           {/* TAB: TASK ASSIGN & TRACK */}

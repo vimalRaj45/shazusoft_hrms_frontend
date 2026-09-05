@@ -8,10 +8,12 @@ import {
   Avatar,
   Menu,
   MenuItem,
-  Chip
+  Chip,
+  Tooltip
 } from '@mui/material';
 import {
   Menu as MenuIcon,
+  MenuOpen as MenuOpenIcon,
   CalendarMonth as CalendarIcon,
   KeyboardArrowDown as ArrowDownIcon,
   Logout as LogoutIcon,
@@ -20,7 +22,14 @@ import {
 import { useAuth } from '../context/AuthContext';
 import toast, { muiToast } from '../utils/muiToast';
 
-export default function TopNavbar({ onMobileDrawerToggle, activeView, onSelectView, onOpenSearch }) {
+export default function TopNavbar({
+  onMobileDrawerToggle,
+  activeView,
+  onSelectView,
+  onOpenSearch,
+  isSidebarCollapsed = false,
+  onToggleSidebar
+}) {
   const { user, isAdmin, logout } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -58,17 +67,38 @@ export default function TopNavbar({ onMobileDrawerToggle, activeView, onSelectVi
         zIndex: 1100
       }}
     >
-      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3 }, minHeight: 64, height: 64 }}>
-        {/* Left: Mobile Menu Toggle & Period Tag */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1.5, sm: 2.5, md: 3 }, minHeight: 64, height: 64 }}>
+        {/* Left: Sidebar Toggle Button (Desktop + Mobile) & Period Tag */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Mobile Drawer Button */}
           <IconButton
             color="inherit"
             edge="start"
             onClick={onMobileDrawerToggle}
-            sx={{ display: { md: 'none' }, mr: 1 }}
+            sx={{ display: { md: 'none' }, mr: 0.5 }}
           >
             <MenuIcon />
           </IconButton>
+
+          {/* Desktop Sidebar Collapse / Expand Toggle Button */}
+          <Tooltip
+            title={isSidebarCollapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+            placement="bottom"
+            arrow
+          >
+            <IconButton
+              onClick={onToggleSidebar}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                color: '#475569',
+                borderRadius: '4px',
+                p: 0.8,
+                '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
+              }}
+            >
+              {isSidebarCollapsed ? <MenuIcon /> : <MenuOpenIcon />}
+            </IconButton>
+          </Tooltip>
 
           {/* Period Selector Dropdown Pill */}
           <Box
@@ -102,7 +132,7 @@ export default function TopNavbar({ onMobileDrawerToggle, activeView, onSelectVi
             gap: 1.2,
             px: 2,
             py: 0.7,
-            width: { xs: 170, sm: 260, md: 380 },
+            width: { xs: 160, sm: 240, md: 360, lg: 420 },
             bgcolor: '#f8fafc',
             border: '1.5px solid #e2e8f0',
             borderRadius: '4px',
@@ -136,7 +166,6 @@ export default function TopNavbar({ onMobileDrawerToggle, activeView, onSelectVi
 
         {/* Right Side: Role Badge & Logged In User Avatar */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-
           {/* Role Indicator Badge */}
           <Box
             onClick={handleOpenMenu}

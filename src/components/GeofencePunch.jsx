@@ -12,39 +12,57 @@ import {
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
+  Home as HomeIcon,
   Login as PunchInIcon,
   Logout as PunchOutIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Refresh as RefreshIcon,
-  HelpOutline as RegularizeIcon
+  HelpOutline as RegularizeIcon,
+  WorkOutline as WorkIcon
 } from '@mui/icons-material';
 import confetti from 'canvas-confetti';
 import toast from '../utils/muiToast';
 import { attendanceAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import AttendanceRegularizationModal from './AttendanceRegularizationModal';
 
 export default function GeofencePunch({ todayData, onRefresh }) {
+  const { user } = useAuth();
+  const isWfh = user?.work_mode === 'wfh';
+
   const [coords, setCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState(null);
-  const [loadingLocation, setLoadingLocation] = useState(true);
+  const [loadingLocation, setLoadingLocation] = useState(!isWfh);
   const [actionLoading, setActionLoading] = useState(false);
   const [openRegularizeModal, setOpenRegularizeModal] = useState(false);
   const [todayHoliday, setTodayHoliday] = useState(null); // null = not a holiday, object = holiday info
   const [isTodaySunday] = useState(() => new Date().getDay() === 0);
 
-  // Fetch holidays to check if today is a holiday
+  // Fetch holidays to check if today is a holiday or a Working Sunday
   useEffect(() => {
-    if (isTodaySunday) return; // Already blocked for Sunday
     const todayStr = new Date().toISOString().slice(0, 10);
     attendanceAPI.getHolidays().then(res => {
       const holidays = res?.data?.holidays || [];
       const match = holidays.find(h => h.date === todayStr);
       if (match) setTodayHoliday(match);
     }).catch(() => {}); // silently ignore
-  }, [isTodaySunday]);
+  }, []);
 
   const captureLocation = () => {
+    if (isWfh) {
+      // In WFH mode, we try to capture coords if easily available, but do not block user
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => {},
+          { timeout: 5000 }
+        );
+      }
+      setLoadingLocation(false);
+      return;
+    }
+
     setLoadingLocation(true);
 
     if (!navigator.geolocation) {
@@ -88,12 +106,14 @@ export default function GeofencePunch({ todayData, onRefresh }) {
 
   useEffect(() => {
     captureLocation();
-    const interval = setInterval(captureLocation, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!isWfh) {
+      const interval = setInterval(captureLocation, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [isWfh]);
 
   const handlePunchIn = async () => {
-    if (!coords) {
+    if (!isWfh && !coords) {
       toast.error('Please wait for GPS location to be detected.');
       return;
     }
@@ -101,8 +121,8 @@ export default function GeofencePunch({ todayData, onRefresh }) {
 
     try {
       const res = await attendanceAPI.punchIn({
-        lat: coords.lat,
-        lng: coords.lng
+        lat: coords?.lat || null,
+        lng: coords?.lng || null
       });
       toast.success(res.data.message || 'Punched in successfully!');
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
@@ -115,7 +135,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   };
 
   const handlePunchOut = async () => {
-    if (!coords) {
+    if (!isWfh && !coords) {
       toast.error('Please wait for GPS location to be detected.');
       return;
     }
@@ -123,8 +143,8 @@ export default function GeofencePunch({ todayData, onRefresh }) {
 
     try {
       const res = await attendanceAPI.punchOut({
-        lat: coords.lat,
-        lng: coords.lng
+        lat: coords?.lat || null,
+        lng: coords?.lng || null
       });
       toast.success(res.data.message || 'Punched out successfully!');
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
@@ -140,20 +160,28 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   const isPunchedIn = todayData?.isPunchedIn;
   const isPunchedOut = todayData?.isPunchedOut;
 
-  // ── Non-working day banner ──────────────────────────────────
-  if (isTodaySunday || todayHoliday) {
+  // Determine if today is a configured Working Sunday override
+  const isWorkingSunday = isTodaySunday && todayHoliday && (
+    todayHoliday.type === 'Working Sunday' ||
+    todayHoliday.name?.toLowerCase().includes('working')
+  );
+
+  // ── Non-working day banner (Shown only if it is a non-working Sunday or non-working holiday) ──
+  if ((isTodaySunday && !isWorkingSunday) || (todayHoliday && !isWorkingSunday && todayHoliday.type !== 'Working Sunday')) {
     const label = isTodaySunday ? 'Sunday' : todayHoliday?.name || 'Holiday';
     const subtitle = isTodaySunday
-      ? 'Today is Sunday — enjoy your well-deserved rest!'
-      : `Today is a company holiday: "${todayHoliday?.name}" (${todayHoliday?.type || 'Holiday'}). No check-in required.`;
+      ? 'Today is Sunday — official non-working day.'
+      : `Today is a scheduled company holiday: "${todayHoliday?.name}" (${todayHoliday?.type || 'Holiday'}). No check-in required.`;
     return (
-      <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
-        <Box sx={{ height: 5, background: 'linear-gradient(90deg, #8b5cf6, #a855f7)' }} />
-        <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200, textAlign: 'center', gap: 1.5 }}>
-          <Typography variant="h2" sx={{ lineHeight: 1 }}>🎉</Typography>
+      <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '4px' }}>
+        <Box sx={{ height: 4, bgcolor: '#8b5cf6' }} />
+        <CardContent sx={{ p: { xs: 2.5, sm: 3 }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 180, textAlign: 'center', gap: 1.5 }}>
+          <Box sx={{ p: 1.5, bgcolor: '#f3e8ff', borderRadius: '50%', color: '#7c3aed', display: 'flex' }}>
+            <EventIcon sx={{ fontSize: 32 }} />
+          </Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: '#6d28d9' }}>{label} — Non-Working Day</Typography>
-          <Typography variant="body2" sx={{ color: '#64748b', maxWidth: 340 }}>{subtitle}</Typography>
-          <Chip label="No check-in required" size="small" sx={{ fontWeight: 700, bgcolor: '#ede9fe', color: '#6d28d9', borderRadius: '4px', mt: 1 }} />
+          <Typography variant="body2" sx={{ color: '#64748b', maxWidth: 360 }}>{subtitle}</Typography>
+          <Chip label="No check-in required" size="small" sx={{ fontWeight: 700, bgcolor: '#ede9fe', color: '#6d28d9', borderRadius: '4px', mt: 0.5 }} />
         </CardContent>
       </Card>
     );
@@ -161,84 +189,129 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   // ───────────────────────────────────────────────────────────
 
   return (
-    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
+    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '4px' }}>
       {/* Decorative gradient bar */}
       <Box
         sx={{
-          height: 5,
-          background: isPunchedIn
-            ? 'linear-gradient(90deg, #10b981, #06b6d4)'
-            : 'linear-gradient(90deg, #6366f1, #a855f7)'
+          height: 4,
+          bgcolor: isPunchedIn ? '#10b981' : isWfh ? '#0284c7' : '#133829'
         }}
       />
-      <CardContent sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <LocationIcon color="primary" />
+            {isWfh ? <HomeIcon color="secondary" /> : <LocationIcon color="primary" />}
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Office Location Attendance
+              {isWfh ? 'Work From Home (WFH) Attendance' : 'Office Location Attendance'}
             </Typography>
           </Box>
-          <Tooltip title="Refresh Location">
-            <span>
-              <Button
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {isWorkingSunday && (
+              <Chip
+                label="Working Sunday Active"
                 size="small"
-                startIcon={<RefreshIcon />}
-                onClick={captureLocation}
-                disabled={loadingLocation}
-                sx={{ color: 'text.secondary' }}
-              >
-                Refresh
-              </Button>
-            </span>
-          </Tooltip>
-        </Box>
-
-        {/* GPS Location Status Box */}
-        <Box
-          sx={{
-            p: 2,
-            mb: 3,
-            borderRadius: '4px',
-            backgroundColor: geoStatus?.inside ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-            border: geoStatus?.inside ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            {loadingLocation ? (
-              <CircularProgress size={22} thickness={5} />
-            ) : geoStatus?.inside ? (
-              <CheckCircleIcon color="success" sx={{ fontSize: 26 }} />
-            ) : (
-              <CancelIcon color="error" sx={{ fontSize: 26 }} />
+                sx={{ fontWeight: 700, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '4px' }}
+              />
             )}
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                {loadingLocation
-                  ? 'Detecting work location...'
-                  : geoStatus?.inside
-                  ? 'Inside Office Premises'
-                  : 'Outside Office Location'}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                {coords
-                  ? `Distance: ${geoStatus?.distanceMeters ?? '--'}m (Allowed: ${geoStatus?.allowedRadiusMeters ?? 150}m)`
-                  : 'Waiting for location check...'}
-              </Typography>
-            </Box>
+            {!isWfh && (
+              <Tooltip title="Refresh Location">
+                <span>
+                  <Button
+                    size="small"
+                    startIcon={<RefreshIcon />}
+                    onClick={captureLocation}
+                    disabled={loadingLocation}
+                    sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
+                  >
+                    Refresh
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
           </Box>
-
-          <Chip
-            size="small"
-            label={geoStatus?.inside ? 'VERIFIED' : 'LOCATION CHECK REQUIRED'}
-            color={geoStatus?.inside ? 'success' : 'error'}
-            sx={{ fontWeight: 700, borderRadius: '4px' }}
-          />
         </Box>
 
+        {/* Status Box: WFH Mode vs Office GPS */}
+        {isWfh ? (
+          <Box
+            sx={{
+              p: 2,
+              mb: 2.5,
+              borderRadius: '4px',
+              backgroundColor: '#f0f9ff',
+              border: '1px solid #bae6fd',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 1.5
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <CheckCircleIcon color="secondary" sx={{ fontSize: 26 }} />
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0369a1' }}>
+                  Work From Home Mode Active
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#0284c7' }}>
+                  GPS geofencing bypassed. Check in & out directly from home.
+                </Typography>
+              </Box>
+            </Box>
+            <Chip
+              size="small"
+              label="REMOTE ALLOWED"
+              color="secondary"
+              sx={{ fontWeight: 800, borderRadius: '4px', fontSize: 10 }}
+            />
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              p: 2,
+              mb: 2.5,
+              borderRadius: '4px',
+              backgroundColor: geoStatus?.inside ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+              border: geoStatus?.inside ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 1.5
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              {loadingLocation ? (
+                <CircularProgress size={22} thickness={5} />
+              ) : geoStatus?.inside ? (
+                <CheckCircleIcon color="success" sx={{ fontSize: 26 }} />
+              ) : (
+                <CancelIcon color="error" sx={{ fontSize: 26 }} />
+              )}
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                  {loadingLocation
+                    ? 'Detecting work location...'
+                    : geoStatus?.inside
+                    ? 'Inside Office Premises'
+                    : 'Outside Office Location'}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  {coords
+                    ? `Distance: ${geoStatus?.distanceMeters ?? '--'}m (Allowed: ${geoStatus?.allowedRadiusMeters ?? 150}m)`
+                    : 'Waiting for location check...'}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Chip
+              size="small"
+              label={geoStatus?.inside ? 'VERIFIED' : 'LOCATION CHECK REQUIRED'}
+              color={geoStatus?.inside ? 'success' : 'error'}
+              sx={{ fontWeight: 700, borderRadius: '4px' }}
+            />
+          </Box>
+        )}
 
         {/* Punch In / Out Action Buttons */}
         <Grid container spacing={2}>
@@ -250,15 +323,17 @@ export default function GeofencePunch({ todayData, onRefresh }) {
               size="large"
               startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <PunchInIcon />}
               onClick={handlePunchIn}
-              disabled={actionLoading || loadingLocation || !geoStatus?.inside || !!attendance}
+              disabled={actionLoading || (!isWfh && (loadingLocation || !geoStatus?.inside)) || !!attendance}
               sx={{
-                py: 1.6,
+                py: { xs: 1.2, sm: 1.5 },
                 fontWeight: 700,
-                fontSize: '1rem',
+                fontSize: { xs: '0.875rem', sm: '0.95rem' },
+                bgcolor: isWfh ? '#0284c7' : '#133829',
+                '&:hover': { bgcolor: isWfh ? '#0369a1' : '#0b2319' },
                 opacity: attendance ? 0.6 : 1
               }}
             >
-              {attendance ? `Punched In at ${attendance.login_time}` : 'Punch In (GPS)'}
+              {attendance ? `Punched In at ${attendance.login_time}` : isWfh ? 'Punch In (WFH Home)' : 'Punch In (Office GPS)'}
             </Button>
           </Grid>
 
@@ -270,16 +345,16 @@ export default function GeofencePunch({ todayData, onRefresh }) {
               size="large"
               startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <PunchOutIcon />}
               onClick={handlePunchOut}
-              disabled={actionLoading || loadingLocation || !isPunchedIn || isPunchedOut || !geoStatus?.inside}
+              disabled={actionLoading || (!isWfh && (loadingLocation || !geoStatus?.inside)) || !isPunchedIn || isPunchedOut}
               sx={{
-                py: 1.6,
+                py: { xs: 1.2, sm: 1.5 },
                 fontWeight: 700,
-                fontSize: '1rem',
+                fontSize: { xs: '0.875rem', sm: '0.95rem' },
                 borderWidth: 2,
                 '&:hover': { borderWidth: 2 }
               }}
             >
-              {isPunchedOut ? `Punched Out at ${attendance.logout_time}` : 'Punch Out (GPS)'}
+              {isPunchedOut ? `Punched Out at ${attendance.logout_time}` : isWfh ? 'Punch Out (WFH Home)' : 'Punch Out (Office GPS)'}
             </Button>
           </Grid>
         </Grid>
@@ -288,7 +363,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
         {attendance && (
           <Box
             sx={{
-              mt: 3,
+              mt: 2.5,
               pt: 2,
               borderTop: '1px solid',
               borderColor: 'divider',
@@ -298,32 +373,32 @@ export default function GeofencePunch({ todayData, onRefresh }) {
             }}
           >
             <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>
                 LOGIN TIME
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'primary.main' }}>
                 {attendance.login_time || '--:--'}
               </Typography>
             </Box>
             <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>
                 STATUS
               </Typography>
               <Typography
-                variant="h6"
+                variant="subtitle1"
                 sx={{
-                  fontWeight: 700,
+                  fontWeight: 800,
                   color: attendance.status === 'Late' ? 'warning.main' : 'success.main'
                 }}
               >
-                {attendance.status}
+                {attendance.status} {attendance.in_geofence === 'WFH' ? '(WFH)' : ''}
               </Typography>
             </Box>
             <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>
                 NET HOURS
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'secondary.main' }}>
                 {attendance.net_hours ? `${attendance.net_hours}h` : 'In Progress'}
               </Typography>
             </Box>
@@ -331,20 +406,20 @@ export default function GeofencePunch({ todayData, onRefresh }) {
         )}
 
         {/* Regularization Prompt for edge cases */}
-        <Box sx={{ mt: 2.5, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
           <Button
             size="small"
             startIcon={<RegularizeIcon fontSize="small" />}
             onClick={() => setOpenRegularizeModal(true)}
             sx={{
-              fontSize: 12,
+              fontSize: { xs: 11, sm: 12 },
               fontWeight: 700,
               textTransform: 'none',
               color: '#64748b',
               '&:hover': { color: '#133829', bgcolor: '#f1f5f9' }
             }}
           >
-            Missed punch or GPS issue? Request Regularization →
+            Missed punch or attendance issue? Request Regularization →
           </Button>
         </Box>
       </CardContent>

@@ -364,24 +364,26 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                           {isFuture ? (
                             <Chip
                               icon={<LockIcon sx={{ fontSize: 13 }} />}
-                              label={row.is_weekend ? 'Weekend' : 'Upcoming'}
+                              label={row.is_working_sunday ? 'Working Sunday (Upcoming)' : (row.is_weekend ? 'Weekend' : 'Upcoming')}
                               size="small"
-                              sx={{ fontWeight: 700, borderRadius: '4px', height: 22, fontSize: 11, bgcolor: '#e2e8f0', color: '#64748b' }}
+                              sx={{ fontWeight: 700, borderRadius: '4px', height: 22, fontSize: 11, bgcolor: row.is_working_sunday ? '#dcfce7' : '#e2e8f0', color: row.is_working_sunday ? '#15803d' : '#64748b' }}
                             />
+                          ) : row.status === 'Working Sunday' ? (
+                            <Chip label="Working Sunday (Shift Open)" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22, bgcolor: '#dcfce7', color: '#15803d' }} />
                           ) : row.status === 'Sunday' ? (
                             <Chip label="Sunday" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22, bgcolor: '#e2e8f0', color: '#475569' }} />
                           ) : row.status === 'Holiday' ? (
                             <Chip label={row.holiday_name || 'Holiday'} size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22, bgcolor: '#ede9fe', color: '#6d28d9' }} />
                           ) : row.status === 'Present' ? (
-                            <Chip label="Present" color="success" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
+                            <Chip label={row.in_geofence === 'WFH' ? 'Present (WFH)' : 'Present'} color="success" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
                           ) : row.status === 'Late' ? (
                             <Chip label="Late Arrival" color="warning" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
-                          ) : row.status === 'Approved Leave' ? (
+                          ) : (row.status === 'Approved Leave' || row.status?.startsWith('On Leave')) ? (
                             <Chip label={`Leave (${row.leave_type || 'Approved'})`} color="info" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
                           ) : row.status === 'Weekend' ? (
                             <Chip label="Weekend" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22, bgcolor: '#f1f5f9', color: '#64748b' }} />
-                          ) : row.status === 'Not Punched Yet' ? (
-                            <Chip label="Not Punched" size="small" color="default" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
+                          ) : (row.status === 'Not Punched Yet' || row.status === 'Pending / Not Punched In') ? (
+                            <Chip label={isToday ? "Shift Open" : "Not Punched"} size="small" color="default" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
                           ) : (
                             <Chip label="Absent" color="error" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
                           )}

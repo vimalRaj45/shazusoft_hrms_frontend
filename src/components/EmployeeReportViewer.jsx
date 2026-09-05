@@ -23,6 +23,8 @@ import {
 } from '@mui/material';
 import {
   Print as PrintIcon,
+  PictureAsPdf as PdfIcon,
+  Download as DownloadIcon,
   CheckCircle as PresentIcon,
   AccessTime as TimeIcon,
   Assignment as TaskIcon,
@@ -34,9 +36,12 @@ import {
   Timeline as TimelineIcon,
   Timer as PermissionIcon
 } from '@mui/icons-material';
+import { generateCorporatePDFReport } from '../utils/pdfReportGenerator';
+import toast from '../utils/muiToast';
 
 export default function EmployeeReportViewer({ reportData }) {
   const [activeTab, setActiveTab] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
 
   if (!reportData) return null;
 
@@ -51,6 +56,19 @@ export default function EmployeeReportViewer({ reportData }) {
     monthYear
   } = reportData;
 
+  const handleDownloadPDF = async () => {
+    setIsExporting(true);
+    try {
+      await generateCorporatePDFReport(reportData);
+      toast.success('Official Executive PDF Report downloaded successfully.');
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      toast.error('Failed to generate PDF report.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -58,7 +76,7 @@ export default function EmployeeReportViewer({ reportData }) {
   return (
     <Box sx={{ mt: 2 }}>
       {/* Report Header Card */}
-      <Card sx={{ mb: 3, borderLeft: '6px solid #2563eb' }}>
+      <Card sx={{ mb: 3, borderLeft: '6px solid #133829', borderRadius: '4px' }}>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
             <Box>
@@ -71,13 +89,13 @@ export default function EmployeeReportViewer({ reportData }) {
                   size="small"
                   color="primary"
                   variant="outlined"
-                  sx={{ fontWeight: 700 }}
+                  sx={{ fontWeight: 700, borderRadius: '4px' }}
                 />
                 <Chip
                   label={employee?.role?.toUpperCase()}
                   size="small"
                   color={employee?.role === 'admin' ? 'secondary' : 'default'}
-                  sx={{ fontWeight: 600 }}
+                  sx={{ fontWeight: 600, borderRadius: '4px' }}
                 />
               </Box>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -88,15 +106,24 @@ export default function EmployeeReportViewer({ reportData }) {
               </Typography>
             </Box>
 
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<PrintIcon />}
-              onClick={handlePrint}
-              sx={{ fontWeight: 700 }}
-            >
-              Print / Export Report (PDF)
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+                startIcon={<PdfIcon />}
+                onClick={handleDownloadPDF}
+                disabled={isExporting}
+                sx={{
+                  fontWeight: 700,
+                  bgcolor: '#133829',
+                  color: '#ffffff',
+                  borderRadius: '4px',
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: '#0f2b20' }
+                }}
+              >
+                {isExporting ? 'Generating PDF...' : 'Download Executive PDF Report'}
+              </Button>
+            </Box>
           </Box>
 
           <Divider sx={{ my: 2.5 }} />

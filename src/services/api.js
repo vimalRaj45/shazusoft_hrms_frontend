@@ -34,7 +34,9 @@ export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   sendOTP: (data) => api.post('/auth/send-otp', data),
   verifyOTP: (data) => api.post('/auth/verify-otp', data),
-  getMe: () => api.get('/auth/me')
+  getMe: () => api.get('/auth/me'),
+  getProfile: () => api.get('/auth/profile'),
+  updateProfile: (data) => api.put('/auth/profile', data)
 };
 
 export const attendanceAPI = {
@@ -109,6 +111,7 @@ export const adminAPI = {
   getEmployees: () => api.get('/admin/employees'),
   createEmployee: (data) => api.post('/admin/employees', data),
   updateEmployee: (id, data) => api.put(`/admin/employees/${id}`, data),
+  updateWorkMode: (id, work_mode) => api.patch(`/admin/employees/${id}/work-mode`, { work_mode }),
   getSettings: () => api.get('/admin/settings'),
   // Geofence is read-only (ENV only) — no updateGeofence
   getHolidays: () => api.get('/admin/holidays'),
@@ -120,4 +123,21 @@ export const searchAPI = {
   globalSearch: (query) => api.get('/search', { params: { q: query } })
 };
 
+export const ticketsAPI = {
+  getTickets: (params) => api.get('/tickets', { params }),
+  createTicket: (data) => api.post('/tickets', data),
+  getTicket: (id) => api.get(`/tickets/${id}`),
+  getMessages: (id) => api.get(`/tickets/${id}/messages`),
+  sendMessage: (id, data) => api.post(`/tickets/${id}/messages`, data),
+  updateStatus: (id, data) => api.patch(`/tickets/${id}/status`, data),
+  getBroadcasts: () => api.get('/tickets/broadcasts/all'),
+  createBroadcast: (data) => api.post('/tickets/broadcasts', data)
+};
+
+export const uploadsAPI = {
+  uploadBase64: (data) => api.post('/uploads/base64', data),
+  deleteFile: (key) => api.delete(`/uploads/file/${key}`)
+};
+
 export default api;
+
