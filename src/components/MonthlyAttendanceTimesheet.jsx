@@ -18,7 +18,8 @@ import {
   Tooltip,
   Alert,
   Tabs,
-  Tab
+  Tab,
+  InputAdornment
 } from '@mui/material';
 import {
   CalendarMonth as CalendarIcon,
@@ -30,7 +31,9 @@ import {
   Refresh as RefreshIcon,
   FactCheck as RegularizeIcon,
   FileDownload as DownloadIcon,
-  TrendingUp as MetricIcon
+  TrendingUp as MetricIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
 import { attendanceAPI } from '../services/api';
 import { formatTime12h } from '../utils/timeUtils';
@@ -58,6 +61,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
   const [timesheetData, setTimesheetData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'PRESENT' | 'LATE' | 'LEAVE_ABSENT'
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Regularization modal state
   const [openRegModal, setOpenRegModal] = useState(false);
@@ -97,14 +101,18 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
   const days = timesheetData?.days || [];
 
   const filteredDays = days.filter((d) => {
-    if (filterType === 'PRESENT') {
-      return d.status === 'Present' || d.status === 'Late';
-    }
-    if (filterType === 'LATE') {
-      return d.status === 'Late';
-    }
-    if (filterType === 'LEAVE_ABSENT') {
-      return d.status === 'Approved Leave' || d.status === 'Absent' || d.status === 'Not Punched Yet';
+    if (filterType === 'PRESENT' && !(d.status === 'Present' || d.status === 'Late')) return false;
+    if (filterType === 'LATE' && d.status !== 'Late') return false;
+    if (filterType === 'LEAVE_ABSENT' && !(d.status === 'Approved Leave' || d.status === 'Absent' || d.status === 'Not Punched Yet')) return false;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const match = (d.date && d.date.includes(q)) ||
+        (d.day_name && d.day_name.toLowerCase().includes(q)) ||
+        (d.status && d.status.toLowerCase().includes(q)) ||
+        (d.holiday_name && d.holiday_name.toLowerCase().includes(q)) ||
+        (d.leave_reason && d.leave_reason.toLowerCase().includes(q));
+      if (!match) return false;
     }
     return true;
   });
@@ -165,11 +173,12 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
       </Card>
 
       {/* 4 Monthly KPI Metric Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #133829', borderRadius: '4px' }}>
-            <CardContent sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+      {/* 4 Monthly KPI Metric Cards */}
+      <Grid container spacing={2} sx={{ mb: 3 }} alignItems="stretch">
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #133829', borderRadius: '4px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                 PRESENT / WORKING DAYS
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, color: '#133829', mt: 0.5 }}>
@@ -182,10 +191,10 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #0284c7', borderRadius: '4px' }}>
-            <CardContent sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #0284c7', borderRadius: '4px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                 TOTAL LOGGED HOURS
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, color: '#0284c7', mt: 0.5 }}>
@@ -195,10 +204,10 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #10b981', borderRadius: '4px' }}>
-            <CardContent sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #10b981', borderRadius: '4px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                 AVERAGE DAILY WORKING TIME
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
@@ -208,10 +217,10 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #f59e0b', borderRadius: '4px' }}>
-            <CardContent sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #f59e0b', borderRadius: '4px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                 ON-TIME ARRIVAL RATE
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, color: '#d97706', mt: 0.5 }}>
@@ -224,11 +233,11 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
 
       {/* Timesheet Table & Filter Bar */}
       <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '4px', bgcolor: '#ffffff' }}>
-        <Box sx={{ borderBottom: '1px solid #e2e8f0', px: 2, pt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ borderBottom: '1px solid #e2e8f0', p: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
           <Tabs
             value={filterType}
             onChange={(e, v) => setFilterType(v)}
-            sx={{ minHeight: 44, '& .MuiTab-root': { minHeight: 44, textTransform: 'none', fontWeight: 700, fontSize: 13 } }}
+            sx={{ minHeight: 40, '& .MuiTab-root': { minHeight: 40, textTransform: 'none', fontWeight: 700, fontSize: 13 } }}
           >
             <Tab label={`All Days (${days.length})`} value="ALL" />
             <Tab label={`Present Days (${timesheetData?.present_days || 0})`} value="PRESENT" />
@@ -236,9 +245,27 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
             <Tab label={`Leaves & Absences (${(timesheetData?.leave_days || 0) + (days.filter(d => d.status === 'Absent').length)})`} value="LEAVE_ABSENT" />
           </Tabs>
 
-          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
-            {selectedMonth === currentMonthKey ? 'Past days active • Future days locked' : 'Historical month archive'}
-          </Typography>
+          <TextField
+            size="small"
+            placeholder="Search date, day, remarks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: '#64748b', fontSize: 18 }} />
+                </InputAdornment>
+              ),
+              endAdornment: searchQuery && (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setSearchQuery('')}>
+                    <ClearIcon sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+            sx={{ width: { xs: '100%', sm: 260 }, bgcolor: '#f8fafc', borderRadius: '4px' }}
+          />
         </Box>
 
         <CardContent sx={{ p: 0 }}>

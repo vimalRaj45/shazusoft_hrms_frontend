@@ -19,11 +19,11 @@ export function MetricCardsSkeleton() {
   return (
     <Box sx={{ mb: 3.5 }}>
       <Skeleton variant="text" width={240} height={28} sx={{ mb: 2, borderRadius: '4px' }} />
-      <Grid container spacing={2}>
+      <Grid container spacing={2} alignItems="stretch">
         {[1, 2, 3, 4].map((i) => (
-          <Grid item xs={12} sm={6} md={3} key={i}>
-            <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '4px', bgcolor: 'rgba(255, 255, 255, 0.9)' }}>
-              <CardContent sx={{ p: 2.5, pt: 3 }}>
+          <Grid item xs={12} sm={6} md={3} key={i} sx={{ display: 'flex' }}>
+            <Card sx={{ width: '100%', height: '100%', border: '1px solid #e5e7eb', borderRadius: '4px', bgcolor: 'rgba(255, 255, 255, 0.9)', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ p: 2.5, pt: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <Skeleton variant="text" width="60%" height={16} sx={{ borderRadius: '4px' }} />
                 <Skeleton variant="text" width="40%" height={48} sx={{ my: 1, borderRadius: '4px' }} />
                 <Skeleton variant="rectangular" width="70%" height={24} sx={{ borderRadius: '4px' }} />

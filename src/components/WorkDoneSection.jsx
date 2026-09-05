@@ -20,7 +20,8 @@ import {
   TableBody,
   Grid,
   CircularProgress,
-  Tooltip
+  Tooltip,
+  InputAdornment
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -29,7 +30,9 @@ import {
   Pending as PendingIcon,
   Autorenew as InProgressIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
 import toast, { muiToast } from '../utils/muiToast';
 import confetti from 'canvas-confetti';
@@ -41,6 +44,22 @@ export default function WorkDoneSection() {
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+
+  // Search & Filter State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const filteredTasks = tasks.filter(t => {
+    const q = searchTerm.trim().toLowerCase();
+    const matchesSearch = !q ||
+      (t.task_title && t.task_title.toLowerCase().includes(q)) ||
+      (t.project_name && t.project_name.toLowerCase().includes(q)) ||
+      (t.description && t.description.toLowerCase().includes(q)) ||
+      (t.remarks && t.remarks.toLowerCase().includes(q)) ||
+      (t.date && t.date.includes(q));
+    const matchesStatus = statusFilter === 'ALL' || t.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const [formData, setFormData] = useState({
     project_name: '',
@@ -191,32 +210,93 @@ export default function WorkDoneSection() {
         </Box>
 
         {/* Task Summary Badges */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ p: 2, borderRadius: 2.5, bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>COMPLETED TASKS</Typography>
+        <Grid container spacing={2} sx={{ mb: 3 }} alignItems="stretch">
+          <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>COMPLETED TASKS</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
                 {completedCount} / {tasks.length}
               </Typography>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ p: 2, borderRadius: 2.5, bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>ESTIMATED HOURS</Typography>
+          <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>ESTIMATED HOURS</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#3b82f6', mt: 0.5 }}>
                 {totalEstHours.toFixed(1)} hrs
               </Typography>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ p: 2, borderRadius: 2.5, bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>ACTUAL HOURS</Typography>
+          <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>ACTUAL HOURS</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#133829', mt: 0.5 }}>
                 {totalActHours.toFixed(1)} hrs
               </Typography>
             </Box>
           </Grid>
         </Grid>
+
+        {/* Search & Status Filter Toolbar */}
+        <Box sx={{ mb: 2.5, p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+          <Grid container spacing={1.5} alignItems="center">
+            <Grid item xs={12} sm={8}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search by task title, project name, details, or date..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#64748b', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setSearchTerm('')}>
+                        <ClearIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                select
+                size="small"
+                label="Status Filter"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+              >
+                <MenuItem value="ALL">All Statuses</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+                <MenuItem value="In-Progress">In-Progress</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+          {(searchTerm || statusFilter !== 'ALL') && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, pt: 1, borderTop: '1px dashed #e2e8f0' }}>
+              <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
+                Filtering active: <strong>{filteredTasks.length}</strong> task(s) matched
+              </Typography>
+              <Button
+                size="small"
+                color="error"
+                onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}
+                sx={{ fontSize: 11, fontWeight: 700, p: 0, textTransform: 'none' }}
+              >
+                Reset Filter
+              </Button>
+            </Box>
+          )}
+        </Box>
 
         {/* Task Table */}
         {loading ? (
@@ -226,6 +306,15 @@ export default function WorkDoneSection() {
             <Typography variant="body2" sx={{ color: '#64748b' }}>
               No tasks logged yet. Click <strong>"Log New Task"</strong> to add your daily activities!
             </Typography>
+          </Box>
+        ) : filteredTasks.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+              No tasks match the current search query or status filter.
+            </Typography>
+            <Button size="small" variant="outlined" sx={{ mt: 1, fontWeight: 700 }} onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}>
+              Clear Filters
+            </Button>
           </Box>
         ) : (
           <Box sx={{ overflowX: 'auto' }}>
@@ -241,7 +330,7 @@ export default function WorkDoneSection() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {tasks.map((task) => (
+                {filteredTasks.map((task) => (
                   <TableRow key={task.id} hover>
                     <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>{task.date}</TableCell>
                     <TableCell>

@@ -105,31 +105,53 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// ─── Fetch Event: Network-first for API, Stale-while-revalidate for static assets ─
+// ─── Fetch Event: Network-first for dynamic assets, Stale-while-revalidate for static assets ─
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Do NOT cache API requests, non-GET methods, or unsupported schemes (e.g. chrome-extension://)
-  if (!request.url.startsWith('http') || url.pathname.startsWith('/api') || request.method !== 'GET') {
-    return;
+  // Do NOT intercept:
+  // - non-GET requests
+  // - unsupported schemes (chrome-extension, etc.)
+  // - /api/ routes
+  // - Vite dev tooling routes (@vite, node_modules, HMR ping, dev query tokens)
+  if (
+    !request.url.startsWith('http') ||
+    request.method !== 'GET' ||
+    url.pathname.startsWith('/api') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.includes('node_modules') ||
+    url.pathname.includes('.vite') ||
+    url.pathname.includes('__vite') ||
+    url.search.includes('t=')
+  ) {
+    return; // Pass through to browser network layer directly
   }
 
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        return cachedResponse;
-      });
-
-      return cachedResponse || fetchPromise;
+      return fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // If navigation request fails offline, fallback to cached index.html
+          if (request.mode === 'navigate') {
+            return caches.match('/index.html').then((indexRes) => {
+              return indexRes || new Response('Network offline', { status: 503, statusText: 'Offline' });
+            });
+          }
+          return new Response('', { status: 503, statusText: 'Offline' });
+        });
     })
   );
 });

@@ -137,6 +137,7 @@ function AppContent() {
   const [openWeeklyModal, setOpenWeeklyModal] = useState(false);
   const [openSearchModal, setOpenSearchModal] = useState(false);
   const [selectedEvaluation, setSelectedEvaluation] = useState(null);
+  const [adminStats, setAdminStats] = useState({ pendingLeaves: 0, pendingRegs: 0 });
 
   // Global Ctrl+K (Search) & Ctrl+B (Sidebar Toggle) shortcut listeners
   useEffect(() => {
@@ -230,7 +231,12 @@ function AppContent() {
 
   const completedTasksCount = myTasks.filter((t) => t.status === 'Completed').length;
   const netWorkedHours = todayData?.attendance?.net_hours || '0';
-  const remainingCL = leaveBalances?.balances?.['Casual Leave']?.remainingDays ?? 12;
+  const remainingCL = leaveBalances?.balances?.['Casual Leave']?.remainingDays ?? (leaveBalances?.policy?.casual_leave ?? 1);
+  const remainingSL = leaveBalances?.balances?.['Sick Leave']?.remainingDays ?? (leaveBalances?.policy?.sick_leave ?? 1);
+  const remainingPL = leaveBalances?.balances?.['Paid Leave']?.remainingDays ?? (leaveBalances?.policy?.paid_leave ?? 1);
+  const remainingPerm = leaveBalances?.permissionPolicy?.remainingThisMonth ?? (leaveBalances?.permissionPolicy?.monthlyLimit ?? 2);
+  const maxPermHours = leaveBalances?.permissionPolicy?.maxPermissionHours ?? 2;
+  const currentMonthStr = leaveBalances?.currentMonth || format(new Date(), 'yyyy-MM');
 
   return (
     <ThemeProvider theme={theme}>
@@ -264,6 +270,7 @@ function AppContent() {
             onSelectTab={setActiveTab}
             isCollapsed={sidebarCollapsed}
             onToggleCollapse={toggleSidebar}
+            adminStats={adminStats}
           />
         </Box>
 
@@ -285,6 +292,7 @@ function AppContent() {
               setMobileDrawerOpen(false);
             }}
             onCloseMobile={() => setMobileDrawerOpen(false)}
+            adminStats={adminStats}
           />
         </Drawer>
 
@@ -342,7 +350,7 @@ function AppContent() {
 
               {/* 4 KPI Top-Border Highlight Cards */}
               <MetricCards
-                daysCount={historyRecords.length > 0 ? historyRecords.length : 1}
+                daysCount={historyRecords.length}
                 netHours={netWorkedHours}
                 tasksCompleted={completedTasksCount}
                 leaveRemaining={remainingCL}
@@ -576,7 +584,7 @@ function AppContent() {
                         />
                       </Box>
                       <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2 }}>
-                        Current available balance and quick operational shortcuts.
+                        Live monthly quota balance ({currentMonthStr}) & quick operational shortcuts.
                       </Typography>
 
                       <Grid container spacing={1.5} sx={{ mb: 2 }}>
@@ -586,7 +594,10 @@ function AppContent() {
                               CASUAL LEAVE
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 800, color: '#15803d' }}>
-                              {leaveBalances?.casual?.remaining ?? 12} Days
+                              {remainingCL} Day{remainingCL === 1 ? '' : 's'}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#166534', fontSize: 11 }}>
+                              {leaveBalances?.balances?.['Casual Leave']?.approvedDays || 0}d used this month
                             </Typography>
                           </Box>
                         </Grid>
@@ -596,7 +607,25 @@ function AppContent() {
                               SICK LEAVE
                             </Typography>
                             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0284c7' }}>
-                              {leaveBalances?.sick?.remaining ?? 6} Days
+                              {remainingSL} Day{remainingSL === 1 ? '' : 's'}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#0369a1', fontSize: 11 }}>
+                              {leaveBalances?.balances?.['Sick Leave']?.approvedDays || 0}d used this month
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Box sx={{ p: 1.2, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                              <Typography variant="caption" sx={{ color: '#92400e', fontWeight: 800, fontSize: 11 }}>
+                                SHORT PERMISSIONS:
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#78350f', fontWeight: 700, fontSize: 11 }}>
+                                {remainingPerm} of {leaveBalances?.permissionPolicy?.monthlyLimit ?? 2} left
+                              </Typography>
+                            </Box>
+                            <Typography variant="caption" sx={{ color: '#b45309', fontWeight: 600, fontSize: 11 }}>
+                              Max {maxPermHours}h per pass
                             </Typography>
                           </Box>
                         </Grid>
@@ -859,11 +888,37 @@ function AppContent() {
           )}
 
           {/* TAB: ADMIN MANAGEMENT SUITE */}
-          {activeTab === 'admin-live' && isAdmin && <AdminDashboard initialTab={0} />}
-          {activeTab === 'admin-evals' && isAdmin && <AdminDashboard initialTab={5} />}
-          {activeTab === 'admin-weekly' && isAdmin && <AdminDashboard initialTab={6} />}
-          {activeTab === 'admin-timesheets' && isAdmin && <AdminDashboard initialTab={7} />}
-          {activeTab === 'admin-holidays' && isAdmin && <AdminDashboard initialTab={10} />}
+          {isAdmin && (activeTab in {
+            'admin-live': 0,
+            'admin-tasks': 1,
+            'admin-regularizations': 2,
+            'admin-workdone': 3,
+            'admin-leaves': 4,
+            'admin-evals': 5,
+            'admin-weekly': 6,
+            'admin-timesheets': 7,
+            'admin-directory': 8,
+            'admin-audit': 9,
+            'admin-holidays': 10
+          }) && (
+            <AdminDashboard
+              initialTab={{
+                'admin-live': 0,
+                'admin-tasks': 1,
+                'admin-regularizations': 2,
+                'admin-workdone': 3,
+                'admin-leaves': 4,
+                'admin-evals': 5,
+                'admin-weekly': 6,
+                'admin-timesheets': 7,
+                'admin-directory': 8,
+                'admin-audit': 9,
+                'admin-holidays': 10
+              }[activeTab]}
+              onTabChange={(key) => setActiveTab(key)}
+              onStatsUpdate={setAdminStats}
+            />
+          )}
           {activeTab === 'ai-reports' && isAdmin && <AIReports />}
 
           {/* TAB: ANNOUNCEMENTS */}

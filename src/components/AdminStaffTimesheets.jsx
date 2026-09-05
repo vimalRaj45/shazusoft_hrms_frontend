@@ -24,7 +24,8 @@ import {
   DialogActions,
   FormControl,
   InputLabel,
-  Select
+  Select,
+  InputAdornment
 } from '@mui/material';
 import {
   Print as PrintIcon,
@@ -42,7 +43,9 @@ import {
   FilterAlt as FilterIcon,
   Cancel as AbsentIcon,
   Assignment as TaskIcon,
-  WorkOutline as WorkIcon
+  WorkOutline as WorkIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
 import { format, addMonths, subMonths } from 'date-fns';
 import { attendanceAPI, adminAPI, reportsAPI } from '../services/api';
@@ -56,6 +59,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
   const [timesheetData, setTimesheetData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
   const [localEmployees, setLocalEmployees] = useState(employees);
 
   // Quick Override Modal
@@ -382,12 +386,26 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
   };
 
   const filteredDays = timesheetData?.days?.filter(d => {
-    if (statusFilter === 'ALL') return true;
-    if (statusFilter === 'PRESENT') return d.status === 'Present' || d.status === 'Late' || d.status === 'Half-Day';
-    if (statusFilter === 'LATE') return d.status === 'Late';
-    if (statusFilter === 'ABSENT') return d.status === 'Absent' || d.status === 'Not Punched Yet';
-    if (statusFilter === 'LEAVE') return d.status === 'Approved Leave';
-    if (statusFilter === 'HOLIDAY_SUNDAY') return d.status === 'Sunday' || d.status === 'Holiday';
+    let statusMatch = true;
+    if (statusFilter === 'PRESENT') statusMatch = (d.status === 'Present' || d.status === 'Late' || d.status === 'Half-Day');
+    else if (statusFilter === 'LATE') statusMatch = (d.status === 'Late');
+    else if (statusFilter === 'ABSENT') statusMatch = (d.status === 'Absent' || d.status === 'Not Punched Yet');
+    else if (statusFilter === 'LEAVE') statusMatch = (d.status === 'Approved Leave');
+    else if (statusFilter === 'HOLIDAY_SUNDAY') statusMatch = (d.status === 'Sunday' || d.status === 'Holiday');
+
+    if (!statusMatch) return false;
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      const searchMatch =
+        (d.date && d.date.includes(q)) ||
+        (d.day_name && d.day_name.toLowerCase().includes(q)) ||
+        (d.status && d.status.toLowerCase().includes(q)) ||
+        (d.holiday_name && d.holiday_name.toLowerCase().includes(q)) ||
+        (d.leave_reason && d.leave_reason.toLowerCase().includes(q)) ||
+        (d.tasks && d.tasks.some(t => (t.task_title && t.task_title.toLowerCase().includes(q)) || (t.project_name && t.project_name.toLowerCase().includes(q))));
+      if (!searchMatch) return false;
+    }
     return true;
   }) || [];
 
@@ -582,27 +600,51 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                 </Typography>
               </Box>
 
-              {/* Status Filters */}
-              <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
-                {[
-                  { key: 'ALL', label: 'All Days' },
-                  { key: 'PRESENT', label: 'Present' },
-                  { key: 'LATE', label: 'Late' },
-                  { key: 'ABSENT', label: 'Absent' },
-                  { key: 'LEAVE', label: 'Leaves' },
-                  { key: 'HOLIDAY_SUNDAY', label: 'Sunday / Holidays' }
-                ].map(tab => (
-                  <Chip
-                    key={tab.key}
-                    label={tab.label}
-                    size="small"
-                    clickable
-                    color={statusFilter === tab.key ? 'primary' : 'default'}
-                    variant={statusFilter === tab.key ? 'filled' : 'outlined'}
-                    onClick={() => setStatusFilter(tab.key)}
-                    sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
-                  />
-                ))}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                <TextField
+                  size="small"
+                  placeholder="Search date, day, task..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon sx={{ color: '#64748b', fontSize: 18 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchTerm && (
+                      <InputAdornment position="end">
+                        <IconButton size="small" onClick={() => setSearchTerm('')}>
+                          <ClearIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                  sx={{ width: { xs: '100%', sm: 220 }, '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                />
+
+                {/* Status Filters */}
+                <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
+                  {[
+                    { key: 'ALL', label: 'All Days' },
+                    { key: 'PRESENT', label: 'Present' },
+                    { key: 'LATE', label: 'Late' },
+                    { key: 'ABSENT', label: 'Absent' },
+                    { key: 'LEAVE', label: 'Leaves' },
+                    { key: 'HOLIDAY_SUNDAY', label: 'Sunday / Holidays' }
+                  ].map(tab => (
+                    <Chip
+                      key={tab.key}
+                      label={tab.label}
+                      size="small"
+                      clickable
+                      color={statusFilter === tab.key ? 'primary' : 'default'}
+                      variant={statusFilter === tab.key ? 'filled' : 'outlined'}
+                      onClick={() => setStatusFilter(tab.key)}
+                      sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                    />
+                  ))}
+                </Box>
               </Box>
             </Box>
 

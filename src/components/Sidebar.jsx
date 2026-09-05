@@ -29,11 +29,21 @@ import {
   ChatOutlined as ChatIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  MenuOpen as MenuOpenIcon
+  MenuOpen as MenuOpenIcon,
+  BadgeOutlined as DirectoryIcon,
+  PublishedWithChanges as RegularizeIcon,
+  CalendarMonthOutlined as CalendarIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
-export default function Sidebar({ activeTab, onSelectTab, onCloseMobile, isCollapsed = false, onToggleCollapse }) {
+export default function Sidebar({
+  activeTab,
+  onSelectTab,
+  onCloseMobile,
+  isCollapsed = false,
+  onToggleCollapse,
+  adminStats = {}
+}) {
   const { isAdmin } = useAuth();
 
   const handleItemClick = (tabKey) => {
@@ -368,10 +378,15 @@ export default function Sidebar({ activeTab, onSelectTab, onCloseMobile, isColla
               <List dense sx={{ p: 0, mb: 1 }}>
                 {renderNavItem('admin-live', 'Live Presence Board', TeamIcon)}
                 {renderNavItem('admin-tasks', 'Team Task Assignment', TrackerIcon)}
-                {renderNavItem('admin-weekly', 'Weekly Staff Reports', WeekIcon, 'All Staff')}
-                {renderNavItem('admin-evals', 'Monthly Appraisals', EvalIcon, '13-Section')}
+                {renderNavItem('admin-regularizations', 'Regularizations', RegularizeIcon, adminStats.pendingRegs > 0 ? `${adminStats.pendingRegs} New` : null)}
+                {renderNavItem('admin-workdone', 'Team Work Done', TaskIcon)}
+                {renderNavItem('admin-leaves', 'Leave Requests', LeaveIcon, adminStats.pendingLeaves > 0 ? `${adminStats.pendingLeaves} New` : null)}
                 {renderNavItem('admin-timesheets', 'Staff Timesheets', ReportIcon)}
-                {renderNavItem('admin-holidays', 'Holidays & Calendar', LeaveIcon)}
+                {renderNavItem('admin-weekly', 'Weekly Staff Reports', WeekIcon)}
+                {renderNavItem('admin-evals', 'Monthly Appraisals', EvalIcon)}
+                {renderNavItem('admin-directory', 'Staff Directory', DirectoryIcon)}
+                {renderNavItem('admin-holidays', 'Calendar & Geofence', CalendarIcon)}
+                {renderNavItem('admin-audit', 'Audit & Security Logs', ShieldIcon)}
                 {renderNavItem('ai-reports', 'Reports & Analytics', SparklesIcon)}
               </List>
             </>

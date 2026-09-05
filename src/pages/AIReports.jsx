@@ -256,64 +256,80 @@ export default function AIReports() {
         currentAIReport ? (
           <Box>
             {/* Top Score Cards */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={6} md={3}>
-                <Card sx={{ bgcolor: 'rgba(37, 99, 235, 0.04)', border: '1px solid #bfdbfe' }}>
-                  <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <ProductivityIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block' }}>
-                      PRODUCTIVITY SCORE
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.main', my: 0.5 }}>
-                      {currentAIReport.productivity_score || currentAIReport.productivityScore || 85}
-                      <span style={{ fontSize: '1.2rem' }}>/100</span>
-                    </Typography>
-                    <Chip label="High Efficiency" size="small" color="primary" sx={{ fontWeight: 700, mt: 1 }} />
+            <Grid container spacing={3} sx={{ mb: 4 }} alignItems="stretch">
+              <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+                <Card sx={{ bgcolor: 'rgba(37, 99, 235, 0.04)', border: '1px solid #bfdbfe', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardContent sx={{ p: 3, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <Box>
+                      <ProductivityIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        PRODUCTIVITY SCORE
+                      </Typography>
+                      <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.main', my: 0.5 }}>
+                        {currentAIReport.productivity_score || currentAIReport.productivityScore || 85}
+                        <span style={{ fontSize: '1.2rem' }}>/100</span>
+                      </Typography>
+                    </Box>
+                    <Box sx={{ mt: 1 }}>
+                      <Chip label="High Efficiency" size="small" color="primary" sx={{ fontWeight: 700 }} />
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <Card sx={{ bgcolor: 'rgba(5, 150, 105, 0.04)', border: '1px solid #a7f3d0' }}>
-                  <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <AttendanceRateIcon color="success" sx={{ fontSize: 32, mb: 1 }} />
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block' }}>
-                      ATTENDANCE RATE
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800, color: '#059669', my: 0.5 }}>
-                      {currentAIReport.attendance_rate || currentAIReport.attendanceRate || '95%'}
-                    </Typography>
-                    <Chip label="Verified In Geofence" size="small" color="success" sx={{ fontWeight: 700, mt: 1 }} />
+              <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+                <Card sx={{ bgcolor: 'rgba(5, 150, 105, 0.04)', border: '1px solid #a7f3d0', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardContent sx={{ p: 3, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <Box>
+                      <AttendanceRateIcon color="success" sx={{ fontSize: 32, mb: 1 }} />
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        ATTENDANCE RATE
+                      </Typography>
+                      <Typography variant="h3" sx={{ fontWeight: 800, color: '#059669', my: 0.5 }}>
+                        {currentAIReport.attendance_rate || currentAIReport.attendanceRate || '95%'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ mt: 1 }}>
+                      <Chip label="Verified In Geofence" size="small" color="success" sx={{ fontWeight: 700 }} />
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <Card sx={{ bgcolor: 'rgba(8, 145, 178, 0.04)', border: '1px solid #a5f3fc' }}>
-                  <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <TimeIcon color="secondary" sx={{ fontSize: 32, mb: 1 }} />
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block' }}>
-                      TASK COMPLETION RATE
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800, color: '#0891b2', my: 0.5 }}>
-                      {currentAIReport.task_completion_rate || currentAIReport.taskCompletionRate || '90%'}
-                    </Typography>
-                    <Chip label="Delivery Benchmark" size="small" color="secondary" sx={{ fontWeight: 700, mt: 1 }} />
+              <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+                <Card sx={{ bgcolor: 'rgba(8, 145, 178, 0.04)', border: '1px solid #a5f3fc', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardContent sx={{ p: 3, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <Box>
+                      <TimeIcon color="secondary" sx={{ fontSize: 32, mb: 1 }} />
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        TASK COMPLETION RATE
+                      </Typography>
+                      <Typography variant="h3" sx={{ fontWeight: 800, color: '#0891b2', my: 0.5 }}>
+                        {currentAIReport.task_completion_rate || currentAIReport.taskCompletionRate || '90%'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ mt: 1 }}>
+                      <Chip label="Delivery Benchmark" size="small" color="secondary" sx={{ fontWeight: 700 }} />
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
-                <Card sx={{ bgcolor: 'rgba(217, 119, 6, 0.04)', border: '1px solid #fde68a' }}>
-                  <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <TimeIcon color="warning" sx={{ fontSize: 32, mb: 1 }} />
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block' }}>
-                      AVG DAILY WORKING HOURS
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800, color: '#d97706', my: 0.5 }}>
-                      {currentAIReport.avg_daily_hours || currentAIReport.avgDailyHours || '8.2h'}
-                    </Typography>
-                    <Chip label="Net Working Time" size="small" color="warning" sx={{ fontWeight: 700, mt: 1 }} />
+              <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+                <Card sx={{ bgcolor: 'rgba(217, 119, 6, 0.04)', border: '1px solid #fde68a', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardContent sx={{ p: 3, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <Box>
+                      <TimeIcon color="warning" sx={{ fontSize: 32, mb: 1 }} />
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        AVG DAILY WORKING HOURS
+                      </Typography>
+                      <Typography variant="h3" sx={{ fontWeight: 800, color: '#d97706', my: 0.5 }}>
+                        {currentAIReport.avg_daily_hours || currentAIReport.avgDailyHours || '8.2h'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ mt: 1 }}>
+                      <Chip label="Net Working Time" size="small" color="warning" sx={{ fontWeight: 700 }} />
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>

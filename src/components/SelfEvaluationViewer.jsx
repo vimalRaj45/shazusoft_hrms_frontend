@@ -168,25 +168,74 @@ export default function SelfEvaluationViewer({ evaluation, onAddReview }) {
 
         {/* 4. Self-Rating */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'primary.main' }}>
               4. COMPETENCY SELF-RATINGS
             </Typography>
             <Chip
-              label={`OVERALL SCORE: ${evaluation.overall_rating || '4.5'} / 5.0 ⭐`}
+              icon={<StarIcon sx={{ color: '#fbbf24 !important', fontSize: '1.1rem' }} />}
+              label={`OVERALL SCORE: ${evaluation.overall_rating || '4.5'} / 5.0`}
               color="primary"
-              sx={{ fontWeight: 800 }}
+              sx={{ fontWeight: 800, px: 0.5 }}
             />
           </Box>
-          <Grid container spacing={1.5}>
-            {Object.entries(RATING_LABELS).map(([key, label]) => (
-              <Grid item xs={12} sm={6} md={4} key={key}>
-                <Box sx={{ p: 1.2, border: '1px solid #e2e8f0', borderRadius: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700 }}>{label}</Typography>
-                  <Rating value={parseFloat(ratings[key]) || 5} readOnly size="small" />
-                </Box>
-              </Grid>
-            ))}
+          <Grid container spacing={1.5} alignItems="stretch">
+            {Object.entries(RATING_LABELS).map(([key, label]) => {
+              const val = parseFloat(ratings[key]) || 5;
+              return (
+                <Grid item xs={12} sm={6} md={4} key={key}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 2,
+                      bgcolor: '#f8fafc',
+                      height: '100%',
+                      boxSizing: 'border-box',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: 1.2,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        borderColor: '#cbd5e1',
+                        bgcolor: '#ffffff',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#0f172a', lineHeight: 1.35 }}>
+                        {label}
+                      </Typography>
+                      <Chip
+                        label={`${val.toFixed(1)}`}
+                        size="small"
+                        sx={{
+                          height: 20,
+                          fontSize: '0.7rem',
+                          fontWeight: 800,
+                          bgcolor: '#fef3c7',
+                          color: '#92400e',
+                          border: '1px solid #fde68a',
+                          flexShrink: 0
+                        }}
+                      />
+                    </Box>
+                    <Rating
+                      value={val}
+                      readOnly
+                      size="small"
+                      precision={0.5}
+                      sx={{
+                        color: '#f59e0b',
+                        '& .MuiRating-icon': { fontSize: '1.2rem' }
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              );
+            })}
           </Grid>
         </Box>
 

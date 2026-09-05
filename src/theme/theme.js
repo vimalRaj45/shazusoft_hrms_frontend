@@ -203,9 +203,7 @@ const baseTheme = (mode = 'light') =>
         styleOverrides: {
           paper: {
             borderRadius: '4px',
-            margin: '12px',
-            width: 'calc(100% - 24px)',
-            maxWidth: '600px'
+            margin: '12px'
           }
         }
       },

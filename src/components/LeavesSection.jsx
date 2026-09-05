@@ -20,14 +20,18 @@ import {
   Grid,
   CircularProgress,
   Tabs,
-  Tab
+  Tab,
+  InputAdornment,
+  IconButton
 } from '@mui/material';
 import {
   EventBusy as LeaveIcon,
   Add as AddIcon,
   Timer as PermissionIcon,
   AccountBalance as BalanceIcon,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
 import toast from '../utils/muiToast';
 import { leavesAPI, adminAPI } from '../services/api';
@@ -41,6 +45,30 @@ export default function LeavesSection() {
   const [permissions, setPermissions] = useState([]);
   const [balanceData, setBalanceData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Search & Filter State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const filteredLeaves = leaves.filter(l => {
+    const q = searchTerm.trim().toLowerCase();
+    const matchesSearch = !q ||
+      (l.leave_type && l.leave_type.toLowerCase().includes(q)) ||
+      (l.reason && l.reason.toLowerCase().includes(q)) ||
+      (l.start_date && l.start_date.includes(q)) ||
+      (l.end_date && l.end_date.includes(q));
+    const matchesStatus = statusFilter === 'ALL' || l.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredPermissions = permissions.filter(p => {
+    const q = searchTerm.trim().toLowerCase();
+    const matchesSearch = !q ||
+      (p.reason && p.reason.toLowerCase().includes(q)) ||
+      (p.date && p.date.includes(q));
+    const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   // Modals
   const [openLeaveModal, setOpenLeaveModal] = useState(false);
@@ -223,10 +251,10 @@ export default function LeavesSection() {
         </Box>
 
         {/* Real-time Monthly Leave Balance KPI Cards */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={3}>
-            <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>CASUAL LEAVE (CL)</Typography>
+        <Grid container spacing={2} sx={{ mb: 3 }} alignItems="stretch">
+          <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>CASUAL LEAVE (CL)</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#3b82f6', mt: 0.5 }}>
                 {balances['Casual Leave']?.remainingDays ?? 1} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {balances['Casual Leave']?.totalQuota ?? 1}d</span>
               </Typography>
@@ -236,9 +264,9 @@ export default function LeavesSection() {
             </Box>
           </Grid>
 
-          <Grid item xs={6} sm={3}>
-            <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>SICK LEAVE (SL)</Typography>
+          <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>SICK LEAVE (SL)</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
                 {balances['Sick Leave']?.remainingDays ?? 1} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {balances['Sick Leave']?.totalQuota ?? 1}d</span>
               </Typography>
@@ -248,9 +276,9 @@ export default function LeavesSection() {
             </Box>
           </Grid>
 
-          <Grid item xs={6} sm={3}>
-            <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>PAID ANNUAL LEAVE (PL)</Typography>
+          <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PAID ANNUAL LEAVE (PL)</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#0284c7', mt: 0.5 }}>
                 {balances['Paid Leave']?.remainingDays ?? 1} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {balances['Paid Leave']?.totalQuota ?? 1}d</span>
               </Typography>
@@ -260,9 +288,9 @@ export default function LeavesSection() {
             </Box>
           </Grid>
 
-          <Grid item xs={6} sm={3}>
-            <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>MONTHLY PERMISSION PASS</Typography>
+          <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>MONTHLY PERMISSION PASS</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#f59e0b', mt: 0.5 }}>
                 {permPolicy.remainingThisMonth} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {permPolicy.monthlyLimit} left</span>
               </Typography>
@@ -281,6 +309,67 @@ export default function LeavesSection() {
           </Tabs>
         </Box>
 
+        {/* Search & Status Filter Bar */}
+        <Box sx={{ mb: 2.5, p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+          <Grid container spacing={1.5} alignItems="center">
+            <Grid item xs={12} sm={8}>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder={activeTab === 0 ? "Search by leave type, reason, or date (YYYY-MM-DD)..." : "Search by permission reason or date (YYYY-MM-DD)..."}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#64748b', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setSearchTerm('')}>
+                        <ClearIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                select
+                size="small"
+                label="Status Filter"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+              >
+                <MenuItem value="ALL">All Statuses</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Approved">Approved</MenuItem>
+                <MenuItem value="Rejected">Rejected</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+          {(searchTerm || statusFilter !== 'ALL') && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, pt: 1, borderTop: '1px dashed #e2e8f0' }}>
+              <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
+                Filtering active: <strong>{activeTab === 0 ? filteredLeaves.length : filteredPermissions.length}</strong> record(s) matched
+              </Typography>
+              <Button
+                size="small"
+                color="error"
+                onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}
+                sx={{ fontSize: 11, fontWeight: 700, p: 0, textTransform: 'none' }}
+              >
+                Reset Filter
+              </Button>
+            </Box>
+          )}
+        </Box>
+
         {/* TAB 0: Leaves Table */}
         {activeTab === 0 && (
           loading ? (
@@ -288,6 +377,13 @@ export default function LeavesSection() {
           ) : leaves.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 3, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
               <Typography variant="body2" sx={{ color: '#64748b' }}>No leave applications submitted yet.</Typography>
+            </Box>
+          ) : filteredLeaves.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>No leave applications match the current search or filters.</Typography>
+              <Button size="small" variant="outlined" sx={{ mt: 1, fontWeight: 700 }} onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}>
+                Clear Filters
+              </Button>
             </Box>
           ) : (
             <Box sx={{ overflowX: 'auto' }}>
@@ -303,7 +399,7 @@ export default function LeavesSection() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {leaves.map((l) => (
+                  {filteredLeaves.map((l) => (
                     <TableRow key={l.id} hover>
                       <TableCell sx={{ fontWeight: 600 }}>{l.leave_type}</TableCell>
                       <TableCell>{l.start_date} to {l.end_date}</TableCell>
@@ -334,6 +430,13 @@ export default function LeavesSection() {
             <Box sx={{ textAlign: 'center', py: 3, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
               <Typography variant="body2" sx={{ color: '#64748b' }}>No permission requests submitted yet.</Typography>
             </Box>
+          ) : filteredPermissions.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>No permission requests match the current search or filters.</Typography>
+              <Button size="small" variant="outlined" sx={{ mt: 1, fontWeight: 700 }} onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}>
+                Clear Filters
+              </Button>
+            </Box>
           ) : (
             <Box sx={{ overflowX: 'auto' }}>
               <Table size="small">
@@ -348,7 +451,7 @@ export default function LeavesSection() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {permissions.map((p) => (
+                  {filteredPermissions.map((p) => (
                     <TableRow key={p.id} hover>
                       <TableCell sx={{ fontWeight: 600 }}>{p.date}</TableCell>
                       <TableCell>{p.start_time} - {p.end_time}</TableCell>
@@ -386,9 +489,9 @@ export default function LeavesSection() {
                   value={leaveForm.leave_type}
                   onChange={(e) => setLeaveForm({ ...leaveForm, leave_type: e.target.value })}
                 >
-                  <MenuItem value="Casual Leave">Casual Leave ({balances['Casual Leave']?.remainingDays ?? 12} days left)</MenuItem>
-                  <MenuItem value="Sick Leave">Sick Leave ({balances['Sick Leave']?.remainingDays ?? 12} days left)</MenuItem>
-                  <MenuItem value="Paid Leave">Paid Annual Leave ({balances['Paid Leave']?.remainingDays ?? 12} days left)</MenuItem>
+                  <MenuItem value="Casual Leave">Casual Leave ({balances['Casual Leave']?.remainingDays ?? (policy.casual_leave ?? 1)} days left this month)</MenuItem>
+                  <MenuItem value="Sick Leave">Sick Leave ({balances['Sick Leave']?.remainingDays ?? (policy.sick_leave ?? 1)} days left this month)</MenuItem>
+                  <MenuItem value="Paid Leave">Paid Annual Leave ({balances['Paid Leave']?.remainingDays ?? (policy.paid_leave ?? 1)} days left this month)</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>

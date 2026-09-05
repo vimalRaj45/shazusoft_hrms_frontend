@@ -24,7 +24,8 @@ import {
   CircularProgress,
   Tabs,
   Tab,
-  Tooltip
+  Tooltip,
+  InputAdornment
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -53,7 +54,10 @@ import {
   ContactPhone as EmergencyIcon,
   Security as SecurityIcon,
   Delete as DeleteIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
+  FilterList as FilterIcon
 } from '@mui/icons-material';
 import toast, { muiToast } from '../utils/muiToast';
 import { adminAPI, workDoneAPI, leavesAPI, reportsAPI, evaluationsAPI, attendanceAPI, communicationsAPI } from '../services/api';
@@ -74,7 +78,21 @@ const REJECTION_TEMPLATES = [
   'Prior manager pre-alignment required before formal submission'
 ];
 
-export default function AdminDashboard({ initialTab = 0 }) {
+const SECTION_META = [
+  { id: 0, title: 'Live Presence Board', subtitle: 'Workforce live presence, geofence status, and punch timestamps', category: 'Daily Operations' },
+  { id: 1, title: 'Team Task Assignment', subtitle: 'Assign tasks, monitor milestone deadlines, and progress oversight', category: 'Daily Operations' },
+  { id: 2, title: 'Attendance Regularizations', subtitle: 'Review and approve missing punch regularization requests', category: 'Daily Operations' },
+  { id: 3, title: 'Team Work Done Logs', subtitle: 'Daily work reports and task deliverable logs across company projects', category: 'Daily Operations' },
+  { id: 4, title: 'Leaves & Short Permissions', subtitle: 'Approve or reject full-day leave applications and short permission passes', category: 'Approvals & Timesheets' },
+  { id: 5, title: 'Monthly Performance Appraisals', subtitle: '13-section employee self-evaluations and performance reviews', category: 'Approvals & Timesheets' },
+  { id: 6, title: 'Weekly Staff Check-ins', subtitle: 'Weekly accomplishment synopses, challenges, and blocker reviews', category: 'Approvals & Timesheets' },
+  { id: 7, title: 'Staff Monthly Timesheets', subtitle: 'Detailed monthly attendance history, punctuality, and hours audit', category: 'Approvals & Timesheets' },
+  { id: 8, title: 'Staff Directory & Status', subtitle: 'Manage employee profiles, work modes, and account deactivations', category: 'Directory & Settings' },
+  { id: 9, title: 'Audit Trail & Security Logs', subtitle: 'System communication logs, resignation audits, and security trail', category: 'Directory & Settings' },
+  { id: 10, title: 'Company Calendar & Geofence', subtitle: 'Official holidays, working Sunday overrides, and GPS geofence perimeter', category: 'Directory & Settings' }
+];
+
+export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpdate }) {
   const [activeTab, setActiveTab] = useState(initialTab);
 
   useEffect(() => {
@@ -82,6 +100,26 @@ export default function AdminDashboard({ initialTab = 0 }) {
       setActiveTab(initialTab);
     }
   }, [initialTab]);
+
+  const handleTabSelect = (idx) => {
+    setActiveTab(idx);
+    if (onTabChange) {
+      const tabKeys = [
+        'admin-live',
+        'admin-tasks',
+        'admin-regularizations',
+        'admin-workdone',
+        'admin-leaves',
+        'admin-evals',
+        'admin-weekly',
+        'admin-timesheets',
+        'admin-directory',
+        'admin-audit',
+        'admin-holidays'
+      ];
+      onTabChange(tabKeys[idx] || 'admin-live');
+    }
+  };
 
   const [liveData, setLiveData] = useState(null);
   const [allTasks, setAllTasks] = useState([]);
@@ -96,6 +134,23 @@ export default function AdminDashboard({ initialTab = 0 }) {
   const [actionLoading, setActionLoading] = useState(false);
   const [leaveSubTab, setLeaveSubTab] = useState(0); // 0 = Full Leaves, 1 = Short Permissions
   const [selectedTimesheetEmpId, setSelectedTimesheetEmpId] = useState('');
+
+  // Universal Search & Filter Controls State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDepartment, setFilterDepartment] = useState('ALL');
+  const [filterStatus, setFilterStatus] = useState('ALL');
+  const [filterWorkMode, setFilterWorkMode] = useState('ALL');
+  const [filterEmployeeStatus, setFilterEmployeeStatus] = useState('ALL');
+
+  // Staff Resignation / Soft Delete Modal State
+  const [openDeactivateModal, setOpenDeactivateModal] = useState(false);
+  const [deactivateTarget, setDeactivateTarget] = useState(null);
+  const [deactivateForm, setDeactivateForm] = useState({
+    status: 'resigned',
+    reason: '',
+    effective_date: format(new Date(), 'yyyy-MM-dd')
+  });
+  const [deactivateLoading, setDeactivateLoading] = useState(false);
 
   // Professional Rejection Modal State
   const [openRejectionModal, setOpenRejectionModal] = useState(false);
@@ -117,6 +172,17 @@ export default function AdminDashboard({ initialTab = 0 }) {
   const [openResolveModal, setOpenResolveModal] = useState(false);
   const [selectedReq, setSelectedReq] = useState(null);
   const [resolveAction, setResolveAction] = useState('Approved');
+
+  // Push pending stats update to parent App component
+  useEffect(() => {
+    if (onStatsUpdate) {
+      onStatsUpdate({
+        pendingLeaves: allLeaves.filter(l => l.status === 'Pending').length,
+        pendingRegs: regularizations.filter(r => r.status === 'Pending').length,
+        totalEmployees: employees.length
+      });
+    }
+  }, [allLeaves, regularizations, employees, onStatsUpdate]);
   const [resolveRemarks, setResolveRemarks] = useState('');
 
   // Add Employee Modal
@@ -338,7 +404,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
     setActionLoading(true);
     try {
       await adminAPI.createEmployee(empForm);
-      toast.success(`Employee "${empForm.name}" registered successfully!`);
+      toast.success(`Employee "${empForm.name}" registered successfully & onboarding invitation email dispatched!`);
       setOpenEmpModal(false);
       setEmpForm({
         name: '',
@@ -351,6 +417,53 @@ export default function AdminDashboard({ initialTab = 0 }) {
       fetchDashboardData();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create employee.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleOpenDeactivate = (emp) => {
+    setDeactivateTarget(emp);
+    setDeactivateForm({
+      status: 'resigned',
+      reason: '',
+      effective_date: format(new Date(), 'yyyy-MM-dd')
+    });
+    setOpenDeactivateModal(true);
+  };
+
+  const handleConfirmDeactivate = async (e) => {
+    e.preventDefault();
+    if (!deactivateTarget) return;
+    if (!deactivateForm.reason.trim()) {
+      toast.error('Please enter the resignation or deactivation reason.');
+      return;
+    }
+    setDeactivateLoading(true);
+    try {
+      const res = await adminAPI.deactivateEmployee(deactivateTarget.id, deactivateForm);
+      toast.success(res.data.message || `Employee ${deactivateTarget.name} marked as ${deactivateForm.status}.`);
+      setOpenDeactivateModal(false);
+      setDeactivateTarget(null);
+      fetchDashboardData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update employee status.');
+    } finally {
+      setDeactivateLoading(false);
+    }
+  };
+
+  const handleReactivateEmployee = async (emp) => {
+    if (!window.confirm(`Are you sure you want to restore "${emp.name}" (${emp.id}) to ACTIVE status?`)) {
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const res = await adminAPI.reactivateEmployee(emp.id);
+      toast.success(res.data.message || `Employee ${emp.name} restored to active status.`);
+      fetchDashboardData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to reactivate employee.');
     } finally {
       setActionLoading(false);
     }
@@ -429,6 +542,171 @@ export default function AdminDashboard({ initialTab = 0 }) {
     return <Chip icon={<AbsentIcon fontSize="small" />} label="Absent Today" color="default" size="small" sx={{ fontWeight: 700 }} />;
   };
 
+  const pendingRegsCount = regularizations.filter(r => r.status === 'Pending').length;
+  const pendingLeavesCount = allLeaves.filter(l => l.status === 'Pending').length;
+
+  // Real-time Search & Multi-criteria Filter Engine
+  const allDepartments = Array.from(
+    new Set(employees.map(e => e.department).filter(Boolean))
+  ).sort();
+
+  const searchLower = searchTerm.trim().toLowerCase();
+
+  const filteredBoard = board.filter(emp => {
+    const matchesSearch = !searchLower ||
+      (emp.name && emp.name.toLowerCase().includes(searchLower)) ||
+      (emp.email && emp.email.toLowerCase().includes(searchLower)) ||
+      (emp.designation && emp.designation.toLowerCase().includes(searchLower)) ||
+      (emp.department && emp.department.toLowerCase().includes(searchLower));
+    const matchesDept = filterDepartment === 'ALL' || emp.department === filterDepartment;
+    const matchesStatus = filterStatus === 'ALL' || emp.statusToday === filterStatus;
+    return matchesSearch && matchesDept && matchesStatus;
+  });
+
+  const filteredRegularizations = regularizations.filter(r => {
+    const matchesSearch = !searchLower ||
+      (r.employee_name && r.employee_name.toLowerCase().includes(searchLower)) ||
+      (r.employee_id && String(r.employee_id).toLowerCase().includes(searchLower)) ||
+      (r.reason && r.reason.toLowerCase().includes(searchLower)) ||
+      (r.date && r.date.includes(searchLower));
+    const matchesStatus = filterStatus === 'ALL' || r.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredTasks = allTasks.filter(t => {
+    const matchesSearch = !searchLower ||
+      (t.employee_name && t.employee_name.toLowerCase().includes(searchLower)) ||
+      (t.task_title && t.task_title.toLowerCase().includes(searchLower)) ||
+      (t.project_name && t.project_name.toLowerCase().includes(searchLower)) ||
+      (t.task_category && t.task_category.toLowerCase().includes(searchLower));
+    const matchesStatus = filterStatus === 'ALL' || t.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredLeaves = allLeaves.filter(l => {
+    const matchesSearch = !searchLower ||
+      (l.employee_name && l.employee_name.toLowerCase().includes(searchLower)) ||
+      (l.leave_type && l.leave_type.toLowerCase().includes(searchLower)) ||
+      (l.reason && l.reason.toLowerCase().includes(searchLower)) ||
+      (l.start_date && l.start_date.includes(searchLower)) ||
+      (l.end_date && l.end_date.includes(searchLower));
+    const matchesStatus = filterStatus === 'ALL' || l.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredPermissions = allPermissions.filter(p => {
+    const matchesSearch = !searchLower ||
+      (p.employee_name && p.employee_name.toLowerCase().includes(searchLower)) ||
+      (p.reason && p.reason.toLowerCase().includes(searchLower)) ||
+      (p.date && p.date.includes(searchLower));
+    const matchesStatus = filterStatus === 'ALL' || p.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredEvaluations = evaluations.filter(ev => {
+    const matchesSearch = !searchLower ||
+      (ev.employee_name && ev.employee_name.toLowerCase().includes(searchLower)) ||
+      (ev.month_year && ev.month_year.includes(searchLower)) ||
+      (ev.designation && ev.designation.toLowerCase().includes(searchLower));
+    return matchesSearch;
+  });
+
+  const filteredEmployees = employees.filter(emp => {
+    const matchesSearch = !searchLower ||
+      (emp.name && emp.name.toLowerCase().includes(searchLower)) ||
+      (emp.email && emp.email.toLowerCase().includes(searchLower)) ||
+      (emp.designation && emp.designation.toLowerCase().includes(searchLower)) ||
+      (emp.department && emp.department.toLowerCase().includes(searchLower)) ||
+      (emp.id && String(emp.id).toLowerCase().includes(searchLower));
+    const matchesDept = filterDepartment === 'ALL' || emp.department === filterDepartment;
+    const matchesWorkMode = filterWorkMode === 'ALL' || emp.work_mode === filterWorkMode;
+    const matchesStatus = filterEmployeeStatus === 'ALL' || emp.status === filterEmployeeStatus;
+    return matchesSearch && matchesDept && matchesWorkMode && matchesStatus;
+  });
+
+  const filteredAuditLogs = auditLogs.filter(l => {
+    const matchesSearch = !searchLower ||
+      (l.sender_name && l.sender_name.toLowerCase().includes(searchLower)) ||
+      (l.recipient_name && l.recipient_name.toLowerCase().includes(searchLower)) ||
+      (l.subject && l.subject.toLowerCase().includes(searchLower)) ||
+      (l.message && l.message.toLowerCase().includes(searchLower)) ||
+      (l.type && l.type.toLowerCase().includes(searchLower));
+    return matchesSearch;
+  });
+
+  const filteredHolidays = holidays.filter(h => {
+    const matchesSearch = !searchLower ||
+      (h.name && h.name.toLowerCase().includes(searchLower)) ||
+      (h.date && h.date.includes(searchLower)) ||
+      (h.type && h.type.toLowerCase().includes(searchLower));
+    return matchesSearch;
+  });
+
+  const getSearchPlaceholder = (tab) => {
+    switch (tab) {
+      case 0: return 'staff name, email, department, or designation';
+      case 2: return 'staff name, employee ID, reason, or date';
+      case 3: return 'task title, project name, category, or employee';
+      case 4: return 'employee name, leave type, reason, or date';
+      case 5: return 'employee name, month, or designation';
+      case 8: return 'employee name, email, department, designation, or ID';
+      case 9: return 'sender, recipient, subject, or message';
+      case 10: return 'holiday title, date, or type';
+      default: return 'keyword...';
+    }
+  };
+
+  const getStatusOptions = (tab) => {
+    switch (tab) {
+      case 0:
+        return [
+          { value: 'Present & Working', label: 'Present & Working' },
+          { value: 'Punched Out', label: 'Punched Out' },
+          { value: 'Absent Today', label: 'Absent Today' }
+        ];
+      case 2:
+      case 4:
+        return [
+          { value: 'Pending', label: 'Pending' },
+          { value: 'Approved', label: 'Approved' },
+          { value: 'Rejected', label: 'Rejected' }
+        ];
+      case 3:
+        return [
+          { value: 'Completed', label: 'Completed' },
+          { value: 'In-Progress', label: 'In-Progress' },
+          { value: 'Assigned', label: 'Assigned' }
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const getActiveItemCount = (tab) => {
+    switch (tab) {
+      case 0: return filteredBoard.length;
+      case 2: return filteredRegularizations.length;
+      case 3: return filteredTasks.length;
+      case 4: return leaveSubTab === 0 ? filteredLeaves.length : filteredPermissions.length;
+      case 5: return filteredEvaluations.length;
+      case 8: return filteredEmployees.length;
+      case 9: return filteredAuditLogs.length;
+      case 10: return filteredHolidays.length;
+      default: return 0;
+    }
+  };
+
+  const hasDeptFilter = [0, 8].includes(activeTab);
+  const hasStatusFilter = [0, 2, 3, 4].includes(activeTab);
+  const hasWorkModeFilter = activeTab === 8;
+
+  const scrollToSection = () => {
+    setTimeout(() => {
+      const el = document.getElementById('admin-workspace-content');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header Bar */}
@@ -466,7 +744,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
             variant="outlined"
             color="primary"
             startIcon={<SettingsIcon />}
-            onClick={() => setActiveTab(10)}
+            onClick={() => handleTabSelect(10)}
             sx={{ fontWeight: 600, borderRadius: '4px' }}
           >
             Geofence Setup
@@ -484,41 +762,42 @@ export default function AdminDashboard({ initialTab = 0 }) {
       </Box>
 
       {/* Live Presence Metric KPI Cards (4 Clean 3-col Grid) */}
-      <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ borderRadius: '4px' }}>
-            <CardContent sx={{ p: 2.5, textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>TOTAL STAFF</Typography>
+      {/* Live Presence Metric KPI Cards (4 Clean 3-col Grid) */}
+      <Grid container spacing={2} sx={{ mb: 4 }} alignItems="stretch">
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+          <Card sx={{ width: '100%', height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', borderTop: '3px solid #133829', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>TOTAL STAFF</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: 'text.primary' }}>
                 {counts.totalStaff}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ borderLeft: '4px solid #059669', borderRadius: '4px' }}>
-            <CardContent sx={{ p: 2.5, textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700 }}>PRESENT IN OFFICE</Typography>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+          <Card sx={{ width: '100%', height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', borderTop: '3px solid #059669', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PRESENT IN OFFICE</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: '#059669' }}>
                 {counts.present}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ borderLeft: '4px solid #0891b2', borderRadius: '4px' }}>
-            <CardContent sx={{ p: 2.5, textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#0891b2', fontWeight: 700 }}>PUNCHED OUT</Typography>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+          <Card sx={{ width: '100%', height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', borderTop: '3px solid #0891b2', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#0891b2', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PUNCHED OUT</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: '#0891b2' }}>
                 {counts.punchedOut}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ borderLeft: '4px solid #64748b', borderRadius: '4px' }}>
-            <CardContent sx={{ p: 2.5, textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>ABSENT TODAY</Typography>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+          <Card sx={{ width: '100%', height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', borderTop: '3px solid #64748b', display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>ABSENT TODAY</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: 'text.secondary' }}>
                 {counts.absent}
               </Typography>
@@ -527,65 +806,292 @@ export default function AdminDashboard({ initialTab = 0 }) {
         </Grid>
       </Grid>
 
-      {/* Tabs for Dashboard Sub-Views */}
-      <Card sx={{ mb: 4, borderRadius: '4px' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-          <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)} variant="scrollable" scrollButtons="auto">
-            <Tab label="Live Presence Board" icon={<PeopleIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label="Task Assign & Tracking" icon={<TaskIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab
-              label={`Regularizations & Edge Cases (${regularizations.filter(r => r.status === 'Pending').length})`}
-              icon={<RegularizeTabIcon />}
-              iconPosition="start"
-              sx={{ fontWeight: 700, color: regularizations.filter(r => r.status === 'Pending').length > 0 ? '#b45309' : 'inherit' }}
-            />
-            <Tab label={`Team Work Done (${allTasks.length})`} icon={<TaskIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label={`Leave Requests (${allLeaves.filter(l => l.status === 'Pending').length})`} icon={<LeaveIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label={`Monthly Self-Evaluations (${evaluations.length})`} icon={<EvalIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label={`Weekly Check-ins (${weeklyReports.length})`} icon={<ReportIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label="Staff Day-Wise Timesheets" icon={<ReportIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label={`Staff Directory (${employees.length})`} icon={<PeopleIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label={`Audit & Communications (${auditLogs.length})`} icon={<AuditIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label={`Holidays & Calendar (${holidays.length})`} icon={<HolidayIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-          </Tabs>
+      {/* Sleek Workspace Context Header (Eliminates Duplicate Module Button Matrix) */}
+      <Card sx={{ mb: 3, borderRadius: '6px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+        <Box sx={{ p: { xs: 2, sm: 2.5 }, bgcolor: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexWrap: 'wrap', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '6px',
+                  bgcolor: 'rgba(19, 56, 41, 0.08)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#133829',
+                  flexShrink: 0
+                }}
+              >
+                {activeTab === 0 && <PeopleIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 1 && <TaskIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 2 && <RegularizeTabIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 3 && <TaskIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 4 && <LeaveIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 5 && <EvalIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 6 && <ReportIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 7 && <ReportIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 8 && <PeopleIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 9 && <AuditIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 10 && <HolidayIcon sx={{ fontSize: 24 }} />}
+              </Box>
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                    Management Suite
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#cbd5e1' }}>•</Typography>
+                  <Typography variant="caption" sx={{ color: '#133829', fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                    {SECTION_META[activeTab]?.category || 'Operations'}
+                  </Typography>
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>
+                  {SECTION_META[activeTab]?.title || 'Admin Workspace'}
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.78rem' }}>
+                  {SECTION_META[activeTab]?.subtitle}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Quick Context Metric & Mobile Switcher */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' }, flexWrap: 'wrap' }}>
+              {/* Contextual Metric Badges */}
+              {activeTab === 0 && (
+                <Chip label={`${counts.present} Present / ${counts.totalStaff} Staff`} size="small" sx={{ fontWeight: 800, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '4px' }} />
+              )}
+              {activeTab === 2 && pendingRegsCount > 0 && (
+                <Chip label={`${pendingRegsCount} Pending Action`} size="small" color="warning" sx={{ fontWeight: 800, borderRadius: '4px' }} />
+              )}
+              {activeTab === 3 && (
+                <Chip label={`${allTasks.length} Logged Tasks`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />
+              )}
+              {activeTab === 4 && (
+                <Chip label={`${pendingLeavesCount} Pending / ${allLeaves.length} Total`} size="small" sx={{ fontWeight: 800, bgcolor: pendingLeavesCount > 0 ? '#fef3c7' : '#f1f5f9', color: pendingLeavesCount > 0 ? '#b45309' : '#475569', borderRadius: '4px' }} />
+              )}
+              {activeTab === 5 && (
+                <Chip label={`${evaluations.length} Evaluations Recorded`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />
+              )}
+              {activeTab === 6 && (
+                <Chip label={`${weeklyReports.length} Weekly Check-ins`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />
+              )}
+              {activeTab === 8 && (
+                <Chip label={`${employees.length} Registered Staff`} size="small" sx={{ fontWeight: 800, bgcolor: '#e0f2fe', color: '#0369a1', borderRadius: '4px' }} />
+              )}
+              {activeTab === 9 && (
+                <Chip label={`${auditLogs.length} Security Audits`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />
+              )}
+              {activeTab === 10 && (
+                <Chip label={`${holidays.length} Company Holidays`} size="small" sx={{ fontWeight: 800, bgcolor: '#f0fdf4', color: '#166534', borderRadius: '4px' }} />
+              )}
+
+              {/* Mobile-Only Section Switcher (hidden on desktop where left sidebar is active) */}
+              <Box sx={{ display: { xs: 'block', md: 'none' }, minWidth: 170 }}>
+                <TextField
+                  select
+                  size="small"
+                  value={activeTab}
+                  onChange={(e) => handleTabSelect(Number(e.target.value))}
+                  sx={{ bgcolor: '#f8fafc', borderRadius: '4px', '& .MuiSelect-select': { py: 0.8, fontSize: '0.8rem', fontWeight: 700 } }}
+                >
+                  {SECTION_META.map((sec, idx) => (
+                    <MenuItem key={idx} value={idx} sx={{ fontSize: '0.82rem', fontWeight: 600 }}>
+                      {sec.title}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Box>
+            </Box>
+          </Box>
         </Box>
 
-        <CardContent sx={{ p: 3 }}>
+        <CardContent id="admin-workspace-content" sx={{ p: 3 }}>
+          {/* Universal Section Search & Filter Toolbar */}
+          {[0, 2, 3, 4, 5, 8, 9, 10].includes(activeTab) && (
+            <Box sx={{ mb: 3, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
+              <Grid container spacing={1.5} alignItems="center">
+                <Grid item xs={12} sm={hasDeptFilter ? (hasStatusFilter || hasWorkModeFilter ? 5 : 7) : (hasStatusFilter ? 7 : 12)} md={hasDeptFilter ? (hasStatusFilter || hasWorkModeFilter ? 6 : 8) : (hasStatusFilter ? 8 : 12)}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder={`Search ${getSearchPlaceholder(activeTab)}...`}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: '#64748b', fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: searchTerm && (
+                        <InputAdornment position="end">
+                          <IconButton size="small" onClick={() => setSearchTerm('')}>
+                            <ClearIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                    sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                  />
+                </Grid>
+
+                {hasDeptFilter && (
+                  <Grid item xs={6} sm={3.5} md={3}>
+                    <TextField
+                      fullWidth
+                      select
+                      size="small"
+                      label="Department"
+                      value={filterDepartment}
+                      onChange={(e) => setFilterDepartment(e.target.value)}
+                      sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                    >
+                      <MenuItem value="ALL">All Departments</MenuItem>
+                      {allDepartments.map(d => (
+                        <MenuItem key={d} value={d}>{d}</MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                )}
+
+                {hasStatusFilter && (
+                  <Grid item xs={6} sm={3.5} md={hasDeptFilter ? 3 : 4}>
+                    <TextField
+                      fullWidth
+                      select
+                      size="small"
+                      label="Status"
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                    >
+                      <MenuItem value="ALL">All Statuses</MenuItem>
+                      {getStatusOptions(activeTab).map(opt => (
+                        <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                )}
+
+                {hasWorkModeFilter && (
+                  <Grid item xs={6} sm={3.5} md={2.5}>
+                    <TextField
+                      fullWidth
+                      select
+                      size="small"
+                      label="Work Mode"
+                      value={filterWorkMode}
+                      onChange={(e) => setFilterWorkMode(e.target.value)}
+                      sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                    >
+                      <MenuItem value="ALL">All Work Modes</MenuItem>
+                      <MenuItem value="office">In-Office</MenuItem>
+                      <MenuItem value="wfh">WFH (Remote)</MenuItem>
+                    </TextField>
+                  </Grid>
+                )}
+
+                {activeTab === 8 && (
+                  <Grid item xs={6} sm={3.5} md={2.5}>
+                    <TextField
+                      fullWidth
+                      select
+                      size="small"
+                      label="Staff Status"
+                      value={filterEmployeeStatus}
+                      onChange={(e) => setFilterEmployeeStatus(e.target.value)}
+                      sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                    >
+                      <MenuItem value="ALL">All Statuses</MenuItem>
+                      <MenuItem value="active">Active Staff</MenuItem>
+                      <MenuItem value="resigned">Resigned Staff</MenuItem>
+                      <MenuItem value="inactive">Inactive Staff</MenuItem>
+                    </TextField>
+                  </Grid>
+                )}
+              </Grid>
+
+              {/* Active Filter Indicator & Reset */}
+              {(searchTerm || filterDepartment !== 'ALL' || filterStatus !== 'ALL' || filterWorkMode !== 'ALL' || filterEmployeeStatus !== 'ALL') && (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5, pt: 1, borderTop: '1px dashed #e2e8f0', flexWrap: 'wrap', gap: 1 }}>
+                  <Typography variant="caption" sx={{ color: '#334155', fontWeight: 600 }}>
+                    Active search & filters applied • <strong>{getActiveItemCount(activeTab)}</strong> records matched
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="text"
+                    color="error"
+                    startIcon={<ClearIcon sx={{ fontSize: 14 }} />}
+                    onClick={() => {
+                      setSearchTerm('');
+                      setFilterDepartment('ALL');
+                      setFilterStatus('ALL');
+                      setFilterWorkMode('ALL');
+                      setFilterEmployeeStatus('ALL');
+                    }}
+                    sx={{ fontSize: 11, fontWeight: 700, py: 0, textTransform: 'none' }}
+                  >
+                    Clear Search & Filters
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
+
           {/* TAB 0: Live Presence Board */}
           {activeTab === 0 && (
             <Box sx={{ overflowX: 'auto' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Employee Name</TableCell>
-                    <TableCell>Department / Designation</TableCell>
-                    <TableCell>Current Live Status</TableCell>
-                    <TableCell>Punch In</TableCell>
-                    <TableCell>Punch Out</TableCell>
-                    <TableCell>Net Working Time</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {board.map((emp) => (
-                    <TableRow key={emp.id} hover>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{emp.name}</Typography>
-                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>{emp.email}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{emp.designation}</Typography>
-                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>{emp.department}</Typography>
-                      </TableCell>
-                      <TableCell>{getStatusChip(emp.statusToday)}</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>{formatTime12h(emp.loginTime)}</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>{formatTime12h(emp.logoutTime)}</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
-                        {emp.netHours ? `${emp.netHours} hrs` : '--'}
-                      </TableCell>
+              {filteredBoard.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 5, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+                  <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    No staff records match the current search or filters.
+                  </Typography>
+                  {(searchTerm || filterDepartment !== 'ALL' || filterStatus !== 'ALL') && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      sx={{ mt: 1.5, fontWeight: 700, borderRadius: '4px' }}
+                      onClick={() => { setSearchTerm(''); setFilterDepartment('ALL'); setFilterStatus('ALL'); }}
+                    >
+                      Reset Filters
+                    </Button>
+                  )}
+                </Box>
+              ) : (
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Employee Name</TableCell>
+                      <TableCell>Department / Designation</TableCell>
+                      <TableCell>Current Live Status</TableCell>
+                      <TableCell>Punch In</TableCell>
+                      <TableCell>Punch Out</TableCell>
+                      <TableCell>Net Working Time</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHead>
+                  <TableBody>
+                    {filteredBoard.map((emp) => (
+                      <TableRow key={emp.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }}>{emp.name}</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>{emp.email}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{emp.designation}</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary' }}>{emp.department}</Typography>
+                        </TableCell>
+                        <TableCell>{getStatusChip(emp.statusToday)}</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{formatTime12h(emp.loginTime)}</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{formatTime12h(emp.logoutTime)}</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
+                          {emp.netHours ? `${emp.netHours} hrs` : '--'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </Box>
           )}
 
@@ -612,9 +1118,9 @@ export default function AdminDashboard({ initialTab = 0 }) {
                 </Button>
               </Box>
 
-              {regularizations.length === 0 ? (
+              {filteredRegularizations.length === 0 ? (
                 <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                  No regularization or edge case requests pending.
+                  No regularization or edge case requests found matching current filters.
                 </Typography>
               ) : (
                 <Table size="small">
@@ -629,7 +1135,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {regularizations.map((r) => (
+                    {filteredRegularizations.map((r) => (
                       <TableRow key={r.id} hover>
                         <TableCell sx={{ fontWeight: 700 }}>{r.employee_name || r.employee_id}</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>{r.date}</TableCell>
@@ -693,9 +1199,9 @@ export default function AdminDashboard({ initialTab = 0 }) {
           {/* TAB 3: Team Work Done */}
           {activeTab === 3 && (
             <Box sx={{ overflowX: 'auto' }}>
-              {allTasks.length === 0 ? (
+              {filteredTasks.length === 0 ? (
                 <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                  No tasks recorded by employees yet.
+                  No tasks or work logs found matching current filters.
                 </Typography>
               ) : (
                 <Table>
@@ -710,7 +1216,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {allTasks.map((t) => (
+                    {filteredTasks.map((t) => (
                       <TableRow key={t.id} hover>
                         <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>{t.date}</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>{t.employee_name || t.employee_id}</TableCell>
@@ -766,11 +1272,11 @@ export default function AdminDashboard({ initialTab = 0 }) {
                 </Tabs>
               </Box>
 
-              {leaveSubTab === 0 ? (
+              {leaveSubTab === 0 && (
                 <Box sx={{ overflowX: 'auto' }}>
-                  {allLeaves.length === 0 ? (
+                  {filteredLeaves.length === 0 ? (
                     <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                      No full-day leave applications submitted.
+                      No full-day leave applications found matching current filters.
                     </Typography>
                   ) : (
                     <Table size="small">
@@ -786,7 +1292,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {allLeaves.map((l) => (
+                        {filteredLeaves.map((l) => (
                           <TableRow key={l.id} hover>
                             <TableCell sx={{ fontWeight: 700 }}>{l.employee_name || l.employee_id}</TableCell>
                             <TableCell><Chip label={l.leave_type} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '4px' }} /></TableCell>
@@ -823,11 +1329,13 @@ export default function AdminDashboard({ initialTab = 0 }) {
                     </Table>
                   )}
                 </Box>
-              ) : (
+              )}
+
+              {leaveSubTab === 1 && (
                 <Box sx={{ overflowX: 'auto' }}>
-                  {allPermissions.length === 0 ? (
+                  {filteredPermissions.length === 0 ? (
                     <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                      No short permission pass requests submitted.
+                      No short permission pass requests found matching current filters.
                     </Typography>
                   ) : (
                     <Table size="small">
@@ -843,7 +1351,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {allPermissions.map((p) => (
+                        {filteredPermissions.map((p) => (
                           <TableRow key={p.id} hover>
                             <TableCell sx={{ fontWeight: 700 }}>{p.employee_name || p.employee_id}</TableCell>
                             <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>{p.date}</TableCell>
@@ -1029,6 +1537,15 @@ export default function AdminDashboard({ initialTab = 0 }) {
                 <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
                   No staff monthly self-evaluations submitted yet.
                 </Typography>
+              ) : filteredEvaluations.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+                  <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    No staff monthly self-evaluations found matching current search.
+                  </Typography>
+                  <Button size="small" variant="outlined" sx={{ mt: 1, fontWeight: 700 }} onClick={() => setSearchTerm('')}>
+                    Clear Search
+                  </Button>
+                </Box>
               ) : (
                 <Table>
                   <TableHead>
@@ -1043,7 +1560,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {evaluations.map((ev) => (
+                    {filteredEvaluations.map((ev) => (
                       <TableRow key={ev.id} hover>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 700 }}>{ev.employee_name}</Typography>
@@ -1051,7 +1568,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>{ev.review_month}</TableCell>
                         <TableCell>
-                          <Chip label={`${ev.overall_rating || '4.5'} / 5.0 ⭐`} size="small" color="primary" sx={{ fontWeight: 800, borderRadius: '4px' }} />
+                          <Chip label={`${ev.overall_rating || '4.5'} / 5.0 Rating`} size="small" color="primary" sx={{ fontWeight: 800, borderRadius: '4px' }} />
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>{ev.targets_tasks?.length || 0} Targets</TableCell>
                         <TableCell sx={{ fontSize: 13 }}>{ev.submission_date}</TableCell>
@@ -1098,24 +1615,37 @@ export default function AdminDashboard({ initialTab = 0 }) {
           {/* TAB 8: Staff Directory */}
           {activeTab === 8 && (
             <Box sx={{ overflowX: 'auto', width: '100%' }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Emp ID</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Role</TableCell>
-                    <TableCell>Work Mode</TableCell>
-                    <TableCell>Department</TableCell>
-                    <TableCell>Designation</TableCell>
-                    <TableCell align="right">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {employees.map((e) => (
-                    <TableRow key={e.id} hover>
+              {filteredEmployees.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 5, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+                  <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    No staff records match the current search or filters.
+                  </Typography>
+                </Box>
+              ) : (
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                      <TableCell sx={{ fontWeight: 700 }}>Emp ID</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Work Mode</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Designation</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredEmployees.map((e) => (
+                    <TableRow key={e.id} hover sx={{ opacity: (e.status === 'resigned' || e.status === 'inactive') ? 0.75 : 1 }}>
                       <TableCell sx={{ fontWeight: 700 }}>{e.id}</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>{e.name}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>
+                        {e.name}
+                        {(e.status === 'resigned' || e.status === 'inactive') && (
+                          <Chip label={e.status?.toUpperCase()} size="small" sx={{ ml: 1, height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#fee2e2', color: '#991b1b', borderRadius: '4px' }} />
+                        )}
+                      </TableCell>
                       <TableCell>{e.email}</TableCell>
                       <TableCell>
                         <Chip
@@ -1125,6 +1655,25 @@ export default function AdminDashboard({ initialTab = 0 }) {
                           variant="outlined"
                           sx={{ fontWeight: 700, borderRadius: '4px' }}
                         />
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip title={e.personal_info?.exit_details?.reason ? `Reason: ${e.personal_info.exit_details.reason} (Effective: ${e.personal_info.exit_details.effective_date || '--'})` : (e.status === 'resigned' ? 'Resigned staff member' : 'Active working status')}>
+                          <Chip
+                            label={e.status === 'resigned' ? 'Resigned' : e.status === 'inactive' ? 'Inactive' : 'Active'}
+                            size="small"
+                            sx={{
+                              fontWeight: 800,
+                              borderRadius: '4px',
+                              bgcolor: e.status === 'resigned' ? '#fef3c7' : e.status === 'inactive' ? '#fee2e2' : '#dcfce7',
+                              color: e.status === 'resigned' ? '#b45309' : e.status === 'inactive' ? '#991b1b' : '#15803d'
+                            }}
+                          />
+                        </Tooltip>
+                        {e.personal_info?.exit_details?.reason && (
+                          <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontSize: 10, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {e.personal_info.exit_details.reason}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -1143,6 +1692,30 @@ export default function AdminDashboard({ initialTab = 0 }) {
                       <TableCell>{e.designation}</TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                          {(e.status === 'resigned' || e.status === 'inactive') ? (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="success"
+                              onClick={() => handleReactivateEmployee(e)}
+                              disabled={actionLoading}
+                              sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                            >
+                              Reactivate
+                            </Button>
+                          ) : e.role !== 'admin' ? (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="error"
+                              onClick={() => handleOpenDeactivate(e)}
+                              disabled={actionLoading}
+                              sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                            >
+                              Mark Resigned
+                            </Button>
+                          ) : null}
+
                           <Button
                             size="small"
                             variant="outlined"
@@ -1209,8 +1782,9 @@ export default function AdminDashboard({ initialTab = 0 }) {
                   ))}
                 </TableBody>
               </Table>
-            </Box>
-          )}
+            )}
+          </Box>
+        )}
 
           {/* TAB 9: Audit & Communications Trail */}
           {activeTab === 9 && (
@@ -1224,9 +1798,9 @@ export default function AdminDashboard({ initialTab = 0 }) {
                 </Typography>
               </Box>
 
-              {auditLogs.length === 0 ? (
+              {filteredAuditLogs.length === 0 ? (
                 <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                  No communication logs recorded yet.
+                  No communication or audit logs found matching current search.
                 </Typography>
               ) : (
                 <Table size="small">
@@ -1240,7 +1814,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {auditLogs.map((l) => (
+                    {filteredAuditLogs.map((l) => (
                       <TableRow key={l.id} hover>
                         <TableCell sx={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>
                           {l.created_at ? format(new Date(l.created_at), 'dd MMM yyyy, hh:mm a') : '--'}
@@ -1367,8 +1941,8 @@ export default function AdminDashboard({ initialTab = 0 }) {
               </Alert>
 
               {/* Holidays Table */}
-              {holidays.length === 0 ? (
-                <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>No custom holidays or Sunday overrides defined yet. Add one above.</Typography>
+              {filteredHolidays.length === 0 ? (
+                <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>No custom holidays or Sunday overrides found matching current search.</Typography>
               ) : (
                 <Box sx={{ overflowX: 'auto', width: '100%' }}>
                   <Table size="small">
@@ -1382,7 +1956,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {holidays.map(h => {
+                      {filteredHolidays.map(h => {
                         const isWorking = h.type === 'Working Sunday' || h.name?.toLowerCase().includes('working');
                         return (
                           <TableRow key={h.id || h.date} hover>
@@ -1442,7 +2016,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
           <DialogTitle sx={{ fontWeight: 700 }}>Register New Staff Member</DialogTitle>
           <DialogContent dividers>
             <Alert severity="info" sx={{ mb: 2, borderRadius: '4px', fontWeight: 600 }}>
-              <strong>OTP Login Secured</strong>: New employees will authenticate directly using Email OTP. No initial passwords required.
+              <strong>Automated Onboarding & OTP Login</strong>: An official onboarding invitation email with Employee ID and login instructions will be sent automatically to the employee.
             </Alert>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
@@ -2133,6 +2707,91 @@ export default function AdminDashboard({ initialTab = 0 }) {
             Close Audit Viewer
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Staff Resignation & Soft Delete Modal */}
+      <Dialog open={openDeactivateModal} onClose={() => !deactivateLoading && setOpenDeactivateModal(false)} maxWidth="sm" fullWidth>
+        <form onSubmit={handleConfirmDeactivate}>
+          <DialogTitle sx={{ fontWeight: 800, color: '#991b1b', borderBottom: '1px solid #fee2e2', bgcolor: '#fff5f5' }}>
+            Staff Resignation & Account Deactivation
+          </DialogTitle>
+          <DialogContent dividers sx={{ p: 3 }}>
+            <Alert severity="warning" sx={{ mb: 2.5, borderRadius: '4px' }}>
+              <strong>Notice:</strong> Marking this employee as <strong>Resigned</strong> or <strong>Inactive</strong> softly deactivates their portal access, archives their pending requests, and removes them from the active daily attendance headcount. All past timesheet records and audit logs are permanently retained.
+            </Alert>
+
+            {deactivateTarget && (
+              <Box sx={{ p: 2, mb: 2.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, textTransform: 'uppercase', display: 'block' }}>Target Employee</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  {deactivateTarget.name} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>({deactivateTarget.id})</span>
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#475569', fontSize: 13 }}>
+                  {deactivateTarget.designation} • {deactivateTarget.department} • {deactivateTarget.email}
+                </Typography>
+              </Box>
+            )}
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  select
+                  size="small"
+                  label="Status Action"
+                  value={deactivateForm.status}
+                  onChange={(e) => setDeactivateForm({ ...deactivateForm, status: e.target.value })}
+                >
+                  <MenuItem value="resigned">Resigned (Official Exit)</MenuItem>
+                  <MenuItem value="inactive">Inactive (Deactivated)</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="date"
+                  label="Effective Exit Date"
+                  InputLabelProps={{ shrink: true }}
+                  required
+                  value={deactivateForm.effective_date}
+                  onChange={(e) => setDeactivateForm({ ...deactivateForm, effective_date: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label="Resignation Reason / Exit Remarks"
+                  placeholder="e.g. Relieved on mutual agreement, career relocation, personal reasons..."
+                  required
+                  value={deactivateForm.reason}
+                  onChange={(e) => setDeactivateForm({ ...deactivateForm, reason: e.target.value })}
+                  helperText="Required for company compliance and permanent audit records."
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ p: 2, borderTop: '1px solid #e2e8f0' }}>
+            <Button
+              onClick={() => setOpenDeactivateModal(false)}
+              disabled={deactivateLoading}
+              sx={{ fontWeight: 700, borderRadius: '4px' }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="error"
+              disabled={deactivateLoading}
+              sx={{ fontWeight: 800, borderRadius: '4px', px: 2.5 }}
+            >
+              {deactivateLoading ? 'Processing...' : 'Confirm Resignation & Deactivate'}
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </Container>
   );

@@ -149,18 +149,19 @@ export default function TopNavbar({
     >
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1.5, sm: 2.5, md: 3 }, minHeight: 64, height: 64 }}>
         {/* Left: Sidebar Toggle Button (Desktop + Mobile) & Period Tag */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.25, md: 1 } }}>
           {/* Mobile Drawer Button */}
           <IconButton
             color="inherit"
             edge="start"
             onClick={onMobileDrawerToggle}
-            sx={{ display: { md: 'none' }, mr: 0.5 }}
+            sx={{ display: { md: 'none' }, p: 1, mr: 0 }}
+            aria-label="Open navigation menu"
           >
             <MenuIcon />
           </IconButton>
 
-          {/* Mobile Brand Logo & Active Section Tag (Clickable to Dashboard) */}
+          {/* Mobile Brand Logo Only (Clickable to Dashboard) */}
           <Box
             onClick={() => {
               if (onSelectView) onSelectView('dashboard');
@@ -169,57 +170,26 @@ export default function TopNavbar({
             sx={{
               display: { xs: 'flex', md: 'none' },
               alignItems: 'center',
-              gap: 0.6,
               cursor: 'pointer',
-              py: 0.3,
-              px: 0.6,
+              p: 0.5,
               borderRadius: '4px',
               transition: 'all 0.15s ease',
               '&:hover': { bgcolor: '#f1f5f9' },
-              '&:active': { transform: 'scale(0.97)' }
+              '&:active': { transform: 'scale(0.95)' }
             }}
           >
             <Box
               component="img"
               src="/logo.png"
-              alt="SST"
+              alt="Logo"
               sx={{
-                width: 20,
-                height: 20,
+                width: 26,
+                height: 26,
                 objectFit: 'contain',
-                borderRadius: '3px',
+                borderRadius: '4px',
                 flexShrink: 0
               }}
             />
-            <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 800,
-                  lineHeight: 1.1,
-                  letterSpacing: '0.02em',
-                  color: '#0f172a',
-                  fontSize: '0.72rem',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                SST
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: '#133829',
-                  fontWeight: 800,
-                  letterSpacing: '0.04em',
-                  fontSize: '0.62rem',
-                  whiteSpace: 'nowrap',
-                  display: 'block',
-                  lineHeight: 1
-                }}
-              >
-                {activeView === 'dashboard' ? 'OVERVIEW' : activeView.toUpperCase().replace('-', ' ')}
-              </Typography>
-            </Box>
           </Box>
 
           {/* Desktop Sidebar Collapse / Expand Toggle Button */}

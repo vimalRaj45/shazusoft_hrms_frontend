@@ -450,8 +450,8 @@ export default function MonthlySelfEvaluationModal({ open = false, onClose, user
               </Box>
 
               <Chip
-                icon={<StarIcon />}
-                label={`Overall Rating: ${overallAverage} / 5.0 ⭐`}
+                icon={<StarIcon sx={{ color: '#fbbf24 !important' }} />}
+                label={`Overall Rating: ${overallAverage} / 5.0`}
                 color="primary"
                 sx={{ fontWeight: 800, fontSize: 13, py: 2 }}
               />

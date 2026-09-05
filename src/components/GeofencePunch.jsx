@@ -19,7 +19,8 @@ import {
   Cancel as CancelIcon,
   Refresh as RefreshIcon,
   HelpOutline as RegularizeIcon,
-  WorkOutline as WorkIcon
+  WorkOutline as WorkIcon,
+  Event as EventIcon
 } from '@mui/icons-material';
 import confetti from 'canvas-confetti';
 import toast from '../utils/muiToast';
@@ -27,6 +28,7 @@ import { attendanceAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AttendanceRegularizationModal from './AttendanceRegularizationModal';
 import { formatTime12h } from '../utils/timeUtils';
+import { format } from 'date-fns';
 
 export default function GeofencePunch({ todayData, onRefresh }) {
   const { user } = useAuth();
@@ -38,17 +40,20 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   const [actionLoading, setActionLoading] = useState(false);
   const [openRegularizeModal, setOpenRegularizeModal] = useState(false);
   const [todayHoliday, setTodayHoliday] = useState(null); // null = not a holiday, object = holiday info
-  const [isTodaySunday] = useState(() => new Date().getDay() === 0);
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const isTodaySunday = new Date().getDay() === 0;
 
   // Fetch holidays to check if today is a holiday or a Working Sunday
   useEffect(() => {
-    const todayStr = new Date().toISOString().slice(0, 10);
     attendanceAPI.getHolidays().then(res => {
       const holidays = res?.data?.holidays || [];
-      const match = holidays.find(h => h.date === todayStr);
-      if (match) setTodayHoliday(match);
+      const match = holidays.find(h => {
+        if (!h.date) return false;
+        return h.date.toString().trim().slice(0, 10) === todayStr;
+      });
+      setTodayHoliday(match || null);
     }).catch(() => {}); // silently ignore
-  }, []);
+  }, [todayStr, todayData]);
 
   const captureLocation = () => {
     if (isWfh) {
@@ -164,11 +169,18 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   // Determine if today is a configured Working Sunday override
   const isWorkingSunday = isTodaySunday && todayHoliday && (
     todayHoliday.type === 'Working Sunday' ||
+    todayHoliday.type?.toLowerCase().includes('working') ||
     todayHoliday.name?.toLowerCase().includes('working')
   );
 
+  const isHolidayNonWorking = todayHoliday && !isWorkingSunday && (
+    todayHoliday.type !== 'Working Sunday' &&
+    !todayHoliday.type?.toLowerCase().includes('working') &&
+    !todayHoliday.name?.toLowerCase().includes('working')
+  );
+
   // ── Non-working day banner (Shown only if it is a non-working Sunday or non-working holiday) ──
-  if ((isTodaySunday && !isWorkingSunday) || (todayHoliday && !isWorkingSunday && todayHoliday.type !== 'Working Sunday')) {
+  if ((isTodaySunday && !isWorkingSunday) || isHolidayNonWorking) {
     const label = isTodaySunday ? 'Sunday' : todayHoliday?.name || 'Holiday';
     const subtitle = isTodaySunday
       ? 'Today is Sunday — official non-working day.'
