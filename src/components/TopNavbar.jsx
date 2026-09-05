@@ -169,9 +169,10 @@ export default function TopNavbar({
             sx={{
               display: { xs: 'flex', md: 'none' },
               alignItems: 'center',
-              gap: 0.8,
+              gap: 0.6,
               cursor: 'pointer',
-              p: 0.5,
+              py: 0.3,
+              px: 0.6,
               borderRadius: '4px',
               transition: 'all 0.15s ease',
               '&:hover': { bgcolor: '#f1f5f9' },
@@ -181,12 +182,12 @@ export default function TopNavbar({
             <Box
               component="img"
               src="/logo.png"
-              alt="Shazu Soft Logo"
+              alt="SST"
               sx={{
-                width: 28,
-                height: 28,
+                width: 20,
+                height: 20,
                 objectFit: 'contain',
-                borderRadius: '4px',
+                borderRadius: '3px',
                 flexShrink: 0
               }}
             />
@@ -196,13 +197,13 @@ export default function TopNavbar({
                 sx={{
                   fontWeight: 800,
                   lineHeight: 1.1,
-                  letterSpacing: '-0.02em',
+                  letterSpacing: '0.02em',
                   color: '#0f172a',
-                  fontSize: '0.82rem',
+                  fontSize: '0.72rem',
                   whiteSpace: 'nowrap'
                 }}
               >
-                SHAZU SOFT
+                SST
               </Typography>
               <Typography
                 variant="caption"
@@ -210,9 +211,10 @@ export default function TopNavbar({
                   color: '#133829',
                   fontWeight: 800,
                   letterSpacing: '0.04em',
-                  fontSize: 9,
+                  fontSize: '0.62rem',
                   whiteSpace: 'nowrap',
-                  display: 'block'
+                  display: 'block',
+                  lineHeight: 1
                 }}
               >
                 {activeView === 'dashboard' ? 'OVERVIEW' : activeView.toUpperCase().replace('-', ' ')}
