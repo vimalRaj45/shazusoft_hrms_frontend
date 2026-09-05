@@ -314,10 +314,10 @@ export default function AdminDashboard({ initialTab = 0 }) {
       setEmpForm({
         name: '',
         email: '',
-        password: 'password123',
         role: 'employee',
         department: 'Software Engineering',
-        designation: 'Software Developer'
+        designation: 'Software Developer',
+        work_mode: 'office'
       });
       fetchDashboardData();
     } catch (err) {
