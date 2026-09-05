@@ -140,5 +140,15 @@ export const uploadsAPI = {
   deleteFile: (key) => api.delete(`/uploads/file/${key}`)
 };
 
+export const notificationsAPI = {
+  getVapidKey: () => api.get('/notifications/vapid-public-key'),
+  subscribe: (data) => api.post('/notifications/subscribe', data),
+  unsubscribe: (data) => api.post('/notifications/unsubscribe', data),
+  sendTest: () => api.post('/notifications/send-test'),
+  broadcast: (data) => api.post('/notifications/broadcast', data),
+  getStatus: () => api.get('/notifications/status')
+};
+
 export default api;
+
 

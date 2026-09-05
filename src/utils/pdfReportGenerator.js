@@ -410,8 +410,10 @@ export async function generateCorporatePDFReport(reportData) {
   doc.save(filename);
 }
 
-// Alias for executive timesheet PDF generation
-export const generateExecutivePDFReport = generateCorporatePDFReport;
+// Named export for executive timesheet PDF generation (delegates to generateCorporatePDFReport)
+export async function generateExecutivePDFReport(reportData) {
+  return generateCorporatePDFReport(reportData);
+}
 
 /**
  * Generates an executive corporate monochrome Appraisal PDF document
