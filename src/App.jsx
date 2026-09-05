@@ -316,7 +316,7 @@ function AppContent() {
             component="main"
             sx={{
               flexGrow: 1,
-              pt: { xs: '76px', md: 3 },
+              pt: { xs: '76px', md: '84px' },
               px: { xs: 2, sm: 2.5, md: 3 },
               pb: { xs: 2, sm: 2.5, md: 3 },
               maxWidth: '100%',

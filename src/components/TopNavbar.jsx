@@ -96,7 +96,7 @@ export default function TopNavbar({
         const result = await subscribeToPushNotifications();
         if (result.success) {
           setPushSubscribed(true);
-          toast.success('🔔 Push notifications enabled! You will now receive alerts.');
+          toast.success('Push notifications enabled! You will now receive alerts.');
         } else {
           toast.error(result.error || 'Failed to enable push notifications.');
         }
@@ -136,13 +136,15 @@ export default function TopNavbar({
       elevation={0}
       sx={{
         top: 0,
-        position: { xs: 'fixed', md: 'sticky' },
-        width: { xs: '100%', md: '100%' },
+        position: 'fixed',
+        left: { xs: 0, md: isSidebarCollapsed ? '72px' : '260px' },
+        width: { xs: '100%', md: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 260px)' },
         backgroundColor: '#ffffff',
         borderBottom: '1px solid #e5e7eb',
         color: '#0f172a',
         zIndex: 1100,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        transition: 'left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1.5, sm: 2.5, md: 3 }, minHeight: 64, height: 64 }}>
@@ -379,8 +381,8 @@ export default function TopNavbar({
               <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: 13 }}>
                 Push Notifications
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontSize: 11 }}>
-                {pushSubscribed ? '✅ Active on this device' : '⭕ Disabled on this device'}
+              <Typography variant="caption" sx={{ color: pushSubscribed ? '#059669' : '#64748b', fontWeight: 600, fontSize: 11 }}>
+                {pushSubscribed ? 'Active on this device' : 'Disabled on this device'}
               </Typography>
             </Box>
             <Divider />

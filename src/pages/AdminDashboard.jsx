@@ -1128,7 +1128,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={e.work_mode === 'wfh' ? '🏠 WFH (Remote)' : '🏢 In-Office'}
+                          label={e.work_mode === 'wfh' ? 'WFH (Remote)' : 'In-Office'}
                           size="small"
                           color={e.work_mode === 'wfh' ? 'secondary' : 'default'}
                           sx={{
@@ -1337,7 +1337,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                 >
                   <MenuItem value="Public Holiday">Public Holiday (Off)</MenuItem>
                   <MenuItem value="Company Off-Day">Company Off-Day (Off)</MenuItem>
-                  <MenuItem value="Working Sunday">💼 Working Sunday (Shift Open)</MenuItem>
+                  <MenuItem value="Working Sunday">Working Sunday (Shift Open)</MenuItem>
                   <MenuItem value="Restricted Holiday">Restricted Holiday</MenuItem>
                 </TextField>
                 <Button
@@ -1363,7 +1363,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
 
               {/* Sunday info chip */}
               <Alert severity="info" sx={{ mb: 2, borderRadius: '4px', fontWeight: 600 }}>
-                📅 <strong>Sundays</strong> are non-working by default. To make a specific Sunday an official working day, select <strong>"Working Sunday (Shift Open)"</strong> above.
+                <strong>Sundays</strong> are non-working by default. To make a specific Sunday an official working day, select <strong>"Working Sunday (Shift Open)"</strong> above.
               </Alert>
 
               {/* Holidays Table */}
@@ -1442,7 +1442,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
           <DialogTitle sx={{ fontWeight: 700 }}>Register New Staff Member</DialogTitle>
           <DialogContent dividers>
             <Alert severity="info" sx={{ mb: 2, borderRadius: '4px', fontWeight: 600 }}>
-              🔐 <strong>OTP Login Secured</strong>: New employees will authenticate directly using Email OTP. No initial passwords required.
+              <strong>OTP Login Secured</strong>: New employees will authenticate directly using Email OTP. No initial passwords required.
             </Alert>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
@@ -1459,8 +1459,8 @@ export default function AdminDashboard({ initialTab = 0 }) {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField fullWidth select label="Attendance & Work Mode" value={empForm.work_mode || 'office'} onChange={(e) => setEmpForm({ ...empForm, work_mode: e.target.value })}>
-                  <MenuItem value="office">🏢 In-Office (GPS Perimeter Required)</MenuItem>
-                  <MenuItem value="wfh">🏠 Work From Home (WFH - GPS Bypassed)</MenuItem>
+                  <MenuItem value="office">In-Office (GPS Perimeter Required)</MenuItem>
+                  <MenuItem value="wfh">Work From Home (WFH - GPS Bypassed)</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -1537,7 +1537,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
           <DialogContent dividers>
             <Box sx={{ mb: 2, p: 1.5, bgcolor: '#fef3c7', border: '1px solid #fde68a', borderRadius: '4px' }}>
               <Typography variant="caption" sx={{ color: '#92400e', fontWeight: 600, display: 'block' }}>
-                ⚠️ This administrative action directly records or updates employee attendance in company records. A mandatory audit reason is required.
+                This administrative action directly records or updates employee attendance in company records. A mandatory audit reason is required.
               </Typography>
             </Box>
 
@@ -1919,7 +1919,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
               }}>
                 <Box>
                   <Typography variant="subtitle2" sx={{ fontWeight: 800, color: selectedComplianceEmp.documents_frozen ? '#991b1b' : '#166534' }}>
-                    {selectedComplianceEmp.documents_frozen ? '🔒 Document Modification Locked by Admin' : '🔓 Document Records Open for Staff Update'}
+                    {selectedComplianceEmp.documents_frozen ? 'Document Modification Locked by Admin' : 'Document Records Open for Staff Update'}
                   </Typography>
                   <Typography variant="caption" sx={{ color: selectedComplianceEmp.documents_frozen ? '#b91c1c' : '#15803d', display: 'block', mt: 0.3 }}>
                     {selectedComplianceEmp.documents_frozen

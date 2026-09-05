@@ -668,7 +668,7 @@ export default function UserProfile() {
               '&:hover': { bgcolor: (!isAdmin && profileData.documents_frozen) ? '#94a3b8' : '#0f291e' }
             }}
           >
-            {saving ? 'Saving Profile...' : (!isAdmin && profileData.documents_frozen) ? '🔒 Records Locked by Admin' : 'Save Profile Changes'}
+            {saving ? 'Saving Profile...' : (!isAdmin && profileData.documents_frozen) ? 'Records Locked by Admin' : 'Save Profile Changes'}
           </Button>
 
           {/* Admin Freeze / Lock Toggle Button */}

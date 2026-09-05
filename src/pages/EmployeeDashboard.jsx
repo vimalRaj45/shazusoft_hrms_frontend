@@ -112,7 +112,7 @@ export default function EmployeeDashboard() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary' }}>
-            Welcome back, {user?.name?.split(' ')[0]} 👋
+            Welcome back, {user?.name?.split(' ')[0]}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, color: 'text.secondary' }}>
             <CalendarIcon fontSize="small" />

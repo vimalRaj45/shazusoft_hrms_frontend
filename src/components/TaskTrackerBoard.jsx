@@ -604,10 +604,10 @@ export default function TaskTrackerBoard() {
                   value={assignForm.priority}
                   onChange={(e) => setAssignForm({ ...assignForm, priority: e.target.value })}
                 >
-                  <MenuItem value="Urgent">Urgent (P0) 🔴</MenuItem>
-                  <MenuItem value="High">High (P1) 🟠</MenuItem>
-                  <MenuItem value="Medium">Medium (P2) 🟡</MenuItem>
-                  <MenuItem value="Low">Low (P3) 🟢</MenuItem>
+                  <MenuItem value="Urgent">Urgent (P0)</MenuItem>
+                  <MenuItem value="High">High (P1)</MenuItem>
+                  <MenuItem value="Medium">Medium (P2)</MenuItem>
+                  <MenuItem value="Low">Low (P3)</MenuItem>
                 </TextField>
               </Grid>
 

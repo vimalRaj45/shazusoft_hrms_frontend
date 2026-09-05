@@ -713,7 +713,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                           <TableCell>
                             {day.holiday_name ? (
                               <Typography variant="caption" sx={{ color: '#7e22ce', fontWeight: 700 }}>
-                                🎉 {day.holiday_name} ({day.holiday_type || 'Public Holiday'})
+                                {day.holiday_name} ({day.holiday_type || 'Public Holiday'})
                               </Typography>
                             ) : day.leave_reason ? (
                               <Typography variant="caption" sx={{ color: '#0369a1', fontWeight: 600 }}>

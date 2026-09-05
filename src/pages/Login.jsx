@@ -396,14 +396,14 @@ export default function Login() {
                   >
                     <Box>
                       <Typography variant="caption" sx={{ color: '#1e40af', fontWeight: 800, display: 'block', fontSize: 10, letterSpacing: '0.04em' }}>
-                        🧪 DEV TESTING OTP CODE:
+                        DEV TESTING OTP CODE:
                       </Typography>
                       <Typography variant="h6" sx={{ color: '#1d4ed8', fontWeight: 900, letterSpacing: '3px', fontFamily: 'monospace', lineHeight: 1.2 }}>
                         {devOtp}
                       </Typography>
                     </Box>
                     <Chip
-                      label="Auto-Filled ✓"
+                      label="Auto-Filled"
                       size="small"
                       color="primary"
                       sx={{ fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 10 }}
