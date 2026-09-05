@@ -44,6 +44,22 @@ import { useAuth } from '../context/AuthContext';
 import toast, { muiToast } from '../utils/muiToast';
 import { format } from 'date-fns';
 
+/**
+ * Resolves a stored file URL to an absolute backend URL.
+ * Relative /api/uploads/file/... URLs are converted to absolute so the browser
+ * fetches them directly from the backend (bypassing React Router in production).
+ */
+const BACKEND_BASE = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
+  : (window.location.origin === 'http://localhost:3000' ? 'http://localhost:5000' : window.location.origin);
+
+function resolveFileUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http')) return url; // already absolute (R2 public URL)
+  // Relative /api/uploads/file/... → absolute backend URL
+  return `${BACKEND_BASE}${url.startsWith('/') ? url : '/' + url}`;
+}
+
 const REQUIRED_DOCUMENTS = [
   { key: 'govt_id', label: 'Government ID (Aadhaar / Passport / Voter ID)', required: true },
   { key: 'pan_card', label: 'PAN Card Copy', required: true },
@@ -1072,11 +1088,11 @@ export default function UserProfile() {
                                     <IconButton
                                       size="small"
                                       component="a"
-                                      href={uploaded.url}
+                                      href={resolveFileUrl(uploaded.url)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       sx={{ p: 0.5, color: '#133829' }}
-                                      title="View Document in Cloudflare R2"
+                                      title="View Document"
                                     >
                                       <ViewIcon fontSize="small" />
                                     </IconButton>

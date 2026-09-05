@@ -1894,7 +1894,7 @@ export default function AdminDashboard({ initialTab = 0 }) {
                                 size="small"
                                 variant="contained"
                                 component="a"
-                                href={doc.url}
+                                href={doc.url.startsWith('http') ? doc.url : `${(import.meta.env.VITE_API_URL || '/api').replace(/\/api$/, '')}${doc.url.startsWith('/') ? doc.url : '/' + doc.url}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 startIcon={<ViewIcon sx={{ fontSize: 14 }} />}
