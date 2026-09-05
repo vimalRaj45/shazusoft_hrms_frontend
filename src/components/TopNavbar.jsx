@@ -354,7 +354,11 @@ export default function TopNavbar({
             }}
           >
             <Avatar
-              src={user?.avatar_url || ''}
+              src={user?.avatar_url
+                ? user.avatar_url.startsWith('http')
+                  ? user.avatar_url
+                  : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar_url}`
+                : ''}
               alt={user?.name || 'User Profile'}
               sx={{
                 width: 38,
@@ -393,7 +397,11 @@ export default function TopNavbar({
             <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #f1f5f9' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                 <Avatar
-                  src={user?.avatar_url || ''}
+                  src={user?.avatar_url
+                    ? user.avatar_url.startsWith('http')
+                      ? user.avatar_url
+                      : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar_url}`
+                    : ''}
                   sx={{ width: 42, height: 42, borderRadius: '50%', bgcolor: '#0f172a', color: '#fff', fontWeight: 800 }}
                 >
                   {user?.name?.charAt(0) || 'U'}

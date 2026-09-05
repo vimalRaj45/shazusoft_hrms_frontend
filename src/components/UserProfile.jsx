@@ -310,18 +310,21 @@ export default function UserProfile() {
       }
 
       const r2Url = uploadRes.data.url;
+      // Add cache-busting timestamp so browser always loads the fresh image
+      const r2UrlWithBust = `${r2Url}?t=${Date.now()}`;
+
       setProfileData(prev => ({
         ...prev,
-        avatar_url: r2Url
+        avatar_url: r2UrlWithBust
       }));
 
-      // Auto-save avatar link to profile
+      // Auto-save avatar link to profile (store clean URL without cache bust param)
       await authAPI.updateProfile({
         avatar_url: r2Url
       });
 
       if (updateUser) {
-        updateUser({ avatar_url: r2Url });
+        updateUser({ avatar_url: r2UrlWithBust });
       }
 
       toast.success('Profile avatar optimized & uploaded to Cloudflare R2 storage.');
@@ -534,7 +537,11 @@ export default function UserProfile() {
           {/* Avatar with Camera Overlay */}
           <Box sx={{ position: 'relative' }}>
             <Avatar
-              src={profileData.avatar_url || ''}
+              src={profileData.avatar_url
+                ? profileData.avatar_url.startsWith('http')
+                  ? profileData.avatar_url
+                  : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${profileData.avatar_url}`
+                : ''}
               alt={profileData.name}
               sx={{
                 width: { xs: 74, sm: 88 },
