@@ -120,7 +120,7 @@ export function TableRowsSkeleton({ rows = 4, cols = 6 }) {
 }
 
 /**
- * Geofence & Break Tracker Skeleton
+ * Geofence Attendance Skeleton
  */
 export function GeofenceSkeleton() {
   return (

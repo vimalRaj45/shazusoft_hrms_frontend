@@ -112,6 +112,7 @@ export const adminAPI = {
   createEmployee: (data) => api.post('/admin/employees', data),
   updateEmployee: (id, data) => api.put(`/admin/employees/${id}`, data),
   updateWorkMode: (id, work_mode) => api.patch(`/admin/employees/${id}/work-mode`, { work_mode }),
+  freezeDocuments: (id, data) => api.post(`/admin/employees/${id}/freeze-documents`, data),
   getSettings: () => api.get('/admin/settings'),
   // Geofence is read-only (ENV only) — no updateGeofence
   getHolidays: () => api.get('/admin/holidays'),

@@ -185,7 +185,7 @@ export default function EmployeeDashboard() {
               }}
               sx={{ fontWeight: 700 }}
             >
-              View / Print Submitted Evaluation
+              View & Export Submitted Appraisal (PDF)
             </Button>
           </CardContent>
         </Card>
@@ -220,7 +220,6 @@ export default function EmployeeDashboard() {
                   <TableCell>Login Time</TableCell>
                   <TableCell>Logout Time</TableCell>
                   <TableCell>Total Hours</TableCell>
-                  <TableCell>Break Hours</TableCell>
                   <TableCell>Net Working Hours</TableCell>
                   <TableCell>Status</TableCell>
                 </TableRow>
@@ -232,7 +231,6 @@ export default function EmployeeDashboard() {
                     <TableCell>{r.login_time || '--'}</TableCell>
                     <TableCell>{r.logout_time || 'Active / Not punched out'}</TableCell>
                     <TableCell>{r.total_hours || '0'}h</TableCell>
-                    <TableCell>{r.break_hours || '0'}h</TableCell>
                     <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>{r.net_hours || '0'}h</TableCell>
                     <TableCell>
                       <Chip

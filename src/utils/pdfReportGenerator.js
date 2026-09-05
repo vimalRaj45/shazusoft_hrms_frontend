@@ -182,7 +182,6 @@ export async function generateCorporatePDFReport(reportData) {
         'Present (On-Time)',
         'Late Entries',
         'Gross Hours',
-        'Total Break Time',
         'Net Work Hours',
         'Daily Avg Net',
         'Tasks Logged',
@@ -201,7 +200,6 @@ export async function generateCorporatePDFReport(reportData) {
         String(summaryMetrics.presentDays || 0),
         String(summaryMetrics.lateDays || 0),
         `${parseFloat(summaryMetrics.totalHoursGross || 0).toFixed(1)} hrs`,
-        `${parseFloat(summaryMetrics.totalBreakHours || 0).toFixed(1)} hrs`,
         `${parseFloat(summaryMetrics.totalNetHours || 0).toFixed(1)} hrs`,
         `${parseFloat(summaryMetrics.avgDailyNetHours || 0).toFixed(1)} hrs/day`,
         String(summaryMetrics.totalTasks || 0),
@@ -237,7 +235,6 @@ export async function generateCorporatePDFReport(reportData) {
       dayName,
       day.loginTime || '—',
       day.logoutTime || '—',
-      day.breakHours ? `${parseFloat(day.breakHours).toFixed(1)} hrs` : '0.0 hrs',
       day.netHours ? `${parseFloat(day.netHours).toFixed(1)} hrs` : '0.0 hrs',
       (day.workMode || 'Office').toUpperCase(),
       day.attendanceStatus || 'Absent'
@@ -256,7 +253,7 @@ export async function generateCorporatePDFReport(reportData) {
       lineWidth: 0.15
     },
     head: [
-      ['Date', 'Day', 'Punch In', 'Punch Out', 'Breaks', 'Net Hours', 'Mode', 'Attendance Status']
+      ['Date', 'Day', 'Punch In', 'Punch Out', 'Net Hours', 'Mode', 'Attendance Status']
     ],
     headStyles: {
       fillColor: [15, 23, 42],
@@ -274,10 +271,9 @@ export async function generateCorporatePDFReport(reportData) {
       3: { cellWidth: 22 },
       4: { cellWidth: 20 },
       5: { cellWidth: 22, fontStyle: 'bold' },
-      6: { cellWidth: 20 },
-      7: { cellWidth: 'auto', fontStyle: 'bold' }
+      6: { cellWidth: 'auto', fontStyle: 'bold' }
     },
-    body: timesheetRows.length > 0 ? timesheetRows : [['No attendance records logged for this period', '', '', '', '', '', '', '']]
+    body: timesheetRows.length > 0 ? timesheetRows : [['No attendance records logged for this period', '', '', '', '', '', '']]
   });
 
   currentY = doc.lastAutoTable.finalY + 6;
@@ -353,6 +349,8 @@ export async function generateCorporatePDFReport(reportData) {
   currentY += splitDeclaration.length * 3.5 + 4;
 
   // Signature lines table
+  const generatedDateStr = format(new Date(), 'yyyy-MM-dd');
+
   autoTable(doc, {
     startY: currentY,
     margin: { left: margin, right: margin },
@@ -367,11 +365,11 @@ export async function generateCorporatePDFReport(reportData) {
     body: [
       [
         {
-          content: `\n\n_____________________________________\nEMPLOYEE SIGNATURE\nName: ${employee.name || 'Staff'}\nDate: ________________________`,
+          content: `\n\n_____________________________________\nEMPLOYEE SIGNATURE\nName: ${employee.name || 'Staff'}\nDate: ${generatedDateStr}`,
           styles: { width: contentWidth / 2 - 2, fontStyle: 'bold' }
         },
         {
-          content: `\n\n_____________________________________\nAUTHORIZED MANAGEMENT SIGNATORY\nFor: SHAZU SOFT HR & OPERATIONS\nDate: ________________________`,
+          content: `\n\n_____________________________________\nAUTHORIZED MANAGEMENT SIGNATORY\nFor: SHAZU SOFT HR & OPERATIONS\nDate: ${generatedDateStr}`,
           styles: { width: contentWidth / 2 - 2, fontStyle: 'bold' }
         }
       ]
@@ -409,5 +407,209 @@ export async function generateCorporatePDFReport(reportData) {
 
   // Save / Download PDF file
   const filename = `SHAZU_HRMS_Report_${(employee.id || 'EMP').replace(/\s+/g, '_')}_${monthYear}.pdf`;
+  doc.save(filename);
+}
+
+// Alias for executive timesheet PDF generation
+export const generateExecutivePDFReport = generateCorporatePDFReport;
+
+/**
+ * Generates an executive corporate monochrome Appraisal PDF document
+ */
+export async function generateAppraisalPDFReport(evaluation) {
+  if (!evaluation) return;
+
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 14;
+  const contentWidth = pageWidth - margin * 2;
+
+  let currentY = margin;
+
+  // Header Banner
+  doc.setFillColor(15, 23, 42);
+  doc.rect(margin, currentY, contentWidth, 18, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.text('SHAZU SOFT TECHNOLOGIES — PERFORMANCE APPRAISAL', margin + 4, currentY + 7);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(203, 213, 225);
+  doc.text(`Period: ${evaluation.review_period || 'Monthly Appraisal'} | Month: ${evaluation.review_month || 'August 2026'}`, margin + 4, currentY + 13);
+
+  currentY += 23;
+
+  // 1. Employee Details Table
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: margin, right: margin },
+    theme: 'plain',
+    styles: { fontSize: 7.5, cellPadding: 2, textColor: [30, 41, 59] },
+    body: [
+      [
+        { content: 'Employee Name:', styles: { fontStyle: 'bold', width: 30 } },
+        { content: evaluation.employee_name || '—', styles: { width: 55 } },
+        { content: 'Employee ID:', styles: { fontStyle: 'bold', width: 30 } },
+        { content: evaluation.employee_id || '—', styles: { width: 55 } }
+      ],
+      [
+        { content: 'Designation:', styles: { fontStyle: 'bold' } },
+        { content: evaluation.designation || '—' },
+        { content: 'Department:', styles: { fontStyle: 'bold' } },
+        { content: evaluation.department || '—' }
+      ],
+      [
+        { content: 'Reporting Person:', styles: { fontStyle: 'bold' } },
+        { content: evaluation.reporting_person || '—' },
+        { content: 'Submission Date:', styles: { fontStyle: 'bold' } },
+        { content: evaluation.submission_date || evaluation.created_at || '—' }
+      ]
+    ]
+  });
+
+  currentY = doc.lastAutoTable.finalY + 4;
+
+  // 2. Targets & Key Accomplishments Table
+  const targets = Array.isArray(evaluation.targets_tasks) ? evaluation.targets_tasks : [];
+  if (targets.length > 0) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text('TARGETS & WORK DELIVERABLES', margin, currentY);
+    currentY += 2;
+
+    autoTable(doc, {
+      startY: currentY,
+      margin: { left: margin, right: margin },
+      theme: 'striped',
+      styles: { fontSize: 7, cellPadding: 1.8, textColor: [30, 41, 59], lineColor: [226, 232, 240], lineWidth: 0.1 },
+      head: [['#', 'Target / Task Description', 'Target Date', 'Actual Date', 'Progress', 'Status']],
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
+      body: targets.map((t, idx) => [
+        String(idx + 1),
+        t.description || t.task || '—',
+        t.target_date || '—',
+        t.actual_date || '—',
+        `${t.progress || 0}%`,
+        t.status || 'Done'
+      ])
+    });
+
+    currentY = doc.lastAutoTable.finalY + 4;
+  }
+
+  // 3. Performance Ratings Table
+  const ratings = evaluation.ratings || {};
+  const ratingKeys = Object.keys(ratings);
+  if (ratingKeys.length > 0) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`PERFORMANCE RATINGS (Overall Score: ${evaluation.overall_rating || '5'}/5)`, margin, currentY);
+    currentY += 2;
+
+    const ratingRows = ratingKeys.map(k => [
+      k.replace(/_/g, ' ').toUpperCase(),
+      `${ratings[k]}/5 Stars`
+    ]);
+
+    autoTable(doc, {
+      startY: currentY,
+      margin: { left: margin, right: margin },
+      theme: 'grid',
+      styles: { fontSize: 7, cellPadding: 1.6, textColor: [30, 41, 59], lineColor: [226, 232, 240], lineWidth: 0.1 },
+      head: [['Assessment Criteria', 'Self Rating']],
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
+      body: ratingRows
+    });
+
+    currentY = doc.lastAutoTable.finalY + 4;
+  }
+
+  // 4. Narrative Sections
+  const narrativeSections = [
+    { title: 'Key Accomplishments', content: evaluation.key_accomplishments },
+    { title: 'Challenges Faced & Solutions', content: evaluation.challenges_faced },
+    { title: 'Learning & Skill Development', content: evaluation.learning_development },
+    { title: 'Areas for Improvement', content: evaluation.areas_for_improvement },
+    { title: 'Support Required from Management', content: evaluation.support_required },
+    { title: 'Goals for Next Period', content: evaluation.goals_next_month }
+  ].filter(s => s.content && s.content.trim().length > 0);
+
+  narrativeSections.forEach(sec => {
+    if (currentY > pageHeight - 35) {
+      doc.addPage();
+      currentY = margin;
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(15, 23, 42);
+    doc.text(sec.title.toUpperCase(), margin, currentY);
+    currentY += 2;
+
+    autoTable(doc, {
+      startY: currentY,
+      margin: { left: margin, right: margin },
+      theme: 'plain',
+      styles: { fontSize: 7.2, cellPadding: 2, textColor: [51, 65, 85], lineColor: [226, 232, 240], lineWidth: 0.1 },
+      body: [[sec.content]]
+    });
+
+    currentY = doc.lastAutoTable.finalY + 3;
+  });
+
+  // 5. Sign-off block
+  if (currentY > pageHeight - 40) {
+    doc.addPage();
+    currentY = margin;
+  }
+
+  const generatedDateStr = format(new Date(), 'yyyy-MM-dd');
+
+  autoTable(doc, {
+    startY: currentY + 4,
+    margin: { left: margin, right: margin },
+    theme: 'plain',
+    styles: { fontSize: 7.5, cellPadding: 3, textColor: [30, 41, 59], lineColor: [203, 213, 225], lineWidth: 0.3 },
+    body: [
+      [
+        {
+          content: `\n\n_____________________________________\nEMPLOYEE SIGNATURE\nName: ${evaluation.employee_name || 'Staff'}\nDate: ${evaluation.submission_date || generatedDateStr}`,
+          styles: { width: contentWidth / 2 - 2, fontStyle: 'bold' }
+        },
+        {
+          content: `\n\n_____________________________________\nREVIEWING MANAGER SIGNATURE\nFor: SHAZU SOFT MANAGEMENT\nDate: ${generatedDateStr}`,
+          styles: { width: contentWidth / 2 - 2, fontStyle: 'bold' }
+        }
+      ]
+    ]
+  });
+
+  // Running footer on all pages
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.2);
+    doc.line(margin, pageHeight - 8, pageWidth - margin, pageHeight - 8);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Official Appraisal Document • Shazu Soft Technologies • Confidential`, margin, pageHeight - 4.5);
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 4.5, { align: 'right' });
+  }
+
+  const filename = `SHAZU_Appraisal_${(evaluation.employee_id || 'EMP').replace(/\s+/g, '_')}_${evaluation.review_month || 'August_2026'}.pdf`;
   doc.save(filename);
 }

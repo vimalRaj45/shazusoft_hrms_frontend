@@ -63,6 +63,14 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const updateUser = (newUserData) => {
+    setUser(prev => {
+      const updated = { ...(prev || {}), ...newUserData };
+      localStorage.setItem('shazusoft_user', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const value = {
     user,
     token,
@@ -72,6 +80,7 @@ export const AuthProvider = ({ children }) => {
     login,
     loginWithOTP,
     logout,
+    updateUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     isEmployee: user?.role === 'employee'
@@ -83,7 +92,25 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    const savedUser = typeof window !== 'undefined' ? localStorage.getItem('shazusoft_user') : null;
+    const user = savedUser ? JSON.parse(savedUser) : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('shazusoft_token') : null;
+    const themeMode = (typeof window !== 'undefined' ? localStorage.getItem('shazusoft_theme') : null) || 'light';
+
+    return {
+      user,
+      token,
+      loading: false,
+      themeMode,
+      toggleThemeMode: () => {},
+      login: async () => {},
+      loginWithOTP: async () => {},
+      logout: () => {},
+      updateUser: () => {},
+      isAuthenticated: !!user,
+      isAdmin: user?.role === 'admin',
+      isEmployee: user?.role === 'employee'
+    };
   }
   return context;
 };

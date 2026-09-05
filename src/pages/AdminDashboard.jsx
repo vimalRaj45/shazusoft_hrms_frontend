@@ -46,6 +46,12 @@ import {
   HistoryEdu as AuditIcon,
   EventNote as HolidayIcon,
   Lock as LockIcon,
+  LockOpen as LockOpenIcon,
+  Description as DocumentIcon,
+  Visibility as ViewIcon,
+  AccountBalance as BankIcon,
+  ContactPhone as EmergencyIcon,
+  Security as SecurityIcon,
   Delete as DeleteIcon,
   Add as AddIcon
 } from '@mui/icons-material';
@@ -159,6 +165,34 @@ export default function AdminDashboard({ initialTab = 0 }) {
   // Self-Evaluation Viewer Modal
   const [selectedEval, setSelectedEval] = useState(null);
   const [openEvalModal, setOpenEvalModal] = useState(false);
+
+  // Staff Compliance Documents & Statutory Audit Modal
+  const [selectedComplianceEmp, setSelectedComplianceEmp] = useState(null);
+  const [openComplianceModal, setOpenComplianceModal] = useState(false);
+  const [freezeActionLoading, setFreezeActionLoading] = useState(false);
+
+  const handleToggleFreezeFromAdmin = async (emp) => {
+    if (!emp) return;
+    const willFreeze = !emp.documents_frozen;
+    setFreezeActionLoading(true);
+    try {
+      const res = await adminAPI.freezeDocuments(emp.id, { freeze: willFreeze });
+      toast.success(res.data.message || (willFreeze ? 'Documents frozen and verified.' : 'Documents unfrozen.'));
+      
+      const updatedEmp = {
+        ...emp,
+        documents_frozen: willFreeze,
+        frozen_at: willFreeze ? new Date().toISOString() : null,
+        frozen_by_name: willFreeze ? 'Admin' : null
+      };
+      setSelectedComplianceEmp(updatedEmp);
+      setEmployees(prev => prev.map(e => e.id === emp.id ? { ...e, ...updatedEmp } : e));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update document freeze status.');
+    } finally {
+      setFreezeActionLoading(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -948,6 +982,29 @@ export default function AdminDashboard({ initialTab = 0 }) {
                           </Button>
                           <Button
                             size="small"
+                            variant="outlined"
+                            startIcon={e.documents_frozen ? <LockIcon sx={{ color: '#dc2626' }} /> : <DocumentIcon />}
+                            onClick={() => {
+                              setSelectedComplianceEmp(e);
+                              setOpenComplianceModal(true);
+                            }}
+                            sx={{
+                              fontWeight: 700,
+                              borderRadius: '4px',
+                              fontSize: 11,
+                              color: e.documents_frozen ? '#dc2626' : '#133829',
+                              borderColor: e.documents_frozen ? '#fca5a5' : '#cbd5e1',
+                              bgcolor: e.documents_frozen ? '#fef2f2' : 'transparent',
+                              '&:hover': {
+                                bgcolor: e.documents_frozen ? '#fee2e2' : '#f1f5f9',
+                                borderColor: e.documents_frozen ? '#ef4444' : '#133829'
+                              }
+                            }}
+                          >
+                            Compliance Docs {e.documents?.length ? `(${e.documents.length})` : ''}
+                          </Button>
+                          <Button
+                            size="small"
                             variant="contained"
                             onClick={() => {
                               setSelectedTimesheetEmpId(e.id);
@@ -1620,6 +1677,289 @@ export default function AdminDashboard({ initialTab = 0 }) {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      {/* Staff Compliance Documents & Statutory Audit Modal */}
+      <Dialog
+        open={openComplianceModal}
+        onClose={() => setOpenComplianceModal(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '4px',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1.5, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{
+              width: 38,
+              height: 38,
+              borderRadius: '4px',
+              bgcolor: 'rgba(19, 56, 41, 0.1)',
+              color: '#133829',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <SecurityIcon />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
+                Staff Compliance & Document Audit
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                {selectedComplianceEmp ? `${selectedComplianceEmp.name} (${selectedComplianceEmp.id}) • ${selectedComplianceEmp.designation} • ${selectedComplianceEmp.department}` : ''}
+              </Typography>
+            </Box>
+          </Box>
+          {selectedComplianceEmp?.documents_frozen && (
+            <Chip
+              icon={<LockIcon sx={{ fontSize: '14px !important' }} />}
+              label="Records Frozen"
+              color="error"
+              size="small"
+              sx={{ fontWeight: 800, borderRadius: '4px', height: 24, fontSize: 11 }}
+            />
+          )}
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ p: 3 }}>
+          {selectedComplianceEmp && (
+            <Box>
+              {/* Top Summary & Admin Lock Action Banner */}
+              <Box sx={{
+                p: 2,
+                mb: 3,
+                bgcolor: selectedComplianceEmp.documents_frozen ? '#fef2f2' : '#f0fdf4',
+                border: '1px solid',
+                borderColor: selectedComplianceEmp.documents_frozen ? '#fecaca' : '#bbf7d0',
+                borderRadius: '4px',
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: 2
+              }}>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: selectedComplianceEmp.documents_frozen ? '#991b1b' : '#166534' }}>
+                    {selectedComplianceEmp.documents_frozen ? '🔒 Document Modification Locked by Admin' : '🔓 Document Records Open for Staff Update'}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: selectedComplianceEmp.documents_frozen ? '#b91c1c' : '#15803d', display: 'block', mt: 0.3 }}>
+                    {selectedComplianceEmp.documents_frozen
+                      ? `Locked & verified on ${selectedComplianceEmp.frozen_at ? format(new Date(selectedComplianceEmp.frozen_at), 'dd MMM yyyy, HH:mm') : 'Company Records'}. Staff cannot edit or delete documents while locked.`
+                      : 'Staff can upload, replace, or update compliance documents and statutory records.'}
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  size="small"
+                  color={selectedComplianceEmp.documents_frozen ? 'warning' : 'error'}
+                  startIcon={freezeActionLoading ? <CircularProgress size={14} color="inherit" /> : selectedComplianceEmp.documents_frozen ? <LockOpenIcon /> : <LockIcon />}
+                  onClick={() => handleToggleFreezeFromAdmin(selectedComplianceEmp)}
+                  disabled={freezeActionLoading}
+                  sx={{
+                    fontWeight: 700,
+                    borderRadius: '4px',
+                    textTransform: 'none',
+                    fontSize: 12,
+                    flexShrink: 0
+                  }}
+                >
+                  {freezeActionLoading ? 'Updating...' : selectedComplianceEmp.documents_frozen ? 'Unfreeze Documents' : 'Freeze & Verify Documents'}
+                </Button>
+              </Box>
+
+              {/* SECTION 1: Statutory & Banking Details (With UPI ID) */}
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1.5 }}>
+                1. Statutory Tax & Payroll Banking Records
+              </Typography>
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>BANK NAME</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                      {selectedComplianceEmp.statutory_info?.bank_name || 'Not Submitted'}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>ACCOUNT NUMBER</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
+                      {selectedComplianceEmp.statutory_info?.bank_account_number || 'Not Submitted'}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>IFSC CODE</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
+                      {selectedComplianceEmp.statutory_info?.ifsc_code || 'Not Submitted'}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>ACCOUNT HOLDER NAME</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                      {selectedComplianceEmp.statutory_info?.account_holder_name || selectedComplianceEmp.name}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#166534', fontWeight: 800, display: 'block' }}>UPI ID / VPA (INSTANT PAYOUT)</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 800, color: '#15803d', fontFamily: 'monospace' }}>
+                      {selectedComplianceEmp.statutory_info?.upi_id || 'Not Configured'}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>PAN NUMBER</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
+                      {selectedComplianceEmp.statutory_info?.pan_number || 'Not Submitted'}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>AADHAAR NUMBER</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
+                      {selectedComplianceEmp.statutory_info?.aadhaar_number || 'Not Submitted'}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>UAN / PF NUMBER</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
+                      {selectedComplianceEmp.statutory_info?.uan_pf_number || 'N/A'}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* SECTION 2: Compliance Documents Uploaded to Cloudflare R2 */}
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1.5 }}>
+                2. Uploaded Compliance Files & Verification Documents ({selectedComplianceEmp.documents?.length || 0} Files)
+              </Typography>
+
+              {(!selectedComplianceEmp.documents || selectedComplianceEmp.documents.length === 0) ? (
+                <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '4px', mb: 3 }}>
+                  <DocumentIcon sx={{ fontSize: 36, color: '#94a3b8', mb: 1 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>
+                    No compliance documents uploaded yet by this employee.
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                    Employee can upload government IDs, PAN copy, bank passbook, and certificates from their Profile page.
+                  </Typography>
+                </Box>
+              ) : (
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                  {selectedComplianceEmp.documents.map((doc, idx) => (
+                    <Grid item xs={12} sm={6} key={idx}>
+                      <Card sx={{ border: '1px solid #bbf7d0', bgcolor: '#f0fdf4', borderRadius: '4px' }}>
+                        <CardContent sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <DocumentIcon sx={{ color: '#15803d', fontSize: 20 }} />
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                                {doc.key === 'govt_id' ? 'Government ID Proof' :
+                                 doc.key === 'pan_card' ? 'PAN Card Copy' :
+                                 doc.key === 'bank_proof' ? 'Bank Passbook / Cheque' :
+                                 doc.key === 'education_cert' ? 'Educational Certificate' :
+                                 doc.key === 'relieving_exp' ? 'Experience / Relieving Letter' : (doc.name || 'Compliance Document')}
+                              </Typography>
+                            </Box>
+                            <Chip label="Verified File" size="small" sx={{ height: 18, fontSize: 9, fontWeight: 800, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '4px' }} />
+                          </Box>
+
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#ffffff', p: 1.2, borderRadius: '4px', border: '1px solid #e2e8f0', mt: 1 }}>
+                            <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {doc.name || 'file'}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: 10 }}>
+                                {doc.size || 'Standard Size'} • Uploaded: {doc.uploaded_at ? format(new Date(doc.uploaded_at), 'dd MMM yyyy') : 'Recent'}
+                              </Typography>
+                            </Box>
+
+                            {doc.url && (
+                              <Button
+                                size="small"
+                                variant="contained"
+                                component="a"
+                                href={doc.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                startIcon={<ViewIcon sx={{ fontSize: 14 }} />}
+                                sx={{
+                                  borderRadius: '4px',
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  bgcolor: '#133829',
+                                  color: '#ffffff',
+                                  textTransform: 'none',
+                                  flexShrink: 0,
+                                  ml: 1,
+                                  '&:hover': { bgcolor: '#0f291e' }
+                                }}
+                              >
+                                View File
+                              </Button>
+                            )}
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+
+              {/* SECTION 3: Emergency Contacts */}
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1.5 }}>
+                3. Emergency Contact Details
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>CONTACT PERSON</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                      {selectedComplianceEmp.emergency_contacts?.contact_name || 'Not Provided'}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>RELATIONSHIP</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                      {selectedComplianceEmp.emergency_contacts?.relationship || 'Not Specified'}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>EMERGENCY PHONE</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
+                      {selectedComplianceEmp.emergency_contacts?.contact_phone || 'Not Provided'}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setOpenComplianceModal(false)} variant="contained" sx={{ bgcolor: '#133829', color: '#fff', borderRadius: '4px', textTransform: 'none', fontWeight: 700 }}>
+            Close Audit Viewer
+          </Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );

@@ -7,7 +7,8 @@ import {
   Button,
   Grid,
   CircularProgress,
-  InputAdornment
+  InputAdornment,
+  Chip
 } from '@mui/material';
 import {
   LocationOn as GpsIcon,
@@ -29,6 +30,7 @@ export default function Login() {
   // OTP Login State
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
+  const [devOtp, setDevOtp] = useState(''); // DEV_TESTING_OTP: Remove in production
   const [step, setStep] = useState(1); // 1 = Enter Email, 2 = Enter OTP
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -53,6 +55,11 @@ export default function Login() {
     try {
       const res = await authAPI.sendOTP({ email: email.trim() });
       toast.success(res.data.message || `Verification code sent to ${email}!`);
+      // DEV_TESTING_OTP: Capture OTP from response for UI testing. Remove in production.
+      if (res.data.dev_otp) {
+        setDevOtp(res.data.dev_otp);
+        setOtpCode(res.data.dev_otp); // Auto-fill for ultra fast testing
+      }
       setStep(2);
       setCountdown(60);
     } catch (err) {
@@ -361,12 +368,48 @@ export default function Login() {
                     onClick={() => {
                       setStep(1);
                       setOtpCode('');
+                      setDevOtp('');
                     }}
                     sx={{ fontSize: 11, fontWeight: 700, textTransform: 'none', color: '#15803d' }}
                   >
                     Change
                   </Button>
                 </Box>
+
+                {/* DEV_TESTING_OTP: Development Testing Helper - Remove in production */}
+                {devOtp && (
+                  <Box
+                    onClick={() => setOtpCode(devOtp)}
+                    sx={{
+                      mb: 2,
+                      p: 1.5,
+                      bgcolor: '#eff6ff',
+                      border: '1px dashed #3b82f6',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      transition: 'all 0.2s ease',
+                      '&:hover': { bgcolor: '#dbeafe', borderColor: '#2563eb' }
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#1e40af', fontWeight: 800, display: 'block', fontSize: 10, letterSpacing: '0.04em' }}>
+                        🧪 DEV TESTING OTP CODE:
+                      </Typography>
+                      <Typography variant="h6" sx={{ color: '#1d4ed8', fontWeight: 900, letterSpacing: '3px', fontFamily: 'monospace', lineHeight: 1.2 }}>
+                        {devOtp}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label="Auto-Filled ✓"
+                      size="small"
+                      color="primary"
+                      sx={{ fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 10 }}
+                    />
+                  </Box>
+                )}
 
                 <Box sx={{ mb: 2.5 }}>
                   <TextField

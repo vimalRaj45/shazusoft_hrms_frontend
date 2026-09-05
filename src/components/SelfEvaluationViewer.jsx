@@ -16,11 +16,13 @@ import {
   Rating
 } from '@mui/material';
 import {
-  Print as PrintIcon,
+  Download as DownloadIcon,
   CheckCircle as CheckIcon,
   Star as StarIcon,
   Description as DocIcon
 } from '@mui/icons-material';
+import { generateAppraisalPDFReport } from '../utils/pdfReportGenerator';
+import toast from '../utils/muiToast';
 
 const RATING_LABELS = {
   quality_of_work: 'Quality of Work',
@@ -42,8 +44,14 @@ export default function SelfEvaluationViewer({ evaluation, onAddReview }) {
   const targets = evaluation.targets_tasks || [];
   const ratings = evaluation.ratings || {};
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPDF = async () => {
+    try {
+      await generateAppraisalPDFReport(evaluation);
+      toast.success('Appraisal PDF downloaded successfully!');
+    } catch (err) {
+      console.error('Appraisal PDF Error:', err);
+      toast.error('Failed to export appraisal PDF.');
+    }
   };
 
   return (
@@ -66,11 +74,11 @@ export default function SelfEvaluationViewer({ evaluation, onAddReview }) {
           <Button
             variant="contained"
             color="primary"
-            startIcon={<PrintIcon />}
-            onClick={handlePrint}
-            sx={{ fontWeight: 700 }}
+            startIcon={<DownloadIcon />}
+            onClick={handleDownloadPDF}
+            sx={{ fontWeight: 700, bgcolor: '#0f172a', '&:hover': { bgcolor: '#1e293b' } }}
           >
-            Print / Export Appraisal (PDF)
+            Download Appraisal PDF
           </Button>
         </Box>
 

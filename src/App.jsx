@@ -200,7 +200,7 @@ function AppContent() {
       <AlertConfirmProvider>
 
       {/* Main Layout: Left Full-Height Sidebar + Right Header/Content */}
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f7f9fa', width: '100%', overflowX: 'hidden' }}>
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f7f9fa', width: '100%', overflowX: 'clip' }}>
         {/* Desktop Sidebar (Starts from the very top 0px) */}
         <Box
           component="aside"
@@ -259,7 +259,7 @@ function AppContent() {
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100vh',
-            overflowX: 'hidden',
+            overflowX: 'clip',
             transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
@@ -756,7 +756,7 @@ function AppContent() {
                           }}
                           sx={{ fontWeight: 700, borderRadius: '4px' }}
                         >
-                          View Full Document & Print
+                          View Full Document & Export PDF
                         </Button>
                       </Box>
                     </Box>
@@ -826,78 +826,6 @@ function AppContent() {
           {activeTab === 'admin-holidays' && isAdmin && <AdminDashboard initialTab={10} />}
           {activeTab === 'ai-reports' && isAdmin && <AIReports />}
 
-          {/* TAB: PROFILE */}
-          {activeTab === 'profile' && (
-            <Box sx={{ maxWidth: 800 }}>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
-                Employee Profile & Credentials
-              </Typography>
-              <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '4px' }}>
-                <CardContent sx={{ p: 3.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mb: 3 }}>
-                    <Box
-                      sx={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: '4px',
-                        bgcolor: '#133829',
-                        color: '#ffffff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 800,
-                        fontSize: 22
-                      }}
-                    >
-                      {user?.name?.charAt(0) || 'U'}
-                    </Box>
-                    <Box>
-                      <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                        {user?.name}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
-                        {user?.designation || 'Staff'} • {user?.department || 'Engineering'}
-                      </Typography>
-                      <Chip
-                        label={user?.role?.toUpperCase()}
-                        size="small"
-                        color="primary"
-                        sx={{ fontWeight: 800, mt: 0.5, height: 20, fontSize: 10, borderRadius: '4px' }}
-                      />
-                    </Box>
-                  </Box>
-
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px solid #e5e7eb' }}>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>EMPLOYEE ID</Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 700, color: '#0f172a' }}>{user?.id}</Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px solid #e5e7eb' }}>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>EMAIL ADDRESS</Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 700, color: '#0f172a' }}>{user?.email}</Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px solid #e5e7eb' }}>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>DEPARTMENT</Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 700, color: '#0f172a' }}>{user?.department}</Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px solid #e5e7eb' }}>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>REPORTING MANAGER</Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 700, color: '#0f172a' }}>Operations & HR Lead</Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Box>
-          )}
-
           {/* TAB: ANNOUNCEMENTS */}
           {activeTab === 'announcements' && (
             <Box sx={{ maxWidth: 900 }}>
@@ -936,10 +864,10 @@ function AppContent() {
                   </Typography>
 
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.8 }}>
-                    2. GPS Geofence Attendance & Break Logs
+                    2. GPS Geofence Attendance
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#475569', mb: 2.5 }}>
-                    Ensure GPS location permissions are granted. The system validates your real-time coordinates against the Shazu Soft office radius. Track your tea, lunch, and short breaks effortlessly.
+                    Ensure GPS location permissions are granted. The system validates your real-time coordinates against the office radius, allowing seamless punch-in and punch-out.
                   </Typography>
 
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.8 }}>

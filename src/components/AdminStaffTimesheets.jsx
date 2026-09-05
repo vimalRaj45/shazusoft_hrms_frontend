@@ -47,6 +47,7 @@ import {
 import { format, addMonths, subMonths } from 'date-fns';
 import { attendanceAPI, adminAPI } from '../services/api';
 import toast from '../utils/muiToast';
+import { generateExecutivePDFReport } from '../utils/pdfReportGenerator';
 
 export default function AdminStaffTimesheets({ initialEmployeeId, employees = [], onRefreshParent }) {
   const [selectedEmpId, setSelectedEmpId] = useState(initialEmployeeId || '');
@@ -128,8 +129,92 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
     setSelectedMonth(format(next, 'yyyy-MM'));
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPDF = async () => {
+    if (!timesheetData) return;
+    try {
+      const selectedEmp = localEmployees.find(e => e.id === selectedEmpId);
+      const emp = timesheetData.employee || selectedEmp || {};
+      const summary = timesheetData.summary || {};
+      const days = timesheetData.days || [];
+
+      const presentDays = timesheetData.present_days ?? summary.presentDaysCount ?? days.filter(d => ['Present', 'Late', 'Half-Day', 'Working Sunday'].includes(d.status)).length;
+      const lateDays = timesheetData.late_days ?? summary.lateCount ?? days.filter(d => d.status === 'Late').length;
+      const totalDays = timesheetData.past_days_count ?? summary.pastDaysCount ?? presentDays;
+      const totalHours = timesheetData.total_hours ?? summary.totalWorkingHours ?? days.reduce((acc, d) => acc + (parseFloat(d.net_hours || d.total_hours || 0) || 0), 0).toFixed(1);
+      const avgHours = timesheetData.avg_hours_per_day ?? summary.avgHoursPerDay ?? (presentDays > 0 ? (parseFloat(totalHours) / presentDays).toFixed(1) : '0.0');
+      const totalTasks = timesheetData.total_tasks_completed ?? summary.totalTasksLogged ?? days.reduce((acc, d) => acc + (d.task_count || 0), 0);
+
+      // Aggregate project breakdown from day tasks
+      const projectMap = {};
+      days.forEach(d => {
+        (d.tasks || []).forEach(t => {
+          const proj = t.project_name || t.project || 'General Operations';
+          if (!projectMap[proj]) {
+            projectMap[proj] = { projectName: proj, totalTasks: 0, completedTasks: 0, estimatedHours: 0, actualHours: 0 };
+          }
+          projectMap[proj].totalTasks += 1;
+          if (t.status === 'Completed') projectMap[proj].completedTasks += 1;
+          projectMap[proj].estimatedHours += parseFloat(t.estimated_hours || t.est || 0) || 0;
+          projectMap[proj].actualHours += parseFloat(t.actual_hours || t.act || 0) || 0;
+        });
+      });
+
+      const totalTaskActual = Object.values(projectMap).reduce((s, p) => s + p.actualHours, 0);
+      const projectBreakdown = Object.values(projectMap).map(p => ({
+        projectName: p.projectName,
+        totalTasks: p.totalTasks,
+        completedTasks: p.completedTasks,
+        estimatedHours: p.estimatedHours.toFixed(1),
+        actualHours: p.actualHours.toFixed(1),
+        completionRate: p.totalTasks > 0 ? Math.round((p.completedTasks / p.totalTasks) * 100) : 100,
+        percentageShare: totalTaskActual > 0 ? Math.round((p.actualHours / totalTaskActual) * 100) : 0
+      }));
+
+      await generateExecutivePDFReport({
+        employee: {
+          name: emp.name || 'Staff Member',
+          id: emp.id || selectedEmpId,
+          email: emp.email || selectedEmp?.email || '',
+          department: emp.department || selectedEmp?.department || 'Operations',
+          designation: emp.designation || selectedEmp?.designation || 'Specialist',
+          work_mode: emp.work_mode || selectedEmp?.work_mode || 'office',
+          role: emp.role || selectedEmp?.role || 'employee'
+        },
+        monthYear: selectedMonth,
+        summaryMetrics: {
+          totalDaysLogged: totalDays,
+          presentDays: presentDays,
+          lateDays: lateDays,
+          totalHoursGross: totalHours,
+          totalNetHours: totalHours,
+          avgDailyNetHours: avgHours,
+          totalTasks: totalTasks,
+          taskCompletionRate: 100
+        },
+        dailyActivityTimeline: days.map(d => ({
+          date: d.date,
+          attendanceStatus: d.status,
+          loginTime: d.login_time && d.login_time !== '--' ? d.login_time : null,
+          logoutTime: d.logout_time && d.logout_time !== '--' && d.logout_time !== 'In Progress' ? d.logout_time : null,
+          grossHours: d.net_hours || d.total_hours || '0',
+          netHours: d.net_hours || d.total_hours || '0',
+          workMode: d.is_working_sunday ? 'Office (Sun)' : (d.status === 'Holiday' ? 'Holiday' : (d.in_geofence === 'WFH' ? 'WFH' : 'Office')),
+          tasks: (d.tasks || []).map(t => ({
+            title: t.task_title || t.title,
+            project: t.project_name || t.project || 'General',
+            est: t.estimated_hours || t.est || '0',
+            act: t.actual_hours || t.act || '0',
+            status: t.status || 'Completed',
+            remarks: t.remarks || ''
+          }))
+        })),
+        projectBreakdown
+      });
+      toast.success('Executive Monochrome PDF report downloaded successfully!');
+    } catch (err) {
+      console.error('PDF Generation Error:', err);
+      toast.error('Failed to generate PDF report.');
+    }
   };
 
   const [selectedDayTasks, setSelectedDayTasks] = useState(null); // { date, day_name, tasks: [], task_count, task_hours }
@@ -379,12 +464,12 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
               <Button
                 variant="contained"
                 size="small"
-                startIcon={<PrintIcon />}
-                onClick={handlePrint}
+                startIcon={<ExportIcon />}
+                onClick={handleDownloadPDF}
                 disabled={!timesheetData}
-                sx={{ fontWeight: 700, borderRadius: '4px', bgcolor: '#133829', '&:hover': { bgcolor: '#0f291e' } }}
+                sx={{ fontWeight: 700, borderRadius: '4px', bgcolor: '#0f172a', '&:hover': { bgcolor: '#1e293b' } }}
               >
-                Print Report
+                Download Executive PDF
               </Button>
             </Box>
           </Box>

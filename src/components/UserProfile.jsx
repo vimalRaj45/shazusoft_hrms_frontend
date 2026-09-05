@@ -17,7 +17,8 @@ import {
   CircularProgress,
   Card,
   CardContent,
-  Tooltip
+  Tooltip,
+  Backdrop
 } from '@mui/material';
 import {
   PhotoCamera as CameraIcon,
@@ -33,11 +34,14 @@ import {
   Save as SaveIcon,
   Spa as LeafLogoIcon,
   Security as SecurityIcon,
-  Fingerprint as IdIcon
+  Fingerprint as IdIcon,
+  Lock as LockIcon,
+  LockOpen as LockOpenIcon,
+  CheckCircleOutline as VerifiedOutlineIcon
 } from '@mui/icons-material';
-import { authAPI, uploadsAPI } from '../services/api';
+import { authAPI, adminAPI, uploadsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import toast from '../utils/muiToast';
+import toast, { muiToast } from '../utils/muiToast';
 import { format } from 'date-fns';
 
 const REQUIRED_DOCUMENTS = [
@@ -48,11 +52,53 @@ const REQUIRED_DOCUMENTS = [
   { key: 'relieving_exp', label: 'Experience / Relieving Letter', required: false }
 ];
 
+/** Efficient Storage Helper: Compresses images client-side before Cloudflare R2 upload */
+function compressImageFile(file, maxDimension = 1600, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => {
+        resolve(e.target.result);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function UserProfile() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, isAdmin, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [freezing, setFreezing] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingDocKey, setUploadingDocKey] = useState(null);
 
@@ -67,6 +113,10 @@ export default function UserProfile() {
     work_mode: 'office',
     phone: '',
     avatar_url: '',
+    documents_frozen: false,
+    frozen_at: null,
+    frozen_by: null,
+    frozen_by_name: null,
     personal_info: {
       dob: '',
       gender: '',
@@ -82,6 +132,7 @@ export default function UserProfile() {
       bank_account_number: '',
       ifsc_code: '',
       account_holder_name: '',
+      upi_id: '',
       pan_number: '',
       aadhaar_number: '',
       uan_pf_number: ''
@@ -116,6 +167,10 @@ export default function UserProfile() {
           work_mode: p.work_mode || authUser?.work_mode || 'office',
           phone: p.phone || '',
           avatar_url: p.avatar_url || '',
+          documents_frozen: Boolean(p.documents_frozen),
+          frozen_at: p.frozen_at || null,
+          frozen_by: p.frozen_by || null,
+          frozen_by_name: p.frozen_by_name || null,
           personal_info: {
             dob: p.personal_info?.dob || '',
             gender: p.personal_info?.gender || '',
@@ -131,6 +186,7 @@ export default function UserProfile() {
             bank_account_number: p.statutory_info?.bank_account_number || '',
             ifsc_code: p.statutory_info?.ifsc_code || '',
             account_holder_name: p.statutory_info?.account_holder_name || '',
+            upi_id: p.statutory_info?.upi_id || '',
             pan_number: p.statutory_info?.pan_number || '',
             aadhaar_number: p.statutory_info?.aadhaar_number || '',
             uan_pf_number: p.statutory_info?.uan_pf_number || ''
@@ -158,6 +214,7 @@ export default function UserProfile() {
   }, []);
 
   const handlePersonalChange = (field, value) => {
+    if (!isAdmin && profileData.documents_frozen) return;
     setProfileData(prev => ({
       ...prev,
       personal_info: { ...prev.personal_info, [field]: value }
@@ -165,6 +222,7 @@ export default function UserProfile() {
   };
 
   const handleStatutoryChange = (field, value) => {
+    if (!isAdmin && profileData.documents_frozen) return;
     setProfileData(prev => ({
       ...prev,
       statutory_info: { ...prev.statutory_info, [field]: value }
@@ -172,14 +230,54 @@ export default function UserProfile() {
   };
 
   const handleEmergencyChange = (field, value) => {
+    if (!isAdmin && profileData.documents_frozen) return;
     setProfileData(prev => ({
       ...prev,
       emergency_contacts: { ...prev.emergency_contacts, [field]: value }
     }));
   };
 
-  // Avatar Image Upload Handler (Direct upload to Cloudflare R2)
+  // Admin Toggle Freeze / Lock Handler
+  const handleToggleFreeze = async () => {
+    const isFreezing = !profileData.documents_frozen;
+    const confirmed = await muiToast.confirm({
+      title: isFreezing ? 'Freeze & Lock Compliance Records?' : 'Unfreeze Compliance Records?',
+      message: isFreezing
+        ? `Are you sure you want to FREEZE and LOCK all compliance documents and statutory records for ${profileData.name}? Non-admin editing will be restricted.`
+        : `Are you sure you want to UNFREEZE records for ${profileData.name}? The employee will be able to edit statutory info and upload replacement documents.`,
+      confirmText: isFreezing ? 'Freeze & Lock Records' : 'Unfreeze for Edits',
+      cancelText: 'Cancel',
+      severity: isFreezing ? 'warning' : 'info'
+    });
+
+    if (!confirmed) return;
+
+    setFreezing(true);
+    try {
+      const res = await adminAPI.freezeDocuments(profileData.id, { frozen: isFreezing });
+      setProfileData(prev => ({
+        ...prev,
+        documents_frozen: isFreezing,
+        frozen_at: isFreezing ? new Date().toISOString() : null,
+        frozen_by: isFreezing ? authUser?.id : null,
+        frozen_by_name: isFreezing ? authUser?.name : null
+      }));
+      toast.success(res.data?.message || (isFreezing ? 'Employee documents locked & frozen.' : 'Employee documents unlocked.'));
+    } catch (err) {
+      console.error('Error toggling freeze:', err);
+      toast.error(err.response?.data?.error || 'Failed to update document lock status.');
+    } finally {
+      setFreezing(false);
+    }
+  };
+
+  // Avatar Image Upload Handler (Compressed client-side before Cloudflare R2 upload)
   const handleAvatarFile = async (e) => {
+    if (!isAdmin && profileData.documents_frozen) {
+      toast.error('Profile records are frozen & locked by HR. Contact HR for changes.');
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -188,52 +286,71 @@ export default function UserProfile() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size exceeds 5MB limit. Please select a smaller photo.');
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size exceeds 10MB limit. Please select a smaller photo.');
       return;
     }
 
     setUploadingAvatar(true);
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const uploadRes = await uploadsAPI.uploadBase64({
-          data_url: reader.result,
-          filename: file.name,
-          folder: 'avatars'
-        });
+    try {
+      const compressedDataUrl = await compressImageFile(file, 800, 0.85);
 
-        const r2Url = uploadRes.data.url;
-        setProfileData(prev => ({
-          ...prev,
-          avatar_url: r2Url
-        }));
+      const uploadRes = await uploadsAPI.uploadBase64({
+        data_url: compressedDataUrl,
+        filename: file.name,
+        folder: 'avatars'
+      });
 
-        // Auto-save avatar link to profile
-        await authAPI.updateProfile({
-          avatar_url: r2Url
-        });
-
-        toast.success('Profile avatar uploaded to Cloudflare R2 storage.');
-      } catch (err) {
-        console.error('Avatar upload error:', err);
-        toast.error('Failed to upload avatar to Cloudflare R2.');
-      } finally {
-        setUploadingAvatar(false);
+      // Clean up old avatar file from Cloudflare R2
+      if (profileData.avatar_url && profileData.avatar_url.includes('/api/uploads/file/')) {
+        const oldAvatarKey = profileData.avatar_url.split('/api/uploads/file/')[1];
+        if (oldAvatarKey) {
+          uploadsAPI.deleteFile(oldAvatarKey).catch(() => {});
+        }
       }
-    };
-    reader.readAsDataURL(file);
+
+      const r2Url = uploadRes.data.url;
+      setProfileData(prev => ({
+        ...prev,
+        avatar_url: r2Url
+      }));
+
+      // Auto-save avatar link to profile
+      await authAPI.updateProfile({
+        avatar_url: r2Url
+      });
+
+      if (updateUser) {
+        updateUser({ avatar_url: r2Url });
+      }
+
+      toast.success('Profile avatar optimized & uploaded to Cloudflare R2 storage.');
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      toast.error('Failed to upload avatar to Cloudflare R2.');
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
-  // Document Upload Handler (Direct upload to Cloudflare R2)
+  // Document Upload Handler (Direct compressed upload to Cloudflare R2)
   const triggerDocumentUpload = (docKey) => {
+    if (!isAdmin && profileData.documents_frozen) {
+      toast.error('Documents are locked & verified by HR. Re-uploading is disabled.');
+      return;
+    }
     setCurrentDocKey(docKey);
     docInputRef.current?.click();
   };
 
-  const handleDocumentFile = (e) => {
+  const handleDocumentFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file || !currentDocKey) return;
+
+    if (!isAdmin && profileData.documents_frozen) {
+      toast.error('Documents are locked & verified by HR.');
+      return;
+    }
 
     if (file.size > 10 * 1024 * 1024) {
       toast.error('Document exceeds 10MB size limit.');
@@ -242,50 +359,60 @@ export default function UserProfile() {
 
     const docKey = currentDocKey;
     setUploadingDocKey(docKey);
-    const reader = new FileReader();
 
-    reader.onload = async () => {
-      try {
-        const uploadRes = await uploadsAPI.uploadBase64({
-          data_url: reader.result,
-          filename: file.name,
-          folder: 'compliance_documents'
-        });
+    try {
+      // Compress if image (PNG/JPG), pass through if PDF
+      const processedDataUrl = await compressImageFile(file, 1600, 0.85);
 
-        const newDoc = {
-          key: docKey,
-          name: file.name,
-          size: uploadRes.data.size || `${(file.size / 1024).toFixed(1)} KB`,
-          type: file.type,
-          url: uploadRes.data.url,
-          r2_key: uploadRes.data.key,
-          uploaded_at: new Date().toISOString()
-        };
+      const uploadRes = await uploadsAPI.uploadBase64({
+        data_url: processedDataUrl,
+        filename: file.name,
+        folder: 'compliance_documents'
+      });
 
-        const updatedDocs = [...profileData.documents.filter(d => d.key !== docKey), newDoc];
-
-        setProfileData(prev => ({
-          ...prev,
-          documents: updatedDocs
-        }));
-
-        // Persist to database
-        await authAPI.updateProfile({
-          documents: updatedDocs
-        });
-
-        toast.success(`"${file.name}" uploaded to Cloudflare R2 bucket.`);
-      } catch (err) {
-        console.error('Document upload error:', err);
-        toast.error('Failed to upload document to Cloudflare R2.');
-      } finally {
-        setUploadingDocKey(null);
+      // Delete old document from R2 if replacing an existing one
+      const oldDoc = profileData.documents.find(d => d.key === docKey);
+      if (oldDoc?.r2_key) {
+        uploadsAPI.deleteFile(oldDoc.r2_key).catch(() => {});
       }
-    };
-    reader.readAsDataURL(file);
+
+      const newDoc = {
+        key: docKey,
+        name: file.name,
+        size: uploadRes.data.size || `${(file.size / 1024).toFixed(1)} KB`,
+        type: file.type,
+        url: uploadRes.data.url,
+        r2_key: uploadRes.data.key,
+        uploaded_at: new Date().toISOString()
+      };
+
+      const updatedDocs = [...profileData.documents.filter(d => d.key !== docKey), newDoc];
+
+      setProfileData(prev => ({
+        ...prev,
+        documents: updatedDocs
+      }));
+
+      // Persist to database
+      await authAPI.updateProfile({
+        documents: updatedDocs
+      });
+
+      toast.success(`"${file.name}" uploaded to Cloudflare R2 bucket.`);
+    } catch (err) {
+      console.error('Document upload error:', err);
+      toast.error(err.response?.data?.error || err.message || 'Failed to upload document to Cloudflare R2.');
+    } finally {
+      setUploadingDocKey(null);
+    }
   };
 
   const removeDocument = async (docKey) => {
+    if (!isAdmin && profileData.documents_frozen) {
+      toast.error('Documents are locked & verified by HR. Deletion is restricted.');
+      return;
+    }
+
     const doc = profileData.documents.find(d => d.key === docKey);
     if (doc?.r2_key) {
       uploadsAPI.deleteFile(doc.r2_key).catch(() => {});
@@ -321,6 +448,9 @@ export default function UserProfile() {
           ...prev,
           profile_completeness: res.data.profile.profile_completeness
         }));
+        if (updateUser) {
+          updateUser(res.data.profile);
+        }
       }
 
       toast.success('Employee profile & documents saved to secure company records.');
@@ -343,7 +473,31 @@ export default function UserProfile() {
   const completeness = profileData.profile_completeness || 0;
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', pb: 4 }}>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', pb: 4, position: 'relative' }}>
+      {/* Uploading File Loading Backdrop */}
+      <Backdrop
+        sx={{
+          color: '#ffffff',
+          zIndex: (theme) => theme.zIndex.drawer + 999,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          bgcolor: 'rgba(15, 23, 42, 0.75)',
+          backdropFilter: 'blur(4px)'
+        }}
+        open={Boolean(uploadingAvatar || uploadingDocKey)}
+      >
+        <CircularProgress size={52} thickness={4} sx={{ color: '#22c55e' }} />
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#ffffff' }}>
+            {uploadingAvatar ? 'Optimizing & Uploading Profile Photo...' : 'Uploading Document to Cloudflare R2...'}
+          </Typography>
+          <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.5 }}>
+            Compressing media and syncing to encrypted cloud storage vault
+          </Typography>
+        </Box>
+      </Backdrop>
+
       {/* Hidden File Inputs */}
       <input
         type="file"
@@ -441,11 +595,19 @@ export default function UserProfile() {
               <SecurityIcon sx={{ fontSize: 14, color: '#15803d' }} />
               Company Verified Employee Record • Work Mode: <strong>{profileData.work_mode === 'wfh' ? 'Remote (WFH)' : 'In-Office (GPS)'}</strong>
             </Typography>
+            {profileData.documents_frozen && (
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.6, px: 1.2, py: 0.4, bgcolor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '4px', mt: 1 }}>
+                <LockIcon sx={{ fontSize: 14, color: '#dc2626' }} />
+                <Typography variant="caption" sx={{ fontWeight: 800, color: '#dc2626', fontSize: 11 }}>
+                  Documents Frozen & Verified {profileData.frozen_by_name ? `by ${profileData.frozen_by_name}` : ''}
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Box>
 
         {/* Right Side: Profile Completeness Meter & Save Button */}
-        <Box sx={{ width: { xs: '100%', md: 240 }, flexShrink: 0 }}>
+        <Box sx={{ width: { xs: '100%', md: 260 }, flexShrink: 0 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.6 }}>
             <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               Profile Completion
@@ -472,21 +634,57 @@ export default function UserProfile() {
             fullWidth
             startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
             onClick={handleSaveProfile}
-            disabled={saving}
+            disabled={saving || (!isAdmin && profileData.documents_frozen)}
             sx={{
               mt: 2,
               fontWeight: 700,
-              bgcolor: '#133829',
+              bgcolor: (!isAdmin && profileData.documents_frozen) ? '#94a3b8' : '#133829',
               color: '#ffffff',
               borderRadius: '4px',
               textTransform: 'none',
-              '&:hover': { bgcolor: '#0f291e' }
+              '&:hover': { bgcolor: (!isAdmin && profileData.documents_frozen) ? '#94a3b8' : '#0f291e' }
             }}
           >
-            {saving ? 'Saving Profile...' : 'Save Profile Changes'}
+            {saving ? 'Saving Profile...' : (!isAdmin && profileData.documents_frozen) ? '🔒 Records Locked by Admin' : 'Save Profile Changes'}
           </Button>
+
+          {/* Admin Freeze / Lock Toggle Button */}
+          {isAdmin && (
+            <Button
+              variant="outlined"
+              fullWidth
+              color={profileData.documents_frozen ? 'warning' : 'error'}
+              startIcon={freezing ? <CircularProgress size={16} color="inherit" /> : profileData.documents_frozen ? <LockOpenIcon /> : <LockIcon />}
+              onClick={handleToggleFreeze}
+              disabled={freezing}
+              sx={{
+                mt: 1,
+                fontWeight: 700,
+                borderRadius: '4px',
+                textTransform: 'none',
+                fontSize: 12
+              }}
+            >
+              {freezing ? 'Updating Lock...' : profileData.documents_frozen ? 'Unfreeze Documents' : 'Freeze Compliance Documents'}
+            </Button>
+          )}
         </Box>
       </Paper>
+
+      {/* Frozen Alert Banner */}
+      {profileData.documents_frozen && (
+        <Paper elevation={0} sx={{ p: 2, mb: 2.5, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <LockIcon sx={{ color: '#d97706', fontSize: 24 }} />
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 800, color: '#92400e' }}>
+              Compliance Documents & Statutory Records are Frozen
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#b45309', fontWeight: 600 }}>
+              All uploaded compliance files and statutory tax records have been locked & verified by Company Administration. {!isAdmin ? 'Contact HR to request changes.' : 'As an Administrator, you can unfreeze documents anytime.'}
+            </Typography>
+          </Box>
+        </Paper>
+      )}
 
       {/* Navigation Tabs for Profile Categories */}
       <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: '4px', bgcolor: '#ffffff', overflow: 'hidden' }}>
@@ -774,6 +972,18 @@ export default function UserProfile() {
                 />
               </Grid>
 
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="UPI ID / VPA (For Instant Digital Payroll Payouts)"
+                  size="small"
+                  fullWidth
+                  placeholder="e.g. employee@okaxis, user@okhdfcbank"
+                  value={profileData.statutory_info.upi_id || ''}
+                  onChange={(e) => handleStatutoryChange('upi_id', e.target.value)}
+                  helperText="Instant settlement UPI Virtual Payment Address"
+                />
+              </Grid>
+
               <Grid item xs={12} sm={4}>
                 <TextField
                   label="Permanent Account Number (PAN)"
@@ -864,15 +1074,23 @@ export default function UserProfile() {
                                       <ViewIcon fontSize="small" />
                                     </IconButton>
                                   )}
-                                  <IconButton
-                                    size="small"
-                                    color="error"
-                                    onClick={() => removeDocument(docDef.key)}
-                                    sx={{ p: 0.5 }}
-                                    title="Delete document"
-                                  >
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
+                                  {(!isAdmin && profileData.documents_frozen) ? (
+                                    <Tooltip title="Document is locked & verified by Company HR" arrow>
+                                      <Box sx={{ p: 0.5, display: 'flex', alignItems: 'center' }}>
+                                        <LockIcon sx={{ fontSize: 18, color: '#94a3b8' }} />
+                                      </Box>
+                                    </Tooltip>
+                                  ) : (
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      onClick={() => removeDocument(docDef.key)}
+                                      sx={{ p: 0.5 }}
+                                      title="Delete document"
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  )}
                                 </Box>
                               </Box>
                             </Box>
@@ -880,20 +1098,21 @@ export default function UserProfile() {
                             <Button
                               variant="outlined"
                               size="small"
-                              startIcon={<UploadIcon />}
+                              startIcon={(!isAdmin && profileData.documents_frozen) ? <LockIcon fontSize="small" /> : <UploadIcon />}
                               onClick={() => triggerDocumentUpload(docDef.key)}
+                              disabled={!isAdmin && profileData.documents_frozen}
                               sx={{
                                 mt: 1,
                                 textTransform: 'none',
                                 fontWeight: 700,
                                 fontSize: '0.78rem',
                                 borderRadius: '4px',
-                                borderColor: '#cbd5e1',
-                                color: '#334155',
+                                borderColor: (!isAdmin && profileData.documents_frozen) ? '#e2e8f0' : '#cbd5e1',
+                                color: (!isAdmin && profileData.documents_frozen) ? '#94a3b8' : '#334155',
                                 '&:hover': { bgcolor: '#f8fafc', borderColor: '#133829' }
                               }}
                             >
-                              Upload Document
+                              {(!isAdmin && profileData.documents_frozen) ? 'Upload Locked by Admin' : 'Upload Document'}
                             </Button>
                           )}
                         </CardContent>

@@ -69,10 +69,6 @@ export default function EmployeeReportViewer({ reportData }) {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <Box sx={{ mt: 2 }}>
       {/* Report Header Card */}
@@ -142,7 +138,7 @@ export default function EmployeeReportViewer({ reportData }) {
               </Box>
             </Grid>
 
-            <Grid item xs={6} sm={3} md={2.4}>
+            <Grid item xs={6} sm={3} md={3}>
               <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>NET WORKING TIME</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: '#059669', mt: 0.5 }}>
@@ -154,19 +150,7 @@ export default function EmployeeReportViewer({ reportData }) {
               </Box>
             </Grid>
 
-            <Grid item xs={6} sm={3} md={2.4}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>BREAK TIME DEDUCTED</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: '#d97706', mt: 0.5 }}>
-                  {summaryMetrics?.totalBreakHours} hrs
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  Total breaks taken
-                </Typography>
-              </Box>
-            </Grid>
-
-            <Grid item xs={6} sm={3} md={2.4}>
+            <Grid item xs={6} sm={3} md={3}>
               <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>TASKS COMPLETED</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: '#2563eb', mt: 0.5 }}>
@@ -178,7 +162,7 @@ export default function EmployeeReportViewer({ reportData }) {
               </Box>
             </Grid>
 
-            <Grid item xs={6} sm={3} md={2.4}>
+            <Grid item xs={6} sm={3} md={3}>
               <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>EFFORT VARIANCE</Typography>
                 <Typography
@@ -335,7 +319,7 @@ export default function EmployeeReportViewer({ reportData }) {
             <Tab label={`Daily Activity Timeline (${dailyActivityTimeline.length} Days)`} icon={<TimelineIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
             <Tab label={`Detailed Work Done (${details?.workDoneLogs?.length || 0})`} icon={<TaskIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
             <Tab label={`Attendance Timesheet (${details?.attendanceLogs?.length || 0})`} icon={<PresentIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
-            <Tab label={`Breaks & Leaves Audit`} icon={<LeaveIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
+            <Tab label={`Leaves & Permissions Audit`} icon={<LeaveIcon />} iconPosition="start" sx={{ fontWeight: 700 }} />
           </Tabs>
         </Box>
 
@@ -355,7 +339,6 @@ export default function EmployeeReportViewer({ reportData }) {
                       <TableCell>Attendance (GPS)</TableCell>
                       <TableCell>Net Hours</TableCell>
                       <TableCell>Tasks Executed</TableCell>
-                      <TableCell>Breaks Taken</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -390,15 +373,6 @@ export default function EmployeeReportViewer({ reportData }) {
                                 </Typography>
                               </Box>
                             ))
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                          {day.breaks.length === 0 ? (
-                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>No breaks</Typography>
-                          ) : (
-                            <Typography variant="body2">
-                              {day.totalBreakMinutes} mins ({day.breaks.length} breaks)
-                            </Typography>
                           )}
                         </TableCell>
                       </TableRow>
@@ -478,7 +452,6 @@ export default function EmployeeReportViewer({ reportData }) {
                       <TableCell>Punch In (GPS)</TableCell>
                       <TableCell>Punch Out (GPS)</TableCell>
                       <TableCell>Gross Time</TableCell>
-                      <TableCell>Breaks</TableCell>
                       <TableCell>Net Working Time</TableCell>
                       <TableCell>Status</TableCell>
                     </TableRow>
@@ -490,7 +463,6 @@ export default function EmployeeReportViewer({ reportData }) {
                         <TableCell>{att.login_time || '--'}</TableCell>
                         <TableCell>{att.logout_time || 'Not punched out'}</TableCell>
                         <TableCell>{att.total_hours || '0'} hrs</TableCell>
-                        <TableCell>{att.break_hours || '0'} hrs</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
                           {att.net_hours || '0'} hrs
                         </TableCell>
