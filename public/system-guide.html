@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Welcome to Shazusoft HRMS - Complete User Guide & Feature Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #133829;
+      --primary-dark: #0b2319;
+      --primary-light: #1e563f;
+      --accent: #15803d;
+      --accent-light: #dcfce7;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px -1px rgba(0,0,0,0.08), 0 2px 6px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 24px -3px rgba(0,0,0,0.1), 0 4px 10px -2px rgba(0,0,0,0.05);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      line-height: 1.6;
+      touch-action: pan-x pan-y;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* Top Navigation Header */
+    .top-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(19, 56, 41, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .brand-text span {
+      font-size: 0.72rem;
+      color: #86efac;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-return {
+      background: #22c55e;
+      color: #0b2319;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-return:hover {
+      background: #4ade80;
+      transform: translateY(-1px);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 20px 80px 20px;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #133829 0%, #1e563f 60%, #0d281e 100%);
+      border-radius: var(--radius-lg);
+      padding: 48px 36px;
+      color: white;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(74, 222, 128, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #86efac;
+      margin-bottom: 16px;
+    }
+
+    .hero h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+      color: #e2e8f0;
+      max-width: 780px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .stat-item h3 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #86efac;
+    }
+
+    .stat-item span {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    /* Jump Navigation Bar */
+    .quick-nav {
+      position: sticky;
+      top: 68px;
+      z-index: 900;
+      background: rgba(248, 250, 252, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 12px 0;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+
+    .quick-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-pills {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-pill {
+      background: white;
+      border: 1px solid var(--border);
+      color: #334155;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-pill:hover, .nav-pill.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Section Headings */
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 24px;
+    }
+
+    /* Module Grid */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    .module-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .module-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .module-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #e8f5e9;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .module-meta h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    .module-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    .module-badge.highlight {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .module-badge.team {
+      background: #ede9fe;
+      color: #6d28d9;
+    }
+
+    .module-body p {
+      color: #475569;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      line-height: 1.55;
+    }
+
+    .feature-list {
+      list-style: none;
+      margin-bottom: 18px;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 20px;
+      font-size: 0.82rem;
+      color: #334155;
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+
+    .feature-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: #16a34a;
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+
+    .pro-tip {
+      background: #f8fafc;
+      border-left: 3px solid #133829;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.78rem;
+      color: #334155;
+      margin-top: auto;
+    }
+
+    .pro-tip strong {
+      color: #0f172a;
+    }
+
+    /* Quick Start 4 Steps */
+    .quick-start-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 48px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .step-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      position: relative;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+    }
+
+    .step-item h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+
+    .step-item p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Shortcuts & FAQ */
+    .two-column {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+
+    .info-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .info-card h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .shortcut-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.84rem;
+    }
+
+    .shortcut-row:last-child {
+      border-bottom: none;
+    }
+
+    kbd {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+      font-family: monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      color: #334155;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        padding: 32px 20px;
+      }
+      .modules-grid {
+        grid-template-columns: 1fr;
+      }
+      .quick-start-box {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="top-header">
+    <a href="/?tab=dashboard" class="brand-group">
+      <div class="brand-logo">S</div>
+      <div class="brand-text">
+        <h1>Shazusoft HRMS</h1>
+        <span>User Guide & Feature Showcase</span>
+      </div>
+    </a>
+    <div class="header-actions">
+      <a href="/?tab=dashboard" class="btn-return">
+        <span>← Launch Portal</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Hero Welcome Banner -->
+    <section class="hero">
+      <span class="hero-badge">Welcome to Our New Software • 2026 Edition</span>
+      <h2>Next-Generation Workplace Operations & HR Intelligence</h2>
+      <p>
+        Welcome to the official Shazusoft HRMS Enterprise Suite! Designed from the ground up for modern high-performance teams, 
+        this software unifies GPS geofenced attendance, team task trackers, instant issue resolution with @mention collaboration, 
+        leave policies, and transparent performance appraisals in a lightning-fast PWA experience.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <h3>10+</h3>
+          <span>Integrated Core Modules</span>
+        </div>
+        <div class="stat-item">
+          <h3>150m</h3>
+          <span>Office GPS Geofence</span>
+        </div>
+        <div class="stat-item">
+          <h3>Real-Time</h3>
+          <span>Web Push & @Mention Alerts</span>
+        </div>
+        <div class="stat-item">
+          <h3>100% PWA</h3>
+          <span>Native Zero-Zoom App Feel</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Navigation Filter Pills -->
+    <nav class="quick-nav">
+      <div class="nav-pills">
+        <a href="#quickstart" class="nav-pill">🚀 Quick Start</a>
+        <a href="#attendance" class="nav-pill">📍 GPS Attendance</a>
+        <a href="#timesheet" class="nav-pill">⏱️ Timesheet & Regularization</a>
+        <a href="#tasks" class="nav-pill">📋 Multi-Staff Tasks</a>
+        <a href="#workdone" class="nav-pill">✍️ Daily Work Done</a>
+        <a href="#leaves" class="nav-pill">🏖️ Leaves & Permissions</a>
+        <a href="#appraisal" class="nav-pill">⭐ Performance Appraisal</a>
+        <a href="#issues" class="nav-pill">💬 Issues & @Mention Chat</a>
+        <a href="#security" class="nav-pill">🔒 Security & Mobile PWA</a>
+      </div>
+    </nav>
+
+    <!-- Quick Start Guide -->
+    <section id="quickstart" class="quick-start-box">
+      <h2 class="section-title">🚀 First-Day Employee Quick Start</h2>
+      <p class="section-subtitle">Follow these 4 simple steps every workday for effortless compliance and visibility:</p>
+      
+      <div class="steps-grid">
+        <div class="step-item">
+          <div class="step-number">1</div>
+          <h4>Punch In via GPS</h4>
+          <p>Upon arriving at office (within 150m of designated premises), click <strong>"Punch In"</strong>. Your coordinates and login timestamp are recorded securely.</p>
+        </div>
+
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <h4>Track Tasks & Collaboration</h4>
+          <p>Check the <strong>"Task Tracker"</strong> board for tasks assigned to you (individual or multi-staff team tasks). Update status as you progress.</p>
+        </div>
+
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <h4>Log Daily Work Done</h4>
+          <p>Before leaving, enter tasks completed, project names, and hours spent in the <strong>"Work Done"</strong> tab for management review.</p>
+        </div>
+
+        <div class="step-item">
+          <div class="step-number">4</div>
+          <h4>Punch Out at EOD</h4>
+          <p>Click <strong>"Punch Out"</strong> on the dashboard. Net working hours (deducting recorded break times) are instantly calculated and stored.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Complete Module Showcase -->
+    <section>
+      <h2 class="section-title">📦 Complete Module Walkthrough</h2>
+      <p class="section-subtitle">Everything you need to know about the software tools and workflows:</p>
+
+      <div class="modules-grid">
+
+        <!-- Module 1: Geofence GPS Attendance -->
+        <div class="module-card" id="attendance">
+          <div>
+            <div class="card-header">
+              <div class="module-icon">📍</div>
+              <div class="module-meta">
+                <h3>GPS Geofence Attendance</h3>
+                <span class="module-badge highlight">150m Office Perimeter</span>
+              </div>
+            </div>
+            <div class="module-body">
+              <p>Ensures honest, tamper-proof attendance without physical biometric hardware. Uses high-accuracy device GPS.</p>
+              <ul class="feature-list">
+                <li><strong>Dynamic Location Verification:</strong> System checks your device GPS against office latitude/longitude (150-meter radius).</li>
+                <li><strong>Punch In / Punch Out:</strong> Single-click punch with real-time shift countdown and overtime indicators.</li>
+                <li><strong>Break Tracking:</strong> Dedicated Lunch and Tea break timers to calculate accurate net office working hours.</li>
+                <li><strong>Office Grace Period:</strong> Standard 10:00 AM shift time with automatic late marking past grace limits.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pro-tip">
+            <strong>Pro Tip:</strong> Enable location permissions in your browser when prompted to allow automatic geofence checks.
+          </div>
+        </div>
+
+        <!-- Module 2: Timesheet & Regularization -->
+        <div class="module-card" id="timesheet">
+          <div>
+            <div class="card-header">
+              <div class="module-icon">⏱️</div>
+              <div class="module-meta">
+                <h3>Timesheet & Regularization</h3>
+                <span class="module-badge">Past-Days Review</span>
+              </div>
+            </div>
+            <div class="module-body">
+              <p>Review historical working hours, attendance consistency, and request corrections for missed punches.</p>
+              <ul class="feature-list">
+                <li><strong>Past-Days Timesheet:</strong> Review daily login, logout, break duration, and net hours (prevents confusing future rows).</li>
+                <li><strong>One-Click Regularization:</strong> If you forgot to punch or faced GPS glitches, submit a regularization request with reason.</li>
+                <li><strong>Manager Approval Workflow:</strong> Admins can review, approve, or reject regularization requests with remarks.</li>
+                <li><strong>Search & Filter:</strong> Filter timesheet records by date range, month, or status.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pro-tip">
+            <strong>Pro Tip:</strong> Regularization requests update timesheet hours automatically upon manager approval.
+          </div>
+        </div>
+
+        <!-- Module 3: Multi-Staff Task Assignment -->
+        <div class="module-card" id="tasks">
+          <div>
+            <div class="card-header">
+              <div class="module-icon">👥</div>
+              <div class="module-meta">
+                <h3>Multi-Staff Task Tracker</h3>
+                <span class="module-badge team">Team Collaboration</span>
+              </div>
+            </div>
+            <div class="module-body">
+              <p>Managers can assign critical project tasks to multiple team members simultaneously with shared accountability.</p>
+              <ul class="feature-list">
+                <li><strong>Multi-Staff Selection:</strong> Assign 1 task to 1, 3, or all active staff members with individual checkboxes and quick "Select All" button.</li>
+                <li><strong>Priority & Deadlines:</strong> Categorize tasks into Urgent (P0), High (P1), Medium (P2), or Low (P3) with strict due dates.</li>
+                <li><strong>Progress Reporting:</strong> Any assigned staff member can report progress (0-100%) and work notes.</li>
+                <li><strong>Auto WorkDone Logging:</strong> Marking a task completed automatically logs verified completion entries for each assigned staff member.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pro-tip">
+            <strong>Pro Tip:</strong> Filter tasks by "My Assigned Tasks" or search by project title in the Task Tracker.
+          </div>
+        </div>
+
+        <!-- Module 4: Daily Work Done -->
+        <div class="module-card" id="workdone">
+          <div>
+            <div class="card-header">
+              <div class="module-icon">✍️</div>
+              <div class="module-meta">
+                <h3>Daily Work Done Logger</h3>
+                <span class="module-badge">Accountability</span>
+              </div>
+            </div>
+            <div class="module-body">
+              <p>Maintain transparency and track project progress by recording daily activities and deliverables.</p>
+              <ul class="feature-list">
+                <li><strong>Daily Activity Logging:</strong> Record project names, task objectives, estimated hours, and actual hours spent.</li>
+                <li><strong>Search & Filter:</strong> Search past work logs by date, project, or keyword.</li>
+                <li><strong>Manager Review:</strong> Management can inspect team productivity logs in real-time.</li>
+                <li><strong>Export Capability:</strong> Download your work log history for monthly reporting.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pro-tip">
+            <strong>Pro Tip:</strong> Enter your work log daily before 6:30 PM to ensure accurate monthly productivity calculations.
+          </div>
+        </div>
+
+        <!-- Module 5: Leaves & Permissions -->
+        <div class="module-card" id="leaves">
+          <div>
+            <div class="card-header">
+              <div class="module-icon">🏖️</div>
+              <div class="module-meta">
+                <h3>Leaves Quota & Permissions</h3>
+                <span class="module-badge highlight">Live Quota Cards</span>
+              </div>
+            </div>
+            <div class="module-body">
+              <p>Transparent policy quotas for Casual, Sick, and Paid leaves alongside 2-hour monthly permission passes.</p>
+              <ul class="feature-list">
+                <li><strong>Real-Time Balance Cards:</strong> Instant visibility into remaining Casual (1/mo), Sick (1/mo), and Paid leave allowances.</li>
+                <li><strong>Short Permission Passes:</strong> Request emergency short permissions (up to 2 hours per pass, max 2 passes per month).</li>
+                <li><strong>Single & Multi-Day Requests:</strong> Simple date picker with automated day count calculations.</li>
+                <li><strong>Instant Notifications:</strong> Receive push notifications when management reviews and decisions your application.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pro-tip">
+            <strong>Pro Tip:</strong> Always apply for planned leaves at least 2 days in advance for smooth manager approval.
+          </div>
+        </div>
+
+        <!-- Module 6: Performance Self-Evaluation -->
+        <div class="module-card" id="appraisal">
+          <div>
+            <div class="card-header">
+              <div class="module-icon">⭐</div>
+              <div class="module-meta">
+                <h3>Self-Evaluations & Appraisal</h3>
+                <span class="module-badge">Monthly Review</span>
+              </div>
+            </div>
+            <div class="module-body">
+              <p>Structured monthly self-evaluations promoting personal growth, constructive feedback, and fair appraisals.</p>
+              <ul class="feature-list">
+                <li><strong>KPI Self-Scoring:</strong> Rate yourself across key competencies including Code Quality, Ownership, Timeliness, and Teamwork.</li>
+                <li><strong>Accomplishments & Challenges:</strong> Document key achievements and roadblocks faced during the month.</li>
+                <li><strong>Manager Feedback:</strong> View manager feedback, counter-ratings, and constructive appraisal notes.</li>
+                <li><strong>Digital Signature:</strong> Sign off digitally with a formal declaration for HR records.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pro-tip">
+            <strong>Pro Tip:</strong> Be thorough and specific in your monthly work summary to highlight your contributions during appraisal cycles.
+          </div>
+        </div>
+
+        <!-- Module 7: Issues & @Mention Chat Hub -->
+        <div class="module-card" id="issues">
+          <div>
+            <div class="card-header">
+              <div class="module-icon">💬</div>
+              <div class="module-meta">
+                <h3>Issue Resolution & Chat Hub</h3>
+                <span class="module-badge team">@Mention Enabled</span>
+              </div>
+            </div>
+            <div class="module-body">
+              <p>Collaborative support ticket system for IT assistance, payroll questions, policy clarifications, and task inquiries.</p>
+              <ul class="feature-list">
+                <li><strong>Live Conversation Threads:</strong> Message back and forth with management in real-time on specific tickets.</li>
+                <li><strong>@Mention Autocomplete:</strong> Type <code>@Name</code> to tag any active team member; they receive immediate push notifications and full ticket access!</li>
+                <li><strong>Scope Filtering:</strong> Toggle between "All Issues", "Raised by Me", and "Mentioned In" with dedicated badges.</li>
+                <li><strong>Resolution Tracking:</strong> Track ticket status through Open, In-Progress, Resolved, and Closed with audit history.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pro-tip">
+            <strong>Pro Tip:</strong> When raising an issue concerning a teammate, tag them with <code>@Name</code> so they can participate in the thread.
+          </div>
+        </div>
+
+        <!-- Module 8: Security & Mobile Experience -->
+        <div class="module-card" id="security">
+          <div>
+            <div class="card-header">
+              <div class="module-icon">🔒</div>
+              <div class="module-meta">
+                <h3>Security & Mobile PWA Feel</h3>
+                <span class="module-badge highlight">Native App Zero-Zoom</span>
+              </div>
+            </div>
+            <div class="module-body">
+              <p>Built with enterprise security standards, authentic email OTP authentication, and a native mobile feel.</p>
+              <ul class="feature-list">
+                <li><strong>Authentic Email OTP:</strong> Genuine 6-digit one-time password dispatched straight to your verified email inbox.</li>
+                <li><strong>Zero-Zoom Native Experience:</strong> Accidental mobile pinch-to-zoom and double-tap zoom are strictly disabled for rock-solid stability.</li>
+                <li><strong>Instant Session Guard:</strong> Deactivated or resigned accounts are instantly auto-logged out and blocked from re-authenticating.</li>
+                <li><strong>Installable PWA:</strong> Add Shazusoft HRMS to your phone's Home Screen for fullscreen native app execution!</li>
+              </ul>
+            </div>
+          </div>
+          <div class="pro-tip">
+            <strong>Pro Tip:</strong> On iPhone/Android, tap "Add to Home Screen" in your browser menu to run Shazusoft HRMS as a standalone fullscreen app!
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Keyboard Shortcuts & FAQs -->
+    <section class="two-column">
+      
+      <!-- Shortcuts Card -->
+      <div class="info-card">
+        <h3>⌨️ Keyboard Shortcuts Cheat Sheet</h3>
+        <p style="color: var(--text-muted); font-size: 0.84rem; margin-bottom: 16px;">Boost your daily productivity with global keyboard shortcuts:</p>
+        
+        <div class="shortcut-row">
+          <span>Global Search (Navigate to any tab or staff)</span>
+          <div><kbd>Ctrl</kbd> + <kbd>K</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span>Toggle Left Sidebar (Expand / Collapse)</span>
+          <div><kbd>Ctrl</kbd> + <kbd>B</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span>Tag Team Member in Chat</span>
+          <div><kbd>@</kbd> + <kbd>Name</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span>Send Message in Issue Thread</span>
+          <div><kbd>Enter</kbd></div>
+        </div>
+        <div class="shortcut-row">
+          <span>Close Modal / Dialog</span>
+          <div><kbd>Esc</kbd></div>
+        </div>
+      </div>
+
+      <!-- FAQ Card -->
+      <div class="info-card">
+        <h3>❓ Frequently Asked Questions</h3>
+        
+        <div style="margin-bottom: 14px;">
+          <h4 style="font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 4px;">What if I punch in outside the 150m geofence?</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">The system will display a distance warning with your current coordinates. If you are on an off-site client visit, submit a regularization request noting your client location.</p>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <h4 style="font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Can multiple staff complete a shared task?</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Yes! Collaborative tasks show all assignees. Any assigned member can update progress or complete the task, logging verified hours for everyone involved.</p>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.9rem; font-weight: 700; color: #0f172a; margin-bottom: 4px;">How do I receive instant push alerts?</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Click the bell icon in the top header and click "Enable Push Notifications". When an admin updates your leave or mentions you, you'll receive a native device alert.</p>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2026 Shazusoft Technologies. Enterprise HRMS Platform. All rights reserved.</p>
+    <p style="margin-top: 6px;">Need technical help? Contact <a href="mailto:support@shazusoft.com">support@shazusoft.com</a> or raise a ticket in the <a href="/?tab=chat-hub">Issue Resolution Hub</a>.</p>
+  </footer>
+
+</body>
+</html>

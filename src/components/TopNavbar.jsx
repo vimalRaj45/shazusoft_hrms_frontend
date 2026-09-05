@@ -25,7 +25,8 @@ import {
   Person as PersonIcon,
   NotificationsActive as NotificationsActiveIcon,
   NotificationsOff as NotificationsOffIcon,
-  Notifications as NotificationsIcon
+  Notifications as NotificationsIcon,
+  HelpOutline as HelpOutlineIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
@@ -302,6 +303,23 @@ export default function TopNavbar({
         {/* Right Side: Push Notification Bell + User Profile */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
 
+          {/* System Guide & Feature Showcase Button */}
+          <Tooltip title="System Guide & Feature Showcase" placement="bottom" arrow>
+            <IconButton
+              onClick={() => onSelectView && onSelectView('system-guide')}
+              sx={{
+                color: activeView === 'system-guide' ? '#133829' : '#64748b',
+                bgcolor: activeView === 'system-guide' ? '#e8f5e9' : 'transparent',
+                borderRadius: '8px',
+                p: 0.9,
+                transition: 'all 0.15s ease',
+                '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
+              }}
+            >
+              <HelpOutlineIcon sx={{ fontSize: 22 }} />
+            </IconButton>
+          </Tooltip>
+
           {/* Push Notification Bell Button */}
           <Tooltip title={pushSubscribed ? 'Notification Settings' : 'Enable Push Notifications'} placement="bottom" arrow>
             <IconButton
@@ -460,6 +478,17 @@ export default function TopNavbar({
             <MenuItem onClick={handleNavigateProfile} sx={{ fontWeight: 700, fontSize: 13, py: 1.2, color: '#0f172a' }}>
               <PersonIcon fontSize="small" sx={{ mr: 1.2, color: 'primary.main' }} />
               My Profile & Documents
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                handleCloseMenu();
+                if (onSelectView) onSelectView('system-guide');
+              }}
+              sx={{ fontWeight: 700, fontSize: 13, py: 1.2, color: '#0f172a' }}
+            >
+              <HelpOutlineIcon fontSize="small" sx={{ mr: 1.2, color: 'primary.main' }} />
+              System Guide & Features
             </MenuItem>
 
             <MenuItem onClick={handleLogout} sx={{ color: '#dc2626', fontWeight: 700, fontSize: 13, py: 1.2 }}>

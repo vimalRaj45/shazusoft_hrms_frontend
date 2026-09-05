@@ -22,7 +22,13 @@ import {
   IconButton,
   Tooltip,
   Slider,
-  CircularProgress
+  CircularProgress,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
+  FormControl,
+  InputLabel,
+  Select
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,7 +41,8 @@ import {
   CalendarToday as CalendarIcon,
   AccessTime as TimeIcon,
   Flag as PriorityIcon,
-  AssignmentTurnedIn as DoneIcon
+  AssignmentTurnedIn as DoneIcon,
+  Group as GroupIcon
 } from '@mui/icons-material';
 import toast, { muiToast } from '../utils/muiToast';
 import confetti from 'canvas-confetti';
@@ -61,7 +68,7 @@ export default function TaskTrackerBoard() {
     task_title: '',
     project_name: '',
     description: '',
-    assigned_to_id: '',
+    assigned_to_ids: [],
     priority: 'High',
     due_date: '',
     estimated_hours: '4'
@@ -102,16 +109,20 @@ export default function TaskTrackerBoard() {
     fetchTasks();
   }, [isAdmin]);
 
-  // Handle Manager Task Assignment
+  // Handle Manager Task Assignment (Supports Multi-Staff Assignment)
   const handleAssignTask = async (e) => {
-    e.preventDefault();
-    if (!assignForm.assigned_to_id) {
-      toast.error('Please select an employee to assign this task.');
+    if (e) e.preventDefault();
+    if (!assignForm.assigned_to_ids || assignForm.assigned_to_ids.length === 0) {
+      toast.error('Please select at least one staff member to assign this task.');
       return;
     }
 
     try {
-      const res = await tasksAPI.assign(assignForm);
+      const res = await tasksAPI.assign({
+        ...assignForm,
+        assigned_to_ids: assignForm.assigned_to_ids,
+        assigned_to_id: assignForm.assigned_to_ids.join(',')
+      });
       toast.success(res.data.message || 'Task assigned successfully!');
       confetti({ particleCount: 60, spread: 60 });
       setOpenAssignModal(false);
@@ -119,7 +130,7 @@ export default function TaskTrackerBoard() {
         task_title: '',
         project_name: '',
         description: '',
-        assigned_to_id: '',
+        assigned_to_ids: [],
         priority: 'High',
         due_date: '',
         estimated_hours: '4'
@@ -203,7 +214,9 @@ export default function TaskTrackerBoard() {
 
   // Filter calculations
   let filteredTasks = [...tasks];
-  if (filterEmployee) filteredTasks = filteredTasks.filter(t => t.assigned_to_id === filterEmployee);
+  if (filterEmployee) {
+    filteredTasks = filteredTasks.filter(t => (t.assigned_to_id || '').split(',').map(s => s.trim()).includes(filterEmployee));
+  }
   if (filterStatus) filteredTasks = filteredTasks.filter(t => t.status === filterStatus);
   if (filterPriority) filteredTasks = filteredTasks.filter(t => t.priority === filterPriority);
   if (searchQuery) {
@@ -419,8 +432,23 @@ export default function TaskTrackerBoard() {
                           <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                             {t.task_title}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.3 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.3, flexWrap: 'wrap' }}>
                             <Chip label={t.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: 11, height: 20, borderRadius: '4px' }} />
+                            {(t.assigned_to_name || '').includes(',') && (
+                              <Chip
+                                icon={<GroupIcon style={{ fontSize: 13, marginLeft: 4 }} />}
+                                label={`Team Task (${(t.assigned_to_name || '').split(',').length} Staff)`}
+                                size="small"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.68rem',
+                                  fontWeight: 700,
+                                  bgcolor: '#e0f2fe',
+                                  color: '#0369a1',
+                                  borderRadius: '3px'
+                                }}
+                              />
+                            )}
                             {t.description && (
                               <Typography variant="caption" sx={{ color: '#64748b', maxWidth: 280, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {t.description}
@@ -431,10 +459,28 @@ export default function TaskTrackerBoard() {
 
                         {isAdmin && (
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
-                              {t.assigned_to_name}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: '#64748b' }}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxWidth: 240, alignItems: 'center' }}>
+                              {(t.assigned_to_name || 'Unassigned')
+                                .split(',')
+                                .map(s => s.trim())
+                                .filter(Boolean)
+                                .map((name, idx) => (
+                                  <Chip
+                                    key={idx}
+                                    label={name}
+                                    size="small"
+                                    sx={{
+                                      height: 22,
+                                      fontSize: '0.72rem',
+                                      fontWeight: 700,
+                                      bgcolor: '#f1f5f9',
+                                      color: '#0f172a',
+                                      border: '1px solid #e2e8f0'
+                                    }}
+                                  />
+                                ))}
+                            </Box>
+                            <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.25 }}>
                               by {t.assigned_by_name || 'Admin'}
                             </Typography>
                           </TableCell>
@@ -546,20 +592,75 @@ export default function TaskTrackerBoard() {
           <DialogContent dividers sx={{ p: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Assign To Staff"
-                  required
-                  value={assignForm.assigned_to_id}
-                  onChange={(e) => setAssignForm({ ...assignForm, assigned_to_id: e.target.value })}
-                >
-                  {employees.map((emp) => (
-                    <MenuItem key={emp.id} value={emp.id}>
-                      {emp.name} — {emp.designation} ({emp.id})
-                    </MenuItem>
-                  ))}
-                </TextField>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="assign-staff-label">Assign To Staff (Select Multiple)</InputLabel>
+                  <Select
+                    labelId="assign-staff-label"
+                    multiple
+                    value={assignForm.assigned_to_ids}
+                    onChange={(e) => {
+                      const { value } = e.target;
+                      setAssignForm({
+                        ...assignForm,
+                        assigned_to_ids: typeof value === 'string' ? value.split(',') : value
+                      });
+                    }}
+                    input={<OutlinedInput label="Assign To Staff (Select Multiple)" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((val) => {
+                          const emp = employees.find(e => e.id === val);
+                          return (
+                            <Chip
+                              key={val}
+                              size="small"
+                              label={emp ? emp.name : val}
+                              sx={{
+                                height: 22,
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                bgcolor: 'rgba(19, 56, 41, 0.1)',
+                                color: '#133829'
+                              }}
+                            />
+                          );
+                        })}
+                      </Box>
+                    )}
+                  >
+                    {employees.filter(e => e.status === 'active').map((emp) => (
+                      <MenuItem key={emp.id} value={emp.id}>
+                        <Checkbox checked={assignForm.assigned_to_ids.indexOf(emp.id) > -1} size="small" />
+                        <ListItemText
+                          primary={<Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.82rem' }}>{emp.name}</Typography>}
+                          secondary={<Typography variant="caption" sx={{ color: '#64748b' }}>{emp.designation || emp.role} • {emp.department || 'Staff'} ({emp.id})</Typography>}
+                        />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => {
+                      const allActiveIds = employees.filter(e => e.status === 'active').map(e => e.id);
+                      setAssignForm({ ...assignForm, assigned_to_ids: allActiveIds });
+                    }}
+                    sx={{ textTransform: 'none', fontSize: '0.7rem', p: 0.2, minWidth: 0, fontWeight: 700, color: '#133829' }}
+                  >
+                    Select All Staff
+                  </Button>
+                  <Typography variant="caption" sx={{ color: '#cbd5e1' }}>•</Typography>
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => setAssignForm({ ...assignForm, assigned_to_ids: [] })}
+                    sx={{ textTransform: 'none', fontSize: '0.7rem', p: 0.2, minWidth: 0, fontWeight: 600, color: '#dc2626' }}
+                  >
+                    Clear
+                  </Button>
+                </Box>
               </Grid>
 
               <Grid item xs={12} sm={6}>

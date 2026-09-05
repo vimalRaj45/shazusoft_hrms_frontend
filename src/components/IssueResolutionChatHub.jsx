@@ -104,6 +104,7 @@ export default function IssueResolutionChatHub({ user }) {
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
+  const [ticketScopeFilter, setTicketScopeFilter] = useState('all'); // 'all' | 'mine' | 'mentioned'
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
@@ -618,6 +619,50 @@ export default function IssueResolutionChatHub({ user }) {
                 fullWidth
               />
 
+              {!isAdmin && (
+                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.25 }}>
+                  {[
+                    { key: 'all', label: 'All Issues' },
+                    { key: 'mine', label: 'Raised by Me' },
+                    { key: 'mentioned', label: 'Mentioned' }
+                  ].map((tab) => {
+                    const isSelected = ticketScopeFilter === tab.key;
+                    const count = tab.key === 'all'
+                      ? tickets.length
+                      : tab.key === 'mine'
+                        ? tickets.filter(t => t.creator_id === user?.id).length
+                        : tickets.filter(t => t.creator_id !== user?.id).length;
+                    return (
+                      <Button
+                        key={tab.key}
+                        size="small"
+                        variant={isSelected ? 'contained' : 'outlined'}
+                        onClick={() => setTicketScopeFilter(tab.key)}
+                        sx={{
+                          flex: 1,
+                          py: 0.3,
+                          px: 0.5,
+                          fontSize: '0.67rem',
+                          fontWeight: isSelected ? 800 : 600,
+                          textTransform: 'none',
+                          minWidth: 0,
+                          borderRadius: '4px',
+                          bgcolor: isSelected ? '#15803d' : 'transparent',
+                          color: isSelected ? '#ffffff' : '#475569',
+                          borderColor: isSelected ? '#15803d' : '#e2e8f0',
+                          '&:hover': {
+                            bgcolor: isSelected ? '#166534' : '#f8fafc',
+                            borderColor: isSelected ? '#166534' : '#cbd5e1'
+                          }
+                        }}
+                      >
+                        {tab.label} ({count})
+                      </Button>
+                    );
+                  })}
+                </Box>
+              )}
+
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                 <FormControl size="small" fullWidth>
                   <Select
@@ -655,11 +700,26 @@ export default function IssueResolutionChatHub({ user }) {
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>No support tickets found</Typography>
                   <Typography variant="caption">Click "+ Raise New Issue" to start a thread</Typography>
                 </Box>
-              ) : (
-                tickets.map((t) => {
+              ) : (() => {
+                const displayedTickets = tickets.filter(t => {
+                  if (ticketScopeFilter === 'mine') return t.creator_id === user?.id;
+                  if (ticketScopeFilter === 'mentioned') return t.creator_id !== user?.id;
+                  return true;
+                });
+
+                if (displayedTickets.length === 0) {
+                  return (
+                    <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>No tickets match "{ticketScopeFilter === 'mine' ? 'Raised by Me' : 'Mentioned'}" filter</Typography>
+                    </Box>
+                  );
+                }
+
+                return displayedTickets.map((t) => {
                   const isSelected = selectedTicket?.id === t.id;
                   const statusConf = STATUS_CONFIG[t.status] || STATUS_CONFIG['Open'];
                   const prioConf = PRIORITIES.find(p => p.label === t.priority) || PRIORITIES[1];
+                  const isMentioned = !isAdmin && t.creator_id !== user?.id;
 
                   return (
                     <Box
@@ -681,7 +741,24 @@ export default function IssueResolutionChatHub({ user }) {
                         <Typography variant="caption" sx={{ fontWeight: 800, color: '#15803d', fontSize: '0.75rem', letterSpacing: '0.02em' }}>
                           {t.ticket_number}
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                        <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0, alignItems: 'center' }}>
+                          {isMentioned && (
+                            <Chip
+                              icon={<AlternateEmailIcon sx={{ fontSize: '11px !important', color: '#6d28d9 !important' }} />}
+                              label="Mentioned"
+                              size="small"
+                              sx={{
+                                height: 18,
+                                fontSize: '0.62rem',
+                                fontWeight: 800,
+                                bgcolor: '#ede9fe',
+                                color: '#6d28d9',
+                                border: '1px solid #ddd6fe',
+                                borderRadius: '4px',
+                                px: 0.2
+                              }}
+                            />
+                          )}
                           <Chip
                             label={t.priority}
                             size="small"
@@ -753,8 +830,8 @@ export default function IssueResolutionChatHub({ user }) {
                       </Box>
                     </Box>
                   );
-                })
-              )}
+                });
+              })()}
             </Box>
           </Box>
         )}
@@ -868,6 +945,24 @@ export default function IssueResolutionChatHub({ user }) {
 
                 {/* Messages Feed Area */}
                 <Box sx={{ flex: 1, p: 2, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {!isAdmin && selectedTicket.creator_id !== user?.id && (
+                    <Alert
+                      severity="info"
+                      icon={<AlternateEmailIcon sx={{ fontSize: 18, color: '#4338ca' }} />}
+                      sx={{
+                        py: 0.5,
+                        px: 1.5,
+                        borderRadius: '6px',
+                        bgcolor: '#eef2ff',
+                        border: '1px solid #c7d2fe',
+                        color: '#3730a3',
+                        fontSize: '0.78rem'
+                      }}
+                    >
+                      You are participating in this issue because you were mentioned by <strong>{selectedTicket.creator_name}</strong>. You can review discussions and reply directly below.
+                    </Alert>
+                  )}
+
                   {messagesLoading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                       <CircularProgress size={28} />

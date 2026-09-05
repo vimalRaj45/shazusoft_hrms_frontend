@@ -301,6 +301,19 @@ const baseTheme = (mode = 'light') =>
             }
           }
         }
+      },
+      MuiCssBaseline: {
+        styleOverrides: {
+          'html, body, #root': {
+            touchAction: 'pan-x pan-y',
+            WebkitTextSizeAdjust: '100%',
+            overscrollBehaviorY: 'none',
+            WebkitTapHighlightColor: 'transparent'
+          },
+          'button, a, input, select, textarea, [role="button"]': {
+            touchAction: 'manipulation'
+          }
+        }
       }
     }
   });

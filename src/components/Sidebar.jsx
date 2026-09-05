@@ -281,7 +281,7 @@ export default function Sidebar({
           <List dense sx={{ p: 0, mb: isCollapsed ? 1 : 2 }}>
             {renderNavItem('dashboard', 'Dashboard', DashboardIcon)}
             {renderNavItem('profile', 'My Profile', ProfileIcon)}
-            {renderNavItem('guide', 'User Guide', GuideIcon)}
+            {renderNavItem('system-guide', 'System Guide & Features', GuideIcon, '2026')}
           </List>
 
           {/* Category 2: STAFF PORTAL (Clickable to Task Tracker) */}

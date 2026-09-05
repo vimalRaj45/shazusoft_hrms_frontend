@@ -61,6 +61,7 @@ import SplashScreen from './components/SplashScreen';
 import PWAInstallBanner from './components/PWAInstallButton';
 import IssueResolutionChatHub from './components/IssueResolutionChatHub';
 import UserProfile from './components/UserProfile';
+import SystemGuide from './components/SystemGuide';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -667,6 +668,11 @@ function AppContent() {
           {/* TAB: MY PROFILE & COMPANY DATA UPLOAD */}
           {activeTab === 'profile' && (
             <UserProfile />
+          )}
+
+          {/* TAB: SYSTEM GUIDE & FEATURE SHOWCASE */}
+          {(activeTab === 'system-guide' || activeTab === 'guide') && (
+            <SystemGuide />
           )}
 
           {/* TAB: ISSUE RESOLUTION & CHAT HUB */}
