@@ -57,7 +57,9 @@ import {
   Add as AddIcon,
   Search as SearchIcon,
   Clear as ClearIcon,
-  FilterList as FilterIcon
+  FilterList as FilterIcon,
+  CalendarMonth as CalendarIcon,
+  AccessTime as TimeIcon
 } from '@mui/icons-material';
 import toast, { muiToast } from '../utils/muiToast';
 import { adminAPI, workDoneAPI, leavesAPI, reportsAPI, evaluationsAPI, attendanceAPI, communicationsAPI } from '../services/api';
@@ -94,6 +96,14 @@ const SECTION_META = [
 
 export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpdate }) {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (typeof initialTab === 'number') {
@@ -724,6 +734,35 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mt: 0.5 }}>
             Real-time Office Presence, Work Submissions, Leaves & Performance Appraisals
           </Typography>
+
+          {/* Live Date & Time Display Badge (Identical to TopNavbar format) */}
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1.2,
+              px: 1.5,
+              py: 0.6,
+              mt: 1.2,
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              bgcolor: '#f8fafc'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+              <CalendarIcon sx={{ fontSize: 15, color: '#133829' }} />
+              <Typography variant="body2" sx={{ fontWeight: 700, fontSize: { xs: 11.5, sm: 12.5 }, color: '#0f172a' }}>
+                {format(currentTime, 'EEE, dd MMM yyyy')}
+              </Typography>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800 }}>|</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <TimeIcon sx={{ fontSize: 14, color: '#059669' }} />
+              <Typography variant="body2" sx={{ fontWeight: 800, fontSize: { xs: 11.5, sm: 12.5 }, color: '#059669', fontFamily: 'monospace' }}>
+                {format(currentTime, 'hh:mm:ss a')}
+              </Typography>
+            </Box>
+          </Box>
         </Box>
 
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
@@ -732,7 +771,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             color="primary"
             startIcon={<ManualAttendanceIcon />}
             onClick={() => setOpenManualAttendanceModal(true)}
-            sx={{ fontWeight: 700, borderRadius: '4px' }}
+            sx={{ fontWeight: 700, borderRadius: '8px' }}
           >
             Manual Attendance
           </Button>
@@ -742,7 +781,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             startIcon={<RefreshIcon />}
             onClick={fetchDashboardData}
             disabled={loading}
-            sx={{ borderRadius: '4px' }}
+            sx={{ borderRadius: '8px' }}
           >
             Refresh Data
           </Button>
@@ -751,7 +790,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             color="primary"
             startIcon={<SettingsIcon />}
             onClick={() => handleTabSelect(10)}
-            sx={{ fontWeight: 600, borderRadius: '4px' }}
+            sx={{ fontWeight: 600, borderRadius: '8px' }}
           >
             Geofence Setup
           </Button>
@@ -760,7 +799,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             color="primary"
             startIcon={<AddPersonIcon />}
             onClick={() => setOpenEmpModal(true)}
-            sx={{ fontWeight: 700, borderRadius: '4px' }}
+            sx={{ fontWeight: 700, borderRadius: '8px' }}
           >
             Add Staff
           </Button>
@@ -768,10 +807,9 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
       </Box>
 
       {/* Live Presence Metric KPI Cards (4 Clean 3-col Grid) */}
-      {/* Live Presence Metric KPI Cards (4 Clean 3-col Grid) */}
       <Grid container spacing={2} sx={{ mb: 4 }} alignItems="stretch">
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-          <Card sx={{ width: '100%', height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', borderTop: '3px solid #133829', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ width: '100%', height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', borderTop: '3px solid #133829', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>TOTAL STAFF</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: 'text.primary' }}>
@@ -781,7 +819,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </Card>
         </Grid>
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-          <Card sx={{ width: '100%', height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', borderTop: '3px solid #059669', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ width: '100%', height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', borderTop: '3px solid #059669', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PRESENT IN OFFICE</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: '#059669' }}>
@@ -791,7 +829,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </Card>
         </Grid>
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-          <Card sx={{ width: '100%', height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', borderTop: '3px solid #0891b2', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ width: '100%', height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', borderTop: '3px solid #0891b2', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#0891b2', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PUNCHED OUT</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: '#0891b2' }}>
@@ -801,7 +839,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </Card>
         </Grid>
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-          <Card sx={{ width: '100%', height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', borderTop: '3px solid #64748b', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ width: '100%', height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', borderTop: '3px solid #64748b', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>ABSENT TODAY</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: 'text.secondary' }}>
@@ -812,8 +850,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         </Grid>
       </Grid>
 
-      {/* Sleek Workspace Context Header (Eliminates Duplicate Module Button Matrix) */}
-      <Card sx={{ mb: 3, borderRadius: '6px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+      {/* Sleek Workspace Context Header */}
+      <Card sx={{ mb: 3, borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
         <Box sx={{ p: { xs: 2, sm: 2.5 }, bgcolor: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexWrap: 'wrap', gap: 1.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -821,7 +859,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                 sx={{
                   width: 44,
                   height: 44,
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   bgcolor: 'rgba(19, 56, 41, 0.08)',
                   display: 'flex',
                   alignItems: 'center',
@@ -865,31 +903,31 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' }, flexWrap: 'wrap' }}>
               {/* Contextual Metric Badges */}
               {activeTab === 0 && (
-                <Chip label={`${counts.present} Present / ${counts.totalStaff} Staff`} size="small" sx={{ fontWeight: 800, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '4px' }} />
+                <Chip label={`${counts.present} Present / ${counts.totalStaff} Staff`} size="small" sx={{ fontWeight: 800, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '6px' }} />
               )}
               {activeTab === 2 && pendingRegsCount > 0 && (
-                <Chip label={`${pendingRegsCount} Pending Action`} size="small" color="warning" sx={{ fontWeight: 800, borderRadius: '4px' }} />
+                <Chip label={`${pendingRegsCount} Pending Action`} size="small" color="warning" sx={{ fontWeight: 800, borderRadius: '6px' }} />
               )}
               {activeTab === 3 && (
-                <Chip label={`${allTasks.length} Logged Tasks`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />
+                <Chip label={`${allTasks.length} Logged Tasks`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '6px' }} />
               )}
               {activeTab === 4 && (
-                <Chip label={`${pendingLeavesCount} Pending / ${allLeaves.length} Total`} size="small" sx={{ fontWeight: 800, bgcolor: pendingLeavesCount > 0 ? '#fef3c7' : '#f1f5f9', color: pendingLeavesCount > 0 ? '#b45309' : '#475569', borderRadius: '4px' }} />
+                <Chip label={`${pendingLeavesCount} Pending / ${allLeaves.length} Total`} size="small" sx={{ fontWeight: 800, bgcolor: pendingLeavesCount > 0 ? '#fef3c7' : '#f1f5f9', color: pendingLeavesCount > 0 ? '#b45309' : '#475569', borderRadius: '6px' }} />
               )}
               {activeTab === 5 && (
-                <Chip label={`${evaluations.length} Evaluations Recorded`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />
+                <Chip label={`${evaluations.length} Evaluations Recorded`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '6px' }} />
               )}
               {activeTab === 6 && (
-                <Chip label={`${weeklyReports.length} Weekly Check-ins`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />
+                <Chip label={`${weeklyReports.length} Weekly Check-ins`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '6px' }} />
               )}
               {activeTab === 8 && (
-                <Chip label={`${employees.length} Registered Staff`} size="small" sx={{ fontWeight: 800, bgcolor: '#e0f2fe', color: '#0369a1', borderRadius: '4px' }} />
+                <Chip label={`${employees.length} Registered Staff`} size="small" sx={{ fontWeight: 800, bgcolor: '#e0f2fe', color: '#0369a1', borderRadius: '6px' }} />
               )}
               {activeTab === 9 && (
-                <Chip label={`${auditLogs.length} Security Audits`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />
+                <Chip label={`${auditLogs.length} Security Audits`} size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '6px' }} />
               )}
               {activeTab === 10 && (
-                <Chip label={`${holidays.length} Company Holidays`} size="small" sx={{ fontWeight: 800, bgcolor: '#f0fdf4', color: '#166534', borderRadius: '4px' }} />
+                <Chip label={`${holidays.length} Company Holidays`} size="small" sx={{ fontWeight: 800, bgcolor: '#f0fdf4', color: '#166534', borderRadius: '6px' }} />
               )}
 
               {/* Mobile-Only Section Switcher (hidden on desktop where left sidebar is active) */}
@@ -899,7 +937,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   size="small"
                   value={activeTab}
                   onChange={(e) => handleTabSelect(Number(e.target.value))}
-                  sx={{ bgcolor: '#f8fafc', borderRadius: '4px', '& .MuiSelect-select': { py: 0.8, fontSize: '0.8rem', fontWeight: 700 } }}
+                  sx={{ bgcolor: '#f8fafc', borderRadius: '8px', '& .MuiSelect-select': { py: 0.8, fontSize: '0.8rem', fontWeight: 700 } }}
                 >
                   {SECTION_META.map((sec, idx) => (
                     <MenuItem key={idx} value={idx} sx={{ fontSize: '0.82rem', fontWeight: 600 }}>
@@ -938,7 +976,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         </InputAdornment>
                       )
                     }}
-                    sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                    sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
                   />
                 </Grid>
 
@@ -951,7 +989,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       label="Department"
                       value={filterDepartment}
                       onChange={(e) => setFilterDepartment(e.target.value)}
-                      sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                      sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
                     >
                       <MenuItem value="ALL">All Departments</MenuItem>
                       {allDepartments.map(d => (
@@ -970,7 +1008,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       label="Status"
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
-                      sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                      sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
                     >
                       <MenuItem value="ALL">All Statuses</MenuItem>
                       {getStatusOptions(activeTab).map(opt => (
@@ -989,7 +1027,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       label="Work Mode"
                       value={filterWorkMode}
                       onChange={(e) => setFilterWorkMode(e.target.value)}
-                      sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                      sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
                     >
                       <MenuItem value="ALL">All Work Modes</MenuItem>
                       <MenuItem value="office">In-Office</MenuItem>
@@ -1007,7 +1045,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       label="Staff Status"
                       value={filterEmployeeStatus}
                       onChange={(e) => setFilterEmployeeStatus(e.target.value)}
-                      sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                      sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
                     >
                       <MenuItem value="ALL">All Statuses</MenuItem>
                       <MenuItem value="active">Active Staff</MenuItem>
@@ -1049,7 +1087,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           {activeTab === 0 && (
             <Box sx={{ overflowX: 'auto' }}>
               {filteredBoard.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 5, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+                <Box sx={{ textAlign: 'center', py: 5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1' }}>
                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
                     No staff records match the current search or filters.
                   </Typography>
@@ -1057,7 +1095,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                     <Button
                       size="small"
                       variant="outlined"
-                      sx={{ mt: 1.5, fontWeight: 700, borderRadius: '4px' }}
+                      sx={{ mt: 1.5, fontWeight: 700, borderRadius: '8px' }}
                       onClick={() => { setSearchTerm(''); setFilterDepartment('ALL'); setFilterStatus('ALL'); }}
                     >
                       Reset Filters
@@ -1118,7 +1156,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   variant="contained"
                   startIcon={<ManualAttendanceIcon />}
                   onClick={() => setOpenManualAttendanceModal(true)}
-                  sx={{ fontWeight: 700, borderRadius: '4px', bgcolor: '#133829' }}
+                  sx={{ fontWeight: 700, borderRadius: '8px', bgcolor: '#133829' }}
                 >
                   New Manual Override Entry
                 </Button>
@@ -1156,7 +1194,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             label={r.status}
                             color={r.status === 'Approved' ? 'success' : r.status === 'Rejected' ? 'error' : 'warning'}
                             size="small"
-                            sx={{ fontWeight: 800, borderRadius: '4px' }}
+                            sx={{ fontWeight: 800, borderRadius: '6px' }}
                           />
                         </TableCell>
                         <TableCell align="right">
@@ -1173,7 +1211,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                                   setResolveRemarks('Verified and regularized.');
                                   setOpenResolveModal(true);
                                 }}
-                                sx={{ fontWeight: 700, borderRadius: '4px' }}
+                                sx={{ fontWeight: 700, borderRadius: '10px' }}
                               >
                                 Approve
                               </Button>
@@ -1183,7 +1221,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                                 color="error"
                                 startIcon={<RejectIcon />}
                                 onClick={() => handleOpenRejection('regularization', r)}
-                                sx={{ fontWeight: 700, borderRadius: '4px' }}
+                                sx={{ fontWeight: 700, borderRadius: '8px' }}
                               >
                                 Reject
                               </Button>
@@ -1227,7 +1265,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>{t.date}</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>{t.employee_name || t.employee_id}</TableCell>
                         <TableCell>
-                          <Chip label={t.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '4px' }} />
+                          <Chip label={t.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '6px' }} />
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 700 }}>{t.task_title}</Typography>
@@ -1245,7 +1283,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             label={t.status}
                             color={t.status === 'Completed' ? 'success' : t.status === 'In-Progress' ? 'primary' : 'warning'}
                             size="small"
-                            sx={{ fontWeight: 700, borderRadius: '4px' }}
+                            sx={{ fontWeight: 700, borderRadius: '6px' }}
                           />
                         </TableCell>
                       </TableRow>
@@ -1307,7 +1345,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         {filteredLeaves.map((l) => (
                           <TableRow key={l.id} hover>
                             <TableCell sx={{ fontWeight: 700 }}>{l.employee_name || l.employee_id}</TableCell>
-                            <TableCell><Chip label={l.leave_type} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '4px' }} /></TableCell>
+                            <TableCell><Chip label={l.leave_type} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '6px' }} /></TableCell>
                             <TableCell sx={{ fontSize: 13 }}>{l.start_date} to {l.end_date}</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>{l.total_days} day(s)</TableCell>
                             <TableCell sx={{ color: 'text.secondary', fontSize: 13, maxWidth: 240 }}>
@@ -1319,15 +1357,15 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                               )}
                             </TableCell>
                             <TableCell>
-                              <Chip label={l.status} color={l.status === 'Approved' ? 'success' : l.status === 'Rejected' ? 'error' : 'warning'} size="small" sx={{ fontWeight: 700, borderRadius: '4px' }} />
+                              <Chip label={l.status} color={l.status === 'Approved' ? 'success' : l.status === 'Rejected' ? 'error' : 'warning'} size="small" sx={{ fontWeight: 700, borderRadius: '6px' }} />
                             </TableCell>
                             <TableCell align="right">
                               {l.status === 'Pending' ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                  <Button size="small" variant="contained" color="success" startIcon={<ApproveIcon />} onClick={() => handleLeaveAction(l.id, 'Approved')} sx={{ borderRadius: '4px', fontWeight: 700 }}>
+                                  <Button size="small" variant="contained" color="success" startIcon={<ApproveIcon />} onClick={() => handleLeaveAction(l.id, 'Approved')} sx={{ borderRadius: '8px', fontWeight: 700 }}>
                                     Approve
                                   </Button>
-                                  <Button size="small" variant="outlined" color="error" startIcon={<RejectIcon />} onClick={() => handleOpenRejection('leave', l)} sx={{ borderRadius: '4px', fontWeight: 700 }}>
+                                  <Button size="small" variant="outlined" color="error" startIcon={<RejectIcon />} onClick={() => handleOpenRejection('leave', l)} sx={{ borderRadius: '8px', fontWeight: 700 }}>
                                     Reject
                                   </Button>
                                 </Box>
@@ -1378,15 +1416,15 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                               )}
                             </TableCell>
                             <TableCell>
-                              <Chip label={p.status} color={p.status === 'Approved' ? 'success' : p.status === 'Rejected' ? 'error' : 'warning'} size="small" sx={{ fontWeight: 700, borderRadius: '4px' }} />
+                              <Chip label={p.status} color={p.status === 'Approved' ? 'success' : p.status === 'Rejected' ? 'error' : 'warning'} size="small" sx={{ fontWeight: 700, borderRadius: '6px' }} />
                             </TableCell>
                             <TableCell align="right">
                               {p.status === 'Pending' ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                  <Button size="small" variant="contained" color="success" startIcon={<ApproveIcon />} onClick={() => handlePermissionAction(p.id, 'Approved')} sx={{ borderRadius: '4px', fontWeight: 700 }}>
+                                  <Button size="small" variant="contained" color="success" startIcon={<ApproveIcon />} onClick={() => handlePermissionAction(p.id, 'Approved')} sx={{ borderRadius: '8px', fontWeight: 700 }}>
                                     Approve
                                   </Button>
-                                  <Button size="small" variant="outlined" color="error" startIcon={<RejectIcon />} onClick={() => handleOpenRejection('permission', p)} sx={{ borderRadius: '4px', fontWeight: 700 }}>
+                                  <Button size="small" variant="outlined" color="error" startIcon={<RejectIcon />} onClick={() => handleOpenRejection('permission', p)} sx={{ borderRadius: '8px', fontWeight: 700 }}>
                                     Reject
                                   </Button>
                                 </Box>
@@ -1405,7 +1443,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               {/* Subtab 2: Monthly Quotas & Policy Settings */}
               {leaveSubTab === 2 && (
                 <Box sx={{ maxWidth: 880, mx: 'auto', py: 1 }}>
-                  <Alert severity="info" sx={{ mb: 3, borderRadius: '4px' }}>
+                  <Alert severity="info" sx={{ mb: 3, borderRadius: '10px' }}>
                     <strong>Monthly Leave Quota Policy:</strong> All leave quotas are configured on a <strong>monthly-wise</strong> basis. Unused allowances refresh each month. Changes apply immediately to all active staff portals and timesheet calculations.
                   </Alert>
 
@@ -1415,7 +1453,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Typography>
                   <Grid container spacing={2} sx={{ mb: 4 }}>
                     <Grid item xs={6} sm={3}>
-                      <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                      <Box sx={{ p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>CASUAL LEAVE (CL)</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 800, color: '#3b82f6', mt: 0.5 }}>
                           {leavePolicy.casual_leave} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {leavePolicy.casual_leave}d</span>
@@ -1424,7 +1462,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       </Box>
                     </Grid>
                     <Grid item xs={6} sm={3}>
-                      <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                      <Box sx={{ p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>SICK LEAVE (SL)</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
                           {leavePolicy.sick_leave} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {leavePolicy.sick_leave}d</span>
@@ -1433,7 +1471,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       </Box>
                     </Grid>
                     <Grid item xs={6} sm={3}>
-                      <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                      <Box sx={{ p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>PAID ANNUAL LEAVE (PL)</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 800, color: '#0284c7', mt: 0.5 }}>
                           {leavePolicy.paid_leave} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {leavePolicy.paid_leave}d</span>
@@ -1442,7 +1480,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       </Box>
                     </Grid>
                     <Grid item xs={6} sm={3}>
-                      <Box sx={{ p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
+                      <Box sx={{ p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center' }}>
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>MONTHLY PERMISSION PASS</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 800, color: '#f59e0b', mt: 0.5 }}>
                           {leavePolicy.monthly_permission_limit} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {leavePolicy.monthly_permission_limit} left</span>
@@ -1453,7 +1491,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Grid>
 
                   {/* Settings Form Card */}
-                  <Card sx={{ p: 3, borderRadius: '4px', border: '1.5px solid #e2e8f0', bgcolor: '#ffffff' }}>
+                  <Card sx={{ p: 3, borderRadius: '10px', border: '1.5px solid #e2e8f0', bgcolor: '#ffffff' }}>
                     <form onSubmit={handleSaveLeavePolicy}>
                       <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
                         Edit Company Monthly Quotas & Permissions
@@ -1530,7 +1568,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                           variant="contained"
                           color="primary"
                           disabled={savingPolicy}
-                          sx={{ fontWeight: 700, borderRadius: '4px', px: 3 }}
+                          sx={{ fontWeight: 700, borderRadius: '8px', px: 3 }}
                         >
                           {savingPolicy ? 'Saving Policy...' : 'Save Monthly Leave Policy'}
                         </Button>
@@ -1550,7 +1588,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   No staff monthly self-evaluations submitted yet.
                 </Typography>
               ) : filteredEvaluations.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+                <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1' }}>
                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
                     No staff monthly self-evaluations found matching current search.
                   </Typography>
@@ -1580,12 +1618,12 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>{ev.review_month}</TableCell>
                         <TableCell>
-                          <Chip label={`${ev.overall_rating || '4.5'} / 5.0 Rating`} size="small" color="primary" sx={{ fontWeight: 800, borderRadius: '4px' }} />
+                          <Chip label={`${ev.overall_rating || '4.5'} / 5.0 Rating`} size="small" color="primary" sx={{ fontWeight: 800, borderRadius: '6px' }} />
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>{ev.targets_tasks?.length || 0} Targets</TableCell>
                         <TableCell sx={{ fontSize: 13 }}>{ev.submission_date}</TableCell>
                         <TableCell>
-                          <Chip label={ev.status || 'Submitted'} size="small" color="success" sx={{ fontWeight: 700, borderRadius: '4px' }} />
+                          <Chip label={ev.status || 'Submitted'} size="small" color="success" sx={{ fontWeight: 700, borderRadius: '6px' }} />
                         </TableCell>
                         <TableCell align="right">
                           <Button
@@ -1597,7 +1635,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                               setSelectedEval(ev);
                               setOpenEvalModal(true);
                             }}
-                            sx={{ fontWeight: 700, borderRadius: '4px' }}
+                            sx={{ fontWeight: 700, borderRadius: '8px' }}
                           >
                             Review Appraisal
                           </Button>
@@ -1628,7 +1666,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           {activeTab === 8 && (
             <Box sx={{ overflowX: 'auto', width: '100%' }}>
               {filteredEmployees.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 5, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+                <Box sx={{ textAlign: 'center', py: 5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1' }}>
                   <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
                     No staff records match the current search or filters.
                   </Typography>
@@ -1655,7 +1693,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       <TableCell sx={{ fontWeight: 700 }}>
                         {e.name}
                         {(e.status === 'resigned' || e.status === 'inactive') && (
-                          <Chip label={e.status?.toUpperCase()} size="small" sx={{ ml: 1, height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#fee2e2', color: '#991b1b', borderRadius: '4px' }} />
+                          <Chip label={e.status?.toUpperCase()} size="small" sx={{ ml: 1, height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#fee2e2', color: '#991b1b', borderRadius: '6px' }} />
                         )}
                       </TableCell>
                       <TableCell>{e.email}</TableCell>
@@ -1665,7 +1703,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                           size="small"
                           color={e.role === 'admin' ? 'primary' : 'secondary'}
                           variant="outlined"
-                          sx={{ fontWeight: 700, borderRadius: '4px' }}
+                          sx={{ fontWeight: 700, borderRadius: '6px' }}
                         />
                       </TableCell>
                       <TableCell>
@@ -1675,7 +1713,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             size="small"
                             sx={{
                               fontWeight: 800,
-                              borderRadius: '4px',
+                              borderRadius: '6px',
                               bgcolor: e.status === 'resigned' ? '#fef3c7' : e.status === 'inactive' ? '#fee2e2' : '#dcfce7',
                               color: e.status === 'resigned' ? '#b45309' : e.status === 'inactive' ? '#991b1b' : '#15803d'
                             }}
@@ -1694,7 +1732,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                           color={e.work_mode === 'wfh' ? 'secondary' : 'default'}
                           sx={{
                             fontWeight: 700,
-                            borderRadius: '4px',
+                            borderRadius: '6px',
                             bgcolor: e.work_mode === 'wfh' ? '#e0f2fe' : '#f1f5f9',
                             color: e.work_mode === 'wfh' ? '#0369a1' : '#475569'
                           }}
@@ -1711,7 +1749,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                               color="success"
                               onClick={() => handleReactivateEmployee(e)}
                               disabled={actionLoading}
-                              sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                              sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 11 }}
                             >
                               Reactivate
                             </Button>
@@ -1722,7 +1760,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                               color="error"
                               onClick={() => handleOpenDeactivate(e)}
                               disabled={actionLoading}
-                              sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                              sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 11 }}
                             >
                               Mark Resigned
                             </Button>
@@ -1734,7 +1772,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             color={e.work_mode === 'wfh' ? 'primary' : 'secondary'}
                             onClick={() => handleToggleWorkMode(e.id, e.work_mode)}
                             disabled={actionLoading}
-                            sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                            sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 11 }}
                           >
                             {e.work_mode === 'wfh' ? 'Switch to Office' : 'Switch to WFH'}
                           </Button>
@@ -1748,7 +1786,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             }}
                             sx={{
                               fontWeight: 700,
-                              borderRadius: '4px',
+                              borderRadius: '8px',
                               fontSize: 11,
                               color: e.documents_frozen ? '#dc2626' : '#133829',
                               borderColor: e.documents_frozen ? '#fca5a5' : '#cbd5e1',
@@ -1770,7 +1808,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             }}
                             sx={{
                               fontWeight: 700,
-                              borderRadius: '4px',
+                              borderRadius: '8px',
                               bgcolor: '#133829',
                               color: '#fff',
                               '&:hover': { bgcolor: '#0f291e' }
@@ -1784,7 +1822,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             color="primary"
                             startIcon={<ReportIcon />}
                             onClick={() => handleOpenEmployeeReport(e.id)}
-                            sx={{ fontWeight: 700, borderRadius: '4px' }}
+                            sx={{ fontWeight: 700, borderRadius: '8px' }}
                           >
                             Full Report
                           </Button>
@@ -1836,7 +1874,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             label={l.type || 'LOG'}
                             size="small"
                             color={l.type?.includes('OVERRIDE') ? 'error' : l.type?.includes('APPROVED') ? 'success' : 'primary'}
-                            sx={{ fontWeight: 800, fontSize: 10, borderRadius: '4px' }}
+                            sx={{ fontWeight: 800, fontSize: 10, borderRadius: '6px' }}
                           />
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>{l.sender_name || l.sender_id}</TableCell>
@@ -1856,7 +1894,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           {activeTab === 10 && (
             <Box>
               {/* Geofence Info (Read-Only) */}
-              <Box sx={{ mb: 4, p: 2.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+              <Box sx={{ mb: 4, p: 2.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <LocationIcon color="primary" />
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>Office Geofencing Perimeter (Configured in .env)</Typography>
@@ -1866,19 +1904,19 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={4}>
-                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
+                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
                       <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>OFFICE LATITUDE</Typography>
                       <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeLatitude || '--'}</Typography>
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
+                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
                       <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>OFFICE LONGITUDE</Typography>
                       <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeLongitude || '--'}</Typography>
                     </Box>
                   </Grid>
                   <Grid item xs={12} sm={4}>
-                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
+                    <Box sx={{ p: 1.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
                       <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>ALLOWED RADIUS</Typography>
                       <Typography variant="h6" sx={{ fontWeight: 800, color: '#133829', fontFamily: 'monospace' }}>{settingsForm.officeRadiusMeters || 150}m</Typography>
                     </Box>
@@ -1895,7 +1933,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               </Box>
 
               {/* Add Holiday Form */}
-              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+              <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                 <TextField
                   size="small"
                   type="date"
@@ -1941,14 +1979,14 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       toast.error(err.response?.data?.error || 'Failed to add calendar entry.');
                     } finally { setAddingHoliday(false); }
                   }}
-                  sx={{ fontWeight: 700, borderRadius: '4px', bgcolor: '#133829', whiteSpace: 'nowrap' }}
+                  sx={{ fontWeight: 700, borderRadius: '10px', bgcolor: '#133829', whiteSpace: 'nowrap' }}
                 >
                   Save Calendar Entry
                 </Button>
               </Box>
 
               {/* Sunday info chip */}
-              <Alert severity="info" sx={{ mb: 2, borderRadius: '4px', fontWeight: 600 }}>
+              <Alert severity="info" sx={{ mb: 2, borderRadius: '10px', fontWeight: 600 }}>
                 <strong>Sundays</strong> are non-working by default. To make a specific Sunday an official working day, select <strong>"Working Sunday (Shift Open)"</strong> above.
               </Alert>
 
@@ -1981,7 +2019,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                                   fontWeight: 700,
                                   bgcolor: isWorking ? '#dcfce7' : '#ede9fe',
                                   color: isWorking ? '#15803d' : '#6d28d9',
-                                  borderRadius: '4px'
+                                  borderRadius: '6px'
                                 }}
                               />
                             </TableCell>
@@ -2027,7 +2065,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         <form onSubmit={handleCreateEmployee}>
           <DialogTitle sx={{ fontWeight: 700 }}>Register New Staff Member</DialogTitle>
           <DialogContent dividers>
-            <Alert severity="info" sx={{ mb: 2, borderRadius: '4px', fontWeight: 600 }}>
+            <Alert severity="info" sx={{ mb: 2, borderRadius: '10px', fontWeight: 600 }}>
               <strong>Automated Onboarding & OTP Login</strong>: An official onboarding invitation email with Employee ID and login instructions will be sent automatically to the employee.
             </Alert>
             <Grid container spacing={2}>
@@ -2113,7 +2151,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         onClose={() => setOpenManualAttendanceModal(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '4px' } }}
+        PaperProps={{ sx: { borderRadius: '12px' } }}
       >
         <form onSubmit={handleManualAttendanceSubmit}>
           <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -2121,7 +2159,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             Manual Attendance Entry / Override
           </DialogTitle>
           <DialogContent dividers>
-            <Box sx={{ mb: 2, p: 1.5, bgcolor: '#fef3c7', border: '1px solid #fde68a', borderRadius: '4px' }}>
+            <Box sx={{ mb: 2, p: 1.5, bgcolor: '#fef3c7', border: '1px solid #fde68a', borderRadius: '12px' }}>
               <Typography variant="caption" sx={{ color: '#92400e', fontWeight: 600, display: 'block' }}>
                 This administrative action directly records or updates employee attendance in company records. A mandatory audit reason is required.
               </Typography>
@@ -2137,10 +2175,10 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   label="Select Staff Member"
                   value={manualForm.employee_id}
                   onChange={(e) => setManualForm({ ...manualForm, employee_id: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 >
                   {employees.map((emp) => (
-                    <MenuItem key={emp.id} value={emp.id} sx={{ fontSize: 13, borderRadius: '4px' }}>
+                    <MenuItem key={emp.id} value={emp.id} sx={{ fontSize: 13, borderRadius: '8px' }}>
                       {emp.name} ({emp.id} • {emp.department})
                     </MenuItem>
                   ))}
@@ -2157,7 +2195,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   value={manualForm.date}
                   onChange={(e) => setManualForm({ ...manualForm, date: e.target.value })}
                   InputLabelProps={{ shrink: true }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 />
               </Grid>
 
@@ -2170,7 +2208,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   label="Attendance Status"
                   value={manualForm.status}
                   onChange={(e) => setManualForm({ ...manualForm, status: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 >
                   <MenuItem value="Present">Present</MenuItem>
                   <MenuItem value="Late">Late</MenuItem>
@@ -2190,7 +2228,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   value={manualForm.login_time}
                   onChange={(e) => setManualForm({ ...manualForm, login_time: e.target.value })}
                   InputLabelProps={{ shrink: true }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 />
               </Grid>
 
@@ -2203,7 +2241,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   value={manualForm.logout_time}
                   onChange={(e) => setManualForm({ ...manualForm, logout_time: e.target.value })}
                   InputLabelProps={{ shrink: true }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 />
               </Grid>
 
@@ -2218,13 +2256,13 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   placeholder="e.g. Approved field duty at client site / Device GPS malfunction verified..."
                   value={manualForm.reason}
                   onChange={(e) => setManualForm({ ...manualForm, reason: e.target.value })}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenManualAttendanceModal(false)} color="inherit" sx={{ borderRadius: '4px' }}>
+            <Button onClick={() => setOpenManualAttendanceModal(false)} color="inherit" sx={{ borderRadius: '8px' }}>
               Cancel
             </Button>
             <Button
@@ -2233,7 +2271,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               disabled={actionLoading}
               sx={{
                 fontWeight: 700,
-                borderRadius: '4px',
+                borderRadius: '8px',
                 bgcolor: '#133829',
                 '&:hover': { bgcolor: '#0b2319' }
               }}
@@ -2250,7 +2288,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         onClose={() => setOpenResolveModal(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '4px' } }}
+        PaperProps={{ sx: { borderRadius: '12px' } }}
       >
         <form onSubmit={handleResolveRequest}>
           <DialogTitle sx={{ fontWeight: 800 }}>
@@ -2258,14 +2296,14 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </DialogTitle>
           <DialogContent dividers>
             {selectedReq && (
-              <Box sx={{ mb: 2, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+              <Box sx={{ mb: 2, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
                 <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                   {selectedReq.employee_name} ({selectedReq.employee_id})
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 1 }}>
                   Date: <strong>{selectedReq.date}</strong> • Requested: <strong>{formatTime12h(selectedReq.requested_login_time)}</strong> to <strong>{selectedReq.requested_logout_time ? formatTime12h(selectedReq.requested_logout_time) : '--'}</strong>
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#334155', fontStyle: 'italic', bgcolor: '#ffffff', p: 1, border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                <Typography variant="body2" sx={{ color: '#334155', fontStyle: 'italic', bgcolor: '#ffffff', p: 1, border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                   "{selectedReq.reason}"
                 </Typography>
               </Box>
@@ -2280,7 +2318,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   label="Decision Action"
                   value={resolveAction}
                   onChange={(e) => setResolveAction(e.target.value)}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 >
                   <MenuItem value="Approved">Approve & Regularize Attendance</MenuItem>
                   <MenuItem value="Rejected">Reject Request</MenuItem>
@@ -2296,13 +2334,13 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   label="Review Remarks & Feedback"
                   value={resolveRemarks}
                   onChange={(e) => setResolveRemarks(e.target.value)}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenResolveModal(false)} color="inherit" sx={{ borderRadius: '4px' }}>
+            <Button onClick={() => setOpenResolveModal(false)} color="inherit" sx={{ borderRadius: '8px' }}>
               Cancel
             </Button>
             <Button
@@ -2310,7 +2348,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               variant="contained"
               color={resolveAction === 'Approved' ? 'success' : 'error'}
               disabled={actionLoading}
-              sx={{ fontWeight: 700, borderRadius: '4px' }}
+              sx={{ fontWeight: 700, borderRadius: '8px' }}
             >
               {actionLoading ? 'Updating...' : `Confirm ${resolveAction}`}
             </Button>
@@ -2326,7 +2364,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '4px',
+            borderRadius: '12px',
             border: '1px solid #e2e8f0',
             boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
           }
@@ -2337,7 +2375,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             <Box sx={{
               width: 36,
               height: 36,
-              borderRadius: '4px',
+              borderRadius: '12px',
               bgcolor: 'rgba(239, 68, 68, 0.15)',
               color: '#ef4444',
               display: 'flex',
@@ -2358,7 +2396,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
 
           <DialogContent dividers sx={{ p: 3 }}>
             {rejectionTarget && (
-              <Box sx={{ mb: 2.5, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+              <Box sx={{ mb: 2.5, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
                 <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                   {rejectionTarget.item.employee_name || rejectionTarget.item.employee_id}
                 </Typography>
@@ -2368,7 +2406,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   {rejectionTarget.type === 'regularization' && `Attendance Regularization: ${rejectionTarget.item.date} (${formatTime12h(rejectionTarget.item.requested_login_time)} to ${rejectionTarget.item.requested_logout_time ? formatTime12h(rejectionTarget.item.requested_logout_time) : 'EOD'})`}
                 </Typography>
                 {rejectionTarget.item.reason && (
-                  <Typography variant="body2" sx={{ mt: 1, color: '#475569', fontSize: 13, fontStyle: 'italic', bgcolor: '#ffffff', p: 1, border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Typography variant="body2" sx={{ mt: 1, color: '#475569', fontSize: 13, fontStyle: 'italic', bgcolor: '#ffffff', p: 1, border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     Employee Reason: "{rejectionTarget.item.reason}"
                   </Typography>
                 )}
@@ -2386,7 +2424,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   size="small"
                   onClick={() => setRejectionReasonText(tmpl)}
                   sx={{
-                    borderRadius: '4px',
+                    borderRadius: '6px',
                     fontSize: 12,
                     fontWeight: 600,
                     cursor: 'pointer',
@@ -2410,12 +2448,12 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               placeholder="Provide a clear, professional explanation to be delivered to the employee's work email..."
               value={rejectionReasonText}
               onChange={(e) => setRejectionReasonText(e.target.value)}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
             />
           </DialogContent>
 
           <DialogActions sx={{ p: 2, gap: 1 }}>
-            <Button onClick={() => setOpenRejectionModal(false)} color="inherit" sx={{ borderRadius: '4px', textTransform: 'none', fontWeight: 600 }}>
+            <Button onClick={() => setOpenRejectionModal(false)} color="inherit" sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600 }}>
               Cancel
             </Button>
             <Button
@@ -2423,7 +2461,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               variant="contained"
               disabled={actionLoading || !rejectionReasonText.trim()}
               sx={{
-                borderRadius: '4px',
+                borderRadius: '8px',
                 bgcolor: '#ef4444',
                 color: '#ffffff',
                 textTransform: 'none',
@@ -2446,7 +2484,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '4px',
+            borderRadius: '12px',
             border: '1px solid #e2e8f0',
             boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
           }
@@ -2457,7 +2495,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             <Box sx={{
               width: 38,
               height: 38,
-              borderRadius: '4px',
+              borderRadius: '12px',
               bgcolor: 'rgba(19, 56, 41, 0.1)',
               color: '#133829',
               display: 'flex',
@@ -2481,7 +2519,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               label="Records Frozen"
               color="error"
               size="small"
-              sx={{ fontWeight: 800, borderRadius: '4px', height: 24, fontSize: 11 }}
+              sx={{ fontWeight: 800, borderRadius: '6px', height: 24, fontSize: 11 }}
             />
           )}
         </DialogTitle>
@@ -2496,7 +2534,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                 bgcolor: selectedComplianceEmp.documents_frozen ? '#fef2f2' : '#f0fdf4',
                 border: '1px solid',
                 borderColor: selectedComplianceEmp.documents_frozen ? '#fecaca' : '#bbf7d0',
-                borderRadius: '4px',
+                borderRadius: '12px',
                 display: 'flex',
                 flexDirection: { xs: 'column', sm: 'row' },
                 justifyContent: 'space-between',
@@ -2522,7 +2560,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   disabled={freezeActionLoading}
                   sx={{
                     fontWeight: 700,
-                    borderRadius: '4px',
+                    borderRadius: '8px',
                     textTransform: 'none',
                     fontSize: 12,
                     flexShrink: 0
@@ -2538,7 +2576,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               </Typography>
               <Grid container spacing={2} sx={{ mb: 3 }}>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>BANK NAME</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                       {selectedComplianceEmp.statutory_info?.bank_name || 'Not Submitted'}
@@ -2546,7 +2584,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>ACCOUNT NUMBER</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
                       {selectedComplianceEmp.statutory_info?.bank_account_number || 'Not Submitted'}
@@ -2554,7 +2592,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>IFSC CODE</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
                       {selectedComplianceEmp.statutory_info?.ifsc_code || 'Not Submitted'}
@@ -2562,7 +2600,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>ACCOUNT HOLDER NAME</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                       {selectedComplianceEmp.statutory_info?.account_holder_name || selectedComplianceEmp.name}
@@ -2570,7 +2608,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#166534', fontWeight: 800, display: 'block' }}>UPI ID / VPA (INSTANT PAYOUT)</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 800, color: '#15803d', fontFamily: 'monospace' }}>
                       {selectedComplianceEmp.statutory_info?.upi_id || 'Not Configured'}
@@ -2578,7 +2616,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>PAN NUMBER</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
                       {selectedComplianceEmp.statutory_info?.pan_number || 'Not Submitted'}
@@ -2586,7 +2624,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>AADHAAR NUMBER</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
                       {selectedComplianceEmp.statutory_info?.aadhaar_number || 'Not Submitted'}
@@ -2594,7 +2632,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>UAN / PF NUMBER</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
                       {selectedComplianceEmp.statutory_info?.uan_pf_number || 'N/A'}
@@ -2609,7 +2647,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               </Typography>
 
               {(!selectedComplianceEmp.documents || selectedComplianceEmp.documents.length === 0) ? (
-                <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '4px', mb: 3 }}>
+                <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '10px', mb: 3 }}>
                   <DocumentIcon sx={{ fontSize: 36, color: '#94a3b8', mb: 1 }} />
                   <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>
                     No compliance documents uploaded yet by this employee.
@@ -2622,7 +2660,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                 <Grid container spacing={2} sx={{ mb: 3 }}>
                   {selectedComplianceEmp.documents.map((doc, idx) => (
                     <Grid item xs={12} sm={6} key={idx}>
-                      <Card sx={{ border: '1px solid #bbf7d0', bgcolor: '#f0fdf4', borderRadius: '4px' }}>
+                      <Card sx={{ border: '1px solid #bbf7d0', bgcolor: '#f0fdf4', borderRadius: '10px' }}>
                         <CardContent sx={{ p: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -2635,10 +2673,10 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                                  doc.key === 'relieving_exp' ? 'Experience / Relieving Letter' : (doc.name || 'Compliance Document')}
                               </Typography>
                             </Box>
-                            <Chip label="Verified File" size="small" sx={{ height: 18, fontSize: 9, fontWeight: 800, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '4px' }} />
+                            <Chip label="Verified File" size="small" sx={{ height: 18, fontSize: 9, fontWeight: 800, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '6px' }} />
                           </Box>
 
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#ffffff', p: 1.2, borderRadius: '4px', border: '1px solid #e2e8f0', mt: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#ffffff', p: 1.2, borderRadius: '6px', border: '1px solid #e2e8f0', mt: 1 }}>
                             <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
                               <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {doc.name || 'file'}
@@ -2658,7 +2696,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                                 rel="noopener noreferrer"
                                 startIcon={<ViewIcon sx={{ fontSize: 14 }} />}
                                 sx={{
-                                  borderRadius: '4px',
+                                  borderRadius: '10px',
                                   fontSize: 11,
                                   fontWeight: 700,
                                   bgcolor: '#133829',
@@ -2686,7 +2724,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>CONTACT PERSON</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                       {selectedComplianceEmp.emergency_contacts?.contact_name || 'Not Provided'}
@@ -2694,7 +2732,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>RELATIONSHIP</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                       {selectedComplianceEmp.emergency_contacts?.relationship || 'Not Specified'}
@@ -2702,7 +2740,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>EMERGENCY PHONE</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
                       {selectedComplianceEmp.emergency_contacts?.contact_phone || 'Not Provided'}
@@ -2715,7 +2753,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         </DialogContent>
 
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOpenComplianceModal(false)} variant="contained" sx={{ bgcolor: '#133829', color: '#fff', borderRadius: '4px', textTransform: 'none', fontWeight: 700 }}>
+          <Button onClick={() => setOpenComplianceModal(false)} variant="contained" sx={{ bgcolor: '#133829', color: '#fff', borderRadius: '8px', textTransform: 'none', fontWeight: 700 }}>
             Close Audit Viewer
           </Button>
         </DialogActions>
@@ -2728,12 +2766,12 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             Staff Resignation & Account Deactivation
           </DialogTitle>
           <DialogContent dividers sx={{ p: 3 }}>
-            <Alert severity="warning" sx={{ mb: 2.5, borderRadius: '4px' }}>
+            <Alert severity="warning" sx={{ mb: 2.5, borderRadius: '10px' }}>
               <strong>Notice:</strong> Marking this employee as <strong>Resigned</strong> or <strong>Inactive</strong> softly deactivates their portal access, archives their pending requests, and removes them from the active daily attendance headcount. All past timesheet records and audit logs are permanently retained.
             </Alert>
 
             {deactivateTarget && (
-              <Box sx={{ p: 2, mb: 2.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+              <Box sx={{ p: 2, mb: 2.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                 <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, textTransform: 'uppercase', display: 'block' }}>Target Employee</Typography>
                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
                   {deactivateTarget.name} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>({deactivateTarget.id})</span>
@@ -2789,7 +2827,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             <Button
               onClick={() => setOpenDeactivateModal(false)}
               disabled={deactivateLoading}
-              sx={{ fontWeight: 700, borderRadius: '4px' }}
+              sx={{ fontWeight: 700, borderRadius: '8px' }}
             >
               Cancel
             </Button>
@@ -2798,7 +2836,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               variant="contained"
               color="error"
               disabled={deactivateLoading}
-              sx={{ fontWeight: 800, borderRadius: '4px', px: 2.5 }}
+              sx={{ fontWeight: 800, borderRadius: '8px', px: 2.5 }}
             >
               {deactivateLoading ? 'Processing...' : 'Confirm Resignation & Deactivate'}
             </Button>

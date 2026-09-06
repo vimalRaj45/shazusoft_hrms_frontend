@@ -45,12 +45,12 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
             placeholder="Search by employee, week, or keyword..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ width: { xs: '100%', sm: 300 }, '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+            sx={{ width: { xs: '100%', sm: 300 }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
           />
           <Chip
             label={`${filteredReports.length} Report(s)`}
             size="small"
-            sx={{ fontWeight: 700, borderRadius: '4px', bgcolor: '#f1f5f9' }}
+            sx={{ fontWeight: 700, borderRadius: '6px', bgcolor: '#f1f5f9' }}
           />
         </Box>
 
@@ -60,7 +60,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
             startIcon={<AddIcon />}
             onClick={onNewReport}
             sx={{
-              borderRadius: '4px',
+              borderRadius: '8px',
               bgcolor: '#133829',
               color: '#ffffff',
               fontWeight: 700,
@@ -74,7 +74,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
       </Box>
 
       {filteredReports.length === 0 ? (
-        <Card sx={{ borderRadius: '4px', border: '1px dashed #cbd5e1', bgcolor: '#f8fafc', p: 4, textAlign: 'center' }}>
+        <Card sx={{ borderRadius: '10px', border: '1px dashed #cbd5e1', bgcolor: '#f8fafc', p: 4, textAlign: 'center' }}>
           <WeekIcon sx={{ fontSize: 44, color: '#94a3b8', mb: 1 }} />
           <Typography variant="h6" sx={{ fontWeight: 700, color: '#475569' }}>
             No Weekly Check-in Reports Found
@@ -87,7 +87,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
               variant="outlined"
               color="success"
               onClick={onNewReport}
-              sx={{ borderRadius: '4px', textTransform: 'none', fontWeight: 700 }}
+              sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700 }}
             >
               Submit Your First Weekly Report
             </Button>
@@ -100,7 +100,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
               <Card
                 elevation={0}
                 sx={{
-                  borderRadius: '4px',
+                  borderRadius: '10px',
                   border: '1px solid #e2e8f0',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                   transition: 'all 0.2s ease',
@@ -125,7 +125,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
                       sx={{
                         width: 32,
                         height: 32,
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         bgcolor: 'rgba(19, 56, 41, 0.1)',
                         color: '#133829',
                         display: 'flex',
@@ -149,7 +149,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
                     label="Weekly Sync"
                     size="small"
                     color="success"
-                    sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                    sx={{ fontWeight: 700, borderRadius: '6px', fontSize: 11 }}
                   />
                 </Box>
 
@@ -158,7 +158,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
                   <Grid container spacing={2}>
                     {/* 1. Key Accomplishments */}
                     <Grid item xs={12} md={6}>
-                      <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px', height: '100%' }}>
+                      <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', height: '100%' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <TrophyIcon sx={{ color: '#16a34a', fontSize: 18 }} />
                           <Typography variant="caption" sx={{ fontWeight: 800, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5 }}>
@@ -173,7 +173,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
 
                     {/* 2. Challenges & Blockers */}
                     <Grid item xs={12} md={6}>
-                      <Box sx={{ p: 1.5, bgcolor: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '4px', height: '100%' }}>
+                      <Box sx={{ p: 1.5, bgcolor: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '10px', height: '100%' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <BlockerIcon sx={{ color: '#dc2626', fontSize: 18 }} />
                           <Typography variant="caption" sx={{ fontWeight: 800, color: '#991b1b', textTransform: 'uppercase', letterSpacing: 0.5 }}>
@@ -188,7 +188,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
 
                     {/* 3. Learnings & Skills */}
                     <Grid item xs={12} md={6}>
-                      <Box sx={{ p: 1.5, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '4px', height: '100%' }}>
+                      <Box sx={{ p: 1.5, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '10px', height: '100%' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <LightbulbIcon sx={{ color: '#d97706', fontSize: 18 }} />
                           <Typography variant="caption" sx={{ fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: 0.5 }}>
@@ -203,7 +203,7 @@ export default function WeeklyReportsViewer({ reports = [], onNewReport, isAdmin
 
                     {/* 4. Next Week Goals */}
                     <Grid item xs={12} md={6}>
-                      <Box sx={{ p: 1.5, bgcolor: '#eff6ff', border: '1px solid #dbeafe', borderRadius: '4px', height: '100%' }}>
+                      <Box sx={{ p: 1.5, bgcolor: '#eff6ff', border: '1px solid #dbeafe', borderRadius: '10px', height: '100%' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <NextGoalIcon sx={{ color: '#2563eb', fontSize: 18 }} />
                           <Typography variant="caption" sx={{ fontWeight: 800, color: '#1e40af', textTransform: 'uppercase', letterSpacing: 0.5 }}>

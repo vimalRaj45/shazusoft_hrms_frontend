@@ -183,7 +183,7 @@ export default function WorkDoneSection() {
   };
 
   return (
-    <Card sx={{ mt: 3, border: '1px solid #e5e7eb', borderRadius: '4px' }}>
+    <Card sx={{ mt: 3, border: '1px solid #e5e7eb', borderRadius: '10px' }}>
       <CardContent sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -203,7 +203,7 @@ export default function WorkDoneSection() {
             color="primary"
             startIcon={<AddIcon />}
             onClick={() => handleOpenModal()}
-            sx={{ fontWeight: 700, borderRadius: '4px' }}
+            sx={{ fontWeight: 700, borderRadius: '8px' }}
           >
             Log New Task
           </Button>
@@ -212,7 +212,7 @@ export default function WorkDoneSection() {
         {/* Task Summary Badges */}
         <Grid container spacing={2} sx={{ mb: 3 }} alignItems="stretch">
           <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
-            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>COMPLETED TASKS</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
                 {completedCount} / {tasks.length}
@@ -220,7 +220,7 @@ export default function WorkDoneSection() {
             </Box>
           </Grid>
           <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
-            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>ESTIMATED HOURS</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#3b82f6', mt: 0.5 }}>
                 {totalEstHours.toFixed(1)} hrs
@@ -228,7 +228,7 @@ export default function WorkDoneSection() {
             </Box>
           </Grid>
           <Grid item xs={12} sm={4} sx={{ display: 'flex' }}>
-            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>ACTUAL HOURS</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#133829', mt: 0.5 }}>
                 {totalActHours.toFixed(1)} hrs
@@ -238,7 +238,7 @@ export default function WorkDoneSection() {
         </Grid>
 
         {/* Search & Status Filter Toolbar */}
-        <Box sx={{ mb: 2.5, p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+        <Box sx={{ mb: 2.5, p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
           <Grid container spacing={1.5} alignItems="center">
             <Grid item xs={12} sm={8}>
               <TextField
@@ -261,7 +261,7 @@ export default function WorkDoneSection() {
                     </InputAdornment>
                   )
                 }}
-                sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -272,7 +272,7 @@ export default function WorkDoneSection() {
                 label="Status Filter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
               >
                 <MenuItem value="ALL">All Statuses</MenuItem>
                 <MenuItem value="Completed">Completed</MenuItem>
@@ -302,13 +302,13 @@ export default function WorkDoneSection() {
         {loading ? (
           <TableRowsSkeleton rows={4} cols={6} />
         ) : tasks.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+          <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
             <Typography variant="body2" sx={{ color: '#64748b' }}>
               No tasks logged yet. Click <strong>"Log New Task"</strong> to add your daily activities!
             </Typography>
           </Box>
         ) : filteredTasks.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+          <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1' }}>
             <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
               No tasks match the current search query or status filter.
             </Typography>

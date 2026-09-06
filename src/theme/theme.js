@@ -115,7 +115,7 @@ const baseTheme = (mode = 'light') =>
       }
     },
     shape: {
-      borderRadius: 4 // Strict 4px border radius for professional crisp look
+      borderRadius: 10 // Modern, professional rounded corners
     },
     components: {
       MuiContainer: {
@@ -133,7 +133,7 @@ const baseTheme = (mode = 'light') =>
       MuiButton: {
         styleOverrides: {
           root: {
-            borderRadius: '4px',
+            borderRadius: '8px',
             padding: '6px 14px',
             fontSize: '0.85rem',
             boxShadow: 'none',
@@ -153,7 +153,7 @@ const baseTheme = (mode = 'light') =>
             }
           },
           outlined: {
-            borderRadius: '4px',
+            borderRadius: '8px',
             borderColor: '#e5e7eb',
             '&:hover': {
               borderColor: '#cbd5e1',
@@ -165,7 +165,7 @@ const baseTheme = (mode = 'light') =>
       MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: '4px',
+            borderRadius: '10px',
             border: '1px solid #e5e7eb',
             boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
             backgroundImage: 'none',
@@ -192,25 +192,83 @@ const baseTheme = (mode = 'light') =>
       MuiPaper: {
         styleOverrides: {
           root: {
-            borderRadius: '4px'
+            borderRadius: '10px'
           },
           rounded: {
-            borderRadius: '4px'
+            borderRadius: '10px'
           }
         }
       },
       MuiDialog: {
         styleOverrides: {
+          root: {
+            '& .MuiBackdrop-root': {
+              backdropFilter: 'blur(2px)'
+            }
+          },
           paper: {
-            borderRadius: '4px',
-            margin: '12px'
+            borderRadius: '12px',
+            margin: '16px',
+            '@media (max-width: 600px)': {
+              margin: '8px auto !important',
+              width: 'calc(100vw - 16px) !important',
+              maxWidth: 'calc(100vw - 16px) !important',
+              maxHeight: 'calc(100dvh - 16px) !important',
+              height: 'auto !important'
+            }
+          },
+          paperScrollPaper: {
+            '@media (max-width: 600px)': {
+              maxHeight: 'calc(100dvh - 16px) !important',
+              display: 'flex',
+              flexDirection: 'column'
+            }
+          },
+          paperFullWidth: {
+            '@media (max-width: 600px)': {
+              width: 'calc(100vw - 16px) !important',
+              maxWidth: 'calc(100vw - 16px) !important'
+            }
+          }
+        }
+      },
+      MuiDialogTitle: {
+        styleOverrides: {
+          root: {
+            '@media (max-width: 600px)': {
+              padding: '12px 14px'
+            }
+          }
+        }
+      },
+      MuiDialogContent: {
+        styleOverrides: {
+          root: {
+            '@media (max-width: 600px)': {
+              padding: '12px 14px',
+              maxHeight: 'calc(100dvh - 115px)'
+            }
+          },
+          dividers: {
+            '@media (max-width: 600px)': {
+              padding: '12px 14px'
+            }
+          }
+        }
+      },
+      MuiDialogActions: {
+        styleOverrides: {
+          root: {
+            '@media (max-width: 600px)': {
+              padding: '10px 14px'
+            }
           }
         }
       },
       MuiChip: {
         styleOverrides: {
           root: {
-            borderRadius: '4px',
+            borderRadius: '6px',
             fontWeight: 700,
             fontSize: '0.72rem',
             height: '24px'
@@ -220,8 +278,22 @@ const baseTheme = (mode = 'light') =>
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
-            borderRadius: '4px',
+            borderRadius: '8px',
             fontSize: '0.875rem'
+          }
+        }
+      },
+      MuiAlert: {
+        styleOverrides: {
+          root: {
+            borderRadius: '10px'
+          }
+        }
+      },
+      MuiMenu: {
+        styleOverrides: {
+          paper: {
+            borderRadius: '10px'
           }
         }
       },

@@ -291,7 +291,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
             size="small"
             icon={<PresentIcon sx={{ fontSize: '13px !important' }} />}
             label="Present"
-            sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 800, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Late':
@@ -300,7 +300,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
             size="small"
             icon={<LateIcon sx={{ fontSize: '13px !important' }} />}
             label="Late"
-            sx={{ bgcolor: '#fef3c7', color: '#b45309', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#fef3c7', color: '#b45309', fontWeight: 800, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Half-Day':
@@ -308,7 +308,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
           <Chip
             size="small"
             label="Half-Day"
-            sx={{ bgcolor: '#ffedd5', color: '#c2410c', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#ffedd5', color: '#c2410c', fontWeight: 800, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Working Sunday':
@@ -317,7 +317,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
             size="small"
             icon={<WorkIcon sx={{ fontSize: '13px !important' }} />}
             label="Working Sunday"
-            sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 800, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Sunday':
@@ -326,7 +326,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
             size="small"
             icon={<SundayIcon sx={{ fontSize: '13px !important' }} />}
             label="Sunday"
-            sx={{ bgcolor: '#f1f5f9', color: '#64748b', fontWeight: 700, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#f1f5f9', color: '#64748b', fontWeight: 700, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Holiday':
@@ -335,7 +335,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
             size="small"
             icon={<HolidayIcon sx={{ fontSize: '13px !important' }} />}
             label={holidayName ? `Holiday: ${holidayName}` : 'Holiday'}
-            sx={{ bgcolor: '#f3e8ff', color: '#7e22ce', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#f3e8ff', color: '#7e22ce', fontWeight: 800, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Approved Leave':
@@ -344,7 +344,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
             size="small"
             icon={<LeaveIcon sx={{ fontSize: '13px !important' }} />}
             label="Approved Leave"
-            sx={{ bgcolor: '#e0f2fe', color: '#0369a1', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#e0f2fe', color: '#0369a1', fontWeight: 800, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Absent':
@@ -353,7 +353,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
             size="small"
             icon={<AbsentIcon sx={{ fontSize: '13px !important' }} />}
             label="Absent"
-            sx={{ bgcolor: '#fee2e2', color: '#b91c1c', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#fee2e2', color: '#b91c1c', fontWeight: 800, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Not Punched Yet':
@@ -361,7 +361,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
           <Chip
             size="small"
             label="Not Punched Yet"
-            sx={{ bgcolor: '#fef9c3', color: '#a16207', fontWeight: 800, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#fef9c3', color: '#a16207', fontWeight: 800, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Weekend':
@@ -369,7 +369,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
           <Chip
             size="small"
             label="Weekend"
-            sx={{ bgcolor: '#f8fafc', color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#f8fafc', color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       case 'Upcoming':
@@ -377,11 +377,11 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
           <Chip
             size="small"
             label="Upcoming"
-            sx={{ bgcolor: '#f8fafc', color: '#cbd5e1', fontWeight: 600, fontSize: '0.75rem', borderRadius: '4px' }}
+            sx={{ bgcolor: '#f8fafc', color: '#cbd5e1', fontWeight: 600, fontSize: '0.75rem', borderRadius: '6px' }}
           />
         );
       default:
-        return <Chip size="small" label={status} sx={{ borderRadius: '4px' }} />;
+        return <Chip size="small" label={status} sx={{ borderRadius: '6px' }} />;
     }
   };
 
@@ -412,7 +412,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
   return (
     <Box sx={{ width: '100%' }}>
       {/* Top Filter & Action Bar */}
-      <Card sx={{ mb: 3, border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+      <Card sx={{ mb: 3, border: '1px solid #e2e8f0', borderRadius: '10px' }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
             {/* Employee Selector */}
@@ -438,7 +438,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
               </FormControl>
 
               {/* Month Navigation */}
-              <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px', p: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', p: 0.5 }}>
                 <Tooltip title="Previous Month">
                   <IconButton size="small" onClick={handlePrevMonth}>
                     <PrevMonthIcon fontSize="small" />
@@ -462,7 +462,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
               </Box>
 
               <Tooltip title="Refresh Timesheet">
-                <IconButton size="small" onClick={fetchTimesheet} sx={{ border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+                <IconButton size="small" onClick={fetchTimesheet} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
                   <RefreshIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -476,7 +476,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                 startIcon={<ExportIcon />}
                 onClick={handleExportCSV}
                 disabled={!timesheetData}
-                sx={{ fontWeight: 700, borderRadius: '4px' }}
+                sx={{ fontWeight: 700, borderRadius: '8px' }}
               >
                 Export CSV
               </Button>
@@ -486,7 +486,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                 startIcon={<ExportIcon />}
                 onClick={handleDownloadPDF}
                 disabled={!timesheetData}
-                sx={{ fontWeight: 700, borderRadius: '4px', bgcolor: '#0f172a', '&:hover': { bgcolor: '#1e293b' } }}
+                sx={{ fontWeight: 700, borderRadius: '8px', bgcolor: '#0f172a', '&:hover': { bgcolor: '#1e293b' } }}
               >
                 Download Executive PDF
               </Button>
@@ -505,7 +505,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
       ) : timesheetData ? (
         <>
           {/* Employee Header & KPI Summary Banner */}
-          <Card sx={{ mb: 3, borderLeft: '6px solid #133829', borderRadius: '4px' }}>
+          <Card sx={{ mb: 3, borderLeft: '6px solid #133829', borderRadius: '10px' }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2, mb: 2.5 }}>
                 <Box>
@@ -528,7 +528,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
               {/* 6 KPI Metric Cards */}
               <Grid container spacing={2}>
                 <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px', textAlign: 'center' }}>
+                  <Box sx={{ p: 1.8, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, display: 'block' }}>WORKING DAYS</Typography>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mt: 0.3 }}>
                       {timesheetData.past_days_count}
@@ -537,7 +537,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                   </Box>
                 </Grid>
                 <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px', textAlign: 'center' }}>
+                  <Box sx={{ p: 1.8, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: '#166534', fontWeight: 800, display: 'block' }}>PRESENT DAYS</Typography>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#15803d', mt: 0.3 }}>
                       {timesheetData.present_days}
@@ -548,7 +548,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                   </Box>
                 </Grid>
                 <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '4px', textAlign: 'center' }}>
+                  <Box sx={{ p: 1.8, bgcolor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: '#92400e', fontWeight: 800, display: 'block' }}>LATE MARKS</Typography>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#b45309', mt: 0.3 }}>
                       {timesheetData.late_days}
@@ -557,7 +557,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                   </Box>
                 </Grid>
                 <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '4px', textAlign: 'center' }}>
+                  <Box sx={{ p: 1.8, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '10px', textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: '#075985', fontWeight: 800, display: 'block' }}>APPROVED LEAVES</Typography>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#0369a1', mt: 0.3 }}>
                       {timesheetData.leave_days}
@@ -566,7 +566,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                   </Box>
                 </Grid>
                 <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '4px', textAlign: 'center' }}>
+                  <Box sx={{ p: 1.8, bgcolor: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: '#6b21a8', fontWeight: 800, display: 'block' }}>TOTAL HOURS</Typography>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#7e22ce', mt: 0.3 }}>
                       {timesheetData.total_hours}h
@@ -577,7 +577,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                   </Box>
                 </Grid>
                 <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '4px', textAlign: 'center' }}>
+                  <Box sx={{ p: 1.8, bgcolor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '10px', textAlign: 'center' }}>
                     <Typography variant="caption" sx={{ color: '#065f46', fontWeight: 800, display: 'block' }}>TASKS COMPLETED</Typography>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#047857', mt: 0.3 }}>
                       {timesheetData.total_tasks_completed || 0}
@@ -592,7 +592,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
           </Card>
 
           {/* Timesheet Table Section with Filters */}
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px' }}>
             <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, borderBottom: '1px solid #e2e8f0' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
@@ -620,7 +620,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                       </InputAdornment>
                     )
                   }}
-                  sx={{ width: { xs: '100%', sm: 220 }, '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                  sx={{ width: { xs: '100%', sm: 220 }, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 />
 
                 {/* Status Filters */}
@@ -641,7 +641,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                       color={statusFilter === tab.key ? 'primary' : 'default'}
                       variant={statusFilter === tab.key ? 'filled' : 'outlined'}
                       onClick={() => setStatusFilter(tab.key)}
-                      sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }}
+                      sx={{ fontWeight: 700, borderRadius: '6px', fontSize: 11 }}
                     />
                   ))}
                 </Box>
@@ -700,7 +700,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                                   fontWeight: 800,
                                   bgcolor: day.is_sunday ? '#fee2e2' : '#f1f5f9',
                                   color: day.is_sunday ? '#b91c1c' : '#475569',
-                                  borderRadius: '3px'
+                                  borderRadius: '6px'
                                 }}
                               />
                               {day.is_today && (
@@ -740,7 +740,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                                   color: '#0369a1',
                                   fontWeight: 800,
                                   fontSize: '0.72rem',
-                                  borderRadius: '4px',
+                                  borderRadius: '10px',
                                   cursor: 'pointer',
                                   '&:hover': { bgcolor: '#bae6fd' }
                                 }}
@@ -786,7 +786,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                                     startIcon={<TaskIcon sx={{ fontSize: '13px !important' }} />}
                                     onClick={() => setSelectedDayTasks(day)}
                                     sx={{
-                                      fontSize: '0.7rem', py: 0.2, px: 1, borderRadius: '4px', fontWeight: 700,
+                                      fontSize: '0.7rem', py: 0.2, px: 1, borderRadius: '8px', fontWeight: 700,
                                       bgcolor: '#133829', color: '#fff',
                                       '&:hover': { bgcolor: '#0f291e' }
                                     }}
@@ -802,7 +802,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                                     variant="outlined"
                                     startIcon={<OverrideIcon sx={{ fontSize: '13px !important' }} />}
                                     onClick={() => handleOpenQuickOverride(day)}
-                                    sx={{ fontSize: '0.7rem', py: 0.2, px: 1, borderRadius: '4px', fontWeight: 700 }}
+                                    sx={{ fontSize: '0.7rem', py: 0.2, px: 1, borderRadius: '8px', fontWeight: 700 }}
                                   >
                                     Override
                                   </Button>
@@ -941,7 +941,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                 {selectedDayTasks.tasks.map((t, idx) => (
                   <TableRow key={t.id || idx} hover>
                     <TableCell sx={{ verticalAlign: 'top' }}>
-                      <Chip label={t.project_name} size="small" color="primary" sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11 }} />
+                      <Chip label={t.project_name} size="small" color="primary" sx={{ fontWeight: 700, borderRadius: '6px', fontSize: 11 }} />
                     </TableCell>
                     <TableCell sx={{ verticalAlign: 'top' }}>
                       <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>{t.task_title}</Typography>
@@ -962,7 +962,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                         label={t.status || 'Completed'}
                         size="small"
                         color={t.status === 'Completed' ? 'success' : 'warning'}
-                        sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 10 }}
+                        sx={{ fontWeight: 700, borderRadius: '6px', fontSize: 10 }}
                       />
                     </TableCell>
                     <TableCell sx={{ verticalAlign: 'top', color: '#64748b', fontSize: 12 }}>
@@ -975,7 +975,7 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setSelectedDayTasks(null)} variant="outlined" sx={{ fontWeight: 700, borderRadius: '4px' }}>
+          <Button onClick={() => setSelectedDayTasks(null)} variant="outlined" sx={{ fontWeight: 700, borderRadius: '8px' }}>
             Close
           </Button>
         </DialogActions>

@@ -29,6 +29,24 @@
         e.preventDefault();
       }, { passive: false });
     </script>
+    <style>
+      /* Mobile Enhanced Modal Dimensions: use calc for full screen optimization */
+      @media (max-width: 600px) {
+        .MuiDialog-paper {
+          margin: 8px auto !important;
+          width: calc(100vw - 16px) !important;
+          max-width: calc(100vw - 16px) !important;
+          max-height: calc(100dvh - 16px) !important;
+          height: auto !important;
+        }
+        .MuiDialog-paperScrollPaper {
+          max-height: calc(100dvh - 16px) !important;
+        }
+        .MuiDialogContent-root {
+          max-height: calc(100dvh - 115px) !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

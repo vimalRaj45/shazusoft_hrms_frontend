@@ -120,14 +120,14 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
   return (
     <Box>
       {/* Month Picker & Header Bar */}
-      <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '4px', mb: 3, bgcolor: '#ffffff' }}>
+      <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', mb: 3, bgcolor: '#ffffff' }}>
         <CardContent sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Box
               sx={{
                 width: 44,
                 height: 44,
-                borderRadius: '4px',
+                borderRadius: '10px',
                 bgcolor: '#133829',
                 color: '#ffffff',
                 display: 'flex',
@@ -156,14 +156,14 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
               inputProps={{ max: currentMonthKey }}
               sx={{
                 bgcolor: '#f8fafc',
-                borderRadius: '4px',
-                '& .MuiOutlinedInput-root': { borderRadius: '4px', fontWeight: 700 }
+                borderRadius: '8px',
+                '& .MuiOutlinedInput-root': { borderRadius: '8px', fontWeight: 700 }
               }}
             />
             <Tooltip title="Refresh timesheet">
               <IconButton
                 onClick={() => fetchMonthlyTimesheet(selectedMonth)}
-                sx={{ border: '1px solid #e2e8f0', borderRadius: '4px' }}
+                sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}
               >
                 <RefreshIcon fontSize="small" />
               </IconButton>
@@ -176,7 +176,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
       {/* 4 Monthly KPI Metric Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }} alignItems="stretch">
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #133829', borderRadius: '4px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #133829', borderRadius: '10px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                 PRESENT / WORKING DAYS
@@ -192,7 +192,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #0284c7', borderRadius: '4px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #0284c7', borderRadius: '10px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                 TOTAL LOGGED HOURS
@@ -205,7 +205,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #10b981', borderRadius: '4px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #10b981', borderRadius: '10px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                 AVERAGE DAILY WORKING TIME
@@ -218,7 +218,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
         </Grid>
 
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #f59e0b', borderRadius: '4px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderTop: '3px solid #f59e0b', borderRadius: '10px', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: 2, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1.2 }}>
                 ON-TIME ARRIVAL RATE
@@ -232,7 +232,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
       </Grid>
 
       {/* Timesheet Table & Filter Bar */}
-      <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '4px', bgcolor: '#ffffff' }}>
+      <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', bgcolor: '#ffffff' }}>
         <Box sx={{ borderBottom: '1px solid #e2e8f0', p: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
           <Tabs
             value={filterType}
@@ -267,7 +267,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                 </InputAdornment>
               )
             }}
-            sx={{ width: { xs: '100%', sm: 260 }, bgcolor: '#f8fafc', borderRadius: '4px' }}
+            sx={{ width: { xs: '100%', sm: 260 }, bgcolor: '#f8fafc', borderRadius: '8px' }}
           />
         </Box>
 
@@ -325,11 +325,11 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                                 fontWeight: 800,
                                 bgcolor: row.is_weekend ? '#fee2e2' : '#f1f5f9',
                                 color: row.is_weekend ? '#991b1b' : '#475569',
-                                borderRadius: '4px'
+                                borderRadius: '6px'
                               }}
                             />
                             {isToday && (
-                              <Chip label="Today" size="small" color="success" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, borderRadius: '4px' }} />
+                              <Chip label="Today" size="small" color="success" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, borderRadius: '6px' }} />
                             )}
                           </Box>
                         </TableCell>
@@ -397,26 +397,26 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                               icon={<LockIcon sx={{ fontSize: 13 }} />}
                               label={row.is_working_sunday ? 'Working Sunday (Upcoming)' : (row.is_weekend ? 'Weekend' : 'Upcoming')}
                               size="small"
-                              sx={{ fontWeight: 700, borderRadius: '4px', height: 22, fontSize: 11, bgcolor: row.is_working_sunday ? '#dcfce7' : '#e2e8f0', color: row.is_working_sunday ? '#15803d' : '#64748b' }}
+                              sx={{ fontWeight: 700, borderRadius: '6px', height: 22, fontSize: 11, bgcolor: row.is_working_sunday ? '#dcfce7' : '#e2e8f0', color: row.is_working_sunday ? '#15803d' : '#64748b' }}
                             />
                           ) : row.status === 'Working Sunday' ? (
-                            <Chip label="Working Sunday (Shift Open)" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22, bgcolor: '#dcfce7', color: '#15803d' }} />
+                            <Chip label="Working Sunday (Shift Open)" size="small" sx={{ fontWeight: 700, borderRadius: '6px', height: 22, bgcolor: '#dcfce7', color: '#15803d' }} />
                           ) : row.status === 'Sunday' ? (
-                            <Chip label="Sunday" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22, bgcolor: '#e2e8f0', color: '#475569' }} />
+                            <Chip label="Sunday" size="small" sx={{ fontWeight: 700, borderRadius: '6px', height: 22, bgcolor: '#e2e8f0', color: '#475569' }} />
                           ) : row.status === 'Holiday' ? (
-                            <Chip label={row.holiday_name || 'Holiday'} size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22, bgcolor: '#ede9fe', color: '#6d28d9' }} />
+                            <Chip label={row.holiday_name || 'Holiday'} size="small" sx={{ fontWeight: 700, borderRadius: '6px', height: 22, bgcolor: '#ede9fe', color: '#6d28d9' }} />
                           ) : row.status === 'Present' ? (
-                            <Chip label={row.in_geofence === 'WFH' ? 'Present (WFH)' : 'Present'} color="success" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
+                            <Chip label={row.in_geofence === 'WFH' ? 'Present (WFH)' : 'Present'} color="success" size="small" sx={{ fontWeight: 700, borderRadius: '6px', height: 22 }} />
                           ) : row.status === 'Late' ? (
-                            <Chip label="Late Arrival" color="warning" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
+                            <Chip label="Late Arrival" color="warning" size="small" sx={{ fontWeight: 700, borderRadius: '6px', height: 22 }} />
                           ) : (row.status === 'Approved Leave' || row.status?.startsWith('On Leave')) ? (
-                            <Chip label={`Leave (${row.leave_type || 'Approved'})`} color="info" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
+                            <Chip label={`Leave (${row.leave_type || 'Approved'})`} color="info" size="small" sx={{ fontWeight: 700, borderRadius: '6px', height: 22 }} />
                           ) : row.status === 'Weekend' ? (
-                            <Chip label="Weekend" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22, bgcolor: '#f1f5f9', color: '#64748b' }} />
+                            <Chip label="Weekend" size="small" sx={{ fontWeight: 700, borderRadius: '6px', height: 22, bgcolor: '#f1f5f9', color: '#64748b' }} />
                           ) : (row.status === 'Not Punched Yet' || row.status === 'Pending / Not Punched In') ? (
-                            <Chip label={isToday ? "Shift Open" : "Not Punched"} size="small" color="default" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
+                            <Chip label={isToday ? "Shift Open" : "Not Punched"} size="small" color="default" sx={{ fontWeight: 700, borderRadius: '6px', height: 22 }} />
                           ) : (
-                            <Chip label="Absent" color="error" size="small" sx={{ fontWeight: 700, borderRadius: '4px', height: 22 }} />
+                            <Chip label="Absent" color="error" size="small" sx={{ fontWeight: 700, borderRadius: '6px', height: 22 }} />
                           )}
                         </TableCell>
 
@@ -433,7 +433,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                               color="warning"
                               startIcon={<RegularizeIcon fontSize="small" />}
                               onClick={() => handleOpenRegularization(row.date)}
-                              sx={{ fontWeight: 700, borderRadius: '4px', textTransform: 'none', py: 0.2, fontSize: 11.5 }}
+                              sx={{ fontWeight: 700, borderRadius: '8px', textTransform: 'none', py: 0.2, fontSize: 11.5 }}
                             >
                               Regularize
                             </Button>
@@ -444,7 +444,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                               color="warning"
                               startIcon={<RegularizeIcon fontSize="small" />}
                               onClick={() => handleOpenRegularization(row.date)}
-                              sx={{ fontWeight: 700, borderRadius: '4px', textTransform: 'none', py: 0.2, fontSize: 11.5 }}
+                              sx={{ fontWeight: 700, borderRadius: '8px', textTransform: 'none', py: 0.2, fontSize: 11.5 }}
                             >
                               Missed Logout
                             </Button>

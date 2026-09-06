@@ -202,7 +202,7 @@ export default function LeavesSection() {
   const permPolicy = balanceData?.permissionPolicy || { monthlyLimit: 2, usedThisMonth: 0, remainingThisMonth: 2 };
 
   return (
-    <Card sx={{ mt: 3, border: '1px solid #e5e7eb', borderRadius: '4px' }}>
+    <Card sx={{ mt: 3, border: '1px solid #e5e7eb', borderRadius: '10px' }}>
       <CardContent sx={{ p: 3 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
@@ -225,7 +225,7 @@ export default function LeavesSection() {
                 color="primary"
                 startIcon={<SettingsIcon />}
                 onClick={handleOpenConfig}
-                sx={{ fontWeight: 700, borderRadius: '4px' }}
+                sx={{ fontWeight: 700, borderRadius: '8px' }}
               >
                 Configure Quotas
               </Button>
@@ -235,7 +235,7 @@ export default function LeavesSection() {
               color="secondary"
               startIcon={<PermissionIcon />}
               onClick={() => setOpenPermModal(true)}
-              sx={{ fontWeight: 600, borderRadius: '4px' }}
+              sx={{ fontWeight: 600, borderRadius: '8px' }}
             >
               Request Permission (1-2h)
             </Button>
@@ -244,7 +244,7 @@ export default function LeavesSection() {
               color="primary"
               startIcon={<AddIcon />}
               onClick={() => setOpenLeaveModal(true)}
-              sx={{ fontWeight: 700, borderRadius: '4px' }}
+              sx={{ fontWeight: 700, borderRadius: '8px' }}
             >
               Apply for Leave
             </Button>
@@ -254,7 +254,7 @@ export default function LeavesSection() {
         {/* Real-time Monthly Leave Balance KPI Cards */}
         <Grid container spacing={2} sx={{ mb: 3 }} alignItems="stretch">
           <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
-            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>CASUAL LEAVE (CL)</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#3b82f6', mt: 0.5 }}>
                 {balances['Casual Leave']?.remainingDays ?? 1} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {balances['Casual Leave']?.totalQuota ?? 1}d</span>
@@ -266,7 +266,7 @@ export default function LeavesSection() {
           </Grid>
 
           <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
-            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>SICK LEAVE (SL)</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
                 {balances['Sick Leave']?.remainingDays ?? 1} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {balances['Sick Leave']?.totalQuota ?? 1}d</span>
@@ -278,7 +278,7 @@ export default function LeavesSection() {
           </Grid>
 
           <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
-            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PAID ANNUAL LEAVE (PL)</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#0284c7', mt: 0.5 }}>
                 {balances['Paid Leave']?.remainingDays ?? 1} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {balances['Paid Leave']?.totalQuota ?? 1}d</span>
@@ -290,7 +290,7 @@ export default function LeavesSection() {
           </Grid>
 
           <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
-            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '4px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>MONTHLY PERMISSION PASS</Typography>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#f59e0b', mt: 0.5 }}>
                 {permPolicy.remainingThisMonth} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {permPolicy.monthlyLimit} left</span>
@@ -317,7 +317,7 @@ export default function LeavesSection() {
         </Box>
 
         {/* Search & Status Filter Bar */}
-        <Box sx={{ mb: 2.5, p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '4px' }}>
+        <Box sx={{ mb: 2.5, p: 1.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
           <Grid container spacing={1.5} alignItems="center">
             <Grid item xs={12} sm={8}>
               <TextField
@@ -340,7 +340,7 @@ export default function LeavesSection() {
                     </InputAdornment>
                   )
                 }}
-                sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -351,7 +351,7 @@ export default function LeavesSection() {
                 label="Status Filter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                sx={{ bgcolor: '#ffffff', borderRadius: '4px' }}
+                sx={{ bgcolor: '#ffffff', borderRadius: '8px' }}
               >
                 <MenuItem value="ALL">All Statuses</MenuItem>
                 <MenuItem value="Pending">Pending</MenuItem>
@@ -382,11 +382,11 @@ export default function LeavesSection() {
           loading ? (
             <TableRowsSkeleton rows={3} cols={6} />
           ) : leaves.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 3, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+            <Box sx={{ textAlign: 'center', py: 3, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
               <Typography variant="body2" sx={{ color: '#64748b' }}>No leave applications submitted yet.</Typography>
             </Box>
           ) : filteredLeaves.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+            <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1' }}>
               <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>No leave applications match the current search or filters.</Typography>
               <Button size="small" variant="outlined" sx={{ mt: 1, fontWeight: 700 }} onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}>
                 Clear Filters
@@ -434,11 +434,11 @@ export default function LeavesSection() {
           loading ? (
             <TableRowsSkeleton rows={3} cols={6} />
           ) : permissions.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 3, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+            <Box sx={{ textAlign: 'center', py: 3, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1' }}>
               <Typography variant="body2" sx={{ color: '#64748b' }}>No permission requests submitted yet.</Typography>
             </Box>
           ) : filteredPermissions.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+            <Box sx={{ textAlign: 'center', py: 4, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1' }}>
               <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>No permission requests match the current search or filters.</Typography>
               <Button size="small" variant="outlined" sx={{ mt: 1, fontWeight: 700 }} onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); }}>
                 Clear Filters

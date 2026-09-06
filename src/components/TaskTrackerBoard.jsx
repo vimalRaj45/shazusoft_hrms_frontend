@@ -239,26 +239,26 @@ export default function TaskTrackerBoard() {
   const getPriorityBadge = (priority) => {
     switch (priority) {
       case 'Urgent':
-        return <Chip label="Urgent" size="small" sx={{ bgcolor: '#fee2e2', color: '#991b1b', fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 11 }} />;
+        return <Chip label="Urgent" size="small" sx={{ bgcolor: '#fee2e2', color: '#991b1b', fontWeight: 800, borderRadius: '6px', height: 22, fontSize: 11 }} />;
       case 'High':
-        return <Chip label="High" size="small" sx={{ bgcolor: '#ffedd5', color: '#c2410c', fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 11 }} />;
+        return <Chip label="High" size="small" sx={{ bgcolor: '#ffedd5', color: '#c2410c', fontWeight: 800, borderRadius: '6px', height: 22, fontSize: 11 }} />;
       case 'Medium':
-        return <Chip label="Medium" size="small" sx={{ bgcolor: '#fef3c7', color: '#b45309', fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 11 }} />;
+        return <Chip label="Medium" size="small" sx={{ bgcolor: '#fef3c7', color: '#b45309', fontWeight: 800, borderRadius: '6px', height: 22, fontSize: 11 }} />;
       default:
-        return <Chip label="Low" size="small" sx={{ bgcolor: '#f1f5f9', color: '#475569', fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 11 }} />;
+        return <Chip label="Low" size="small" sx={{ bgcolor: '#f1f5f9', color: '#475569', fontWeight: 800, borderRadius: '6px', height: 22, fontSize: 11 }} />;
     }
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Completed':
-        return <Chip label="Completed" color="success" size="small" sx={{ fontWeight: 800, borderRadius: '4px' }} />;
+        return <Chip label="Completed" color="success" size="small" sx={{ fontWeight: 800, borderRadius: '6px' }} />;
       case 'In-Progress':
-        return <Chip label="In-Progress" color="primary" size="small" sx={{ fontWeight: 800, borderRadius: '4px' }} />;
+        return <Chip label="In-Progress" color="primary" size="small" sx={{ fontWeight: 800, borderRadius: '6px' }} />;
       case 'Under Review':
-        return <Chip label="Under Review" color="secondary" size="small" sx={{ fontWeight: 800, borderRadius: '4px' }} />;
+        return <Chip label="Under Review" color="secondary" size="small" sx={{ fontWeight: 800, borderRadius: '6px' }} />;
       default:
-        return <Chip label={status || 'Assigned'} color="warning" size="small" sx={{ fontWeight: 800, borderRadius: '4px' }} />;
+        return <Chip label={status || 'Assigned'} color="warning" size="small" sx={{ fontWeight: 800, borderRadius: '6px' }} />;
     }
   };
 
@@ -286,7 +286,7 @@ export default function TaskTrackerBoard() {
             color="primary"
             startIcon={<AddIcon />}
             onClick={() => setOpenAssignModal(true)}
-            sx={{ fontWeight: 800, borderRadius: '4px' }}
+            sx={{ fontWeight: 800, borderRadius: '8px' }}
           >
             Assign New Task
           </Button>
@@ -296,25 +296,25 @@ export default function TaskTrackerBoard() {
       {/* KPI Overview Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={6} sm={3}>
-          <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '4px', textAlign: 'center' }}>
+          <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px', textAlign: 'center' }}>
             <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>TOTAL ASSIGNED</Typography>
             <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', mt: 0.5 }}>{totalAssigned}</Typography>
           </Box>
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '4px', textAlign: 'center' }}>
+          <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', textAlign: 'center' }}>
             <Typography variant="caption" sx={{ color: '#0284c7', fontWeight: 700 }}>IN PROGRESS</Typography>
             <Typography variant="h4" sx={{ fontWeight: 800, color: '#0284c7', mt: 0.5 }}>{inProgressCount}</Typography>
           </Box>
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '4px', textAlign: 'center' }}>
+          <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', textAlign: 'center' }}>
             <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 700 }}>COMPLETED</Typography>
             <Typography variant="h4" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>{completedCount}</Typography>
           </Box>
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '4px', textAlign: 'center' }}>
+          <Box sx={{ p: 2, bgcolor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', textAlign: 'center' }}>
             <Typography variant="caption" sx={{ color: overdueCount > 0 ? '#dc2626' : '#64748b', fontWeight: 700 }}>OVERDUE</Typography>
             <Typography variant="h4" sx={{ fontWeight: 800, color: overdueCount > 0 ? '#dc2626' : '#64748b', mt: 0.5 }}>{overdueCount}</Typography>
           </Box>
@@ -322,7 +322,7 @@ export default function TaskTrackerBoard() {
       </Grid>
 
       {/* Filters Toolbar */}
-      <Card sx={{ mb: 3, border: '1px solid #e5e7eb', borderRadius: '4px' }}>
+      <Card sx={{ mb: 3, border: '1px solid #e5e7eb', borderRadius: '10px' }}>
         <CardContent sx={{ p: 2 }}>
           <Grid container spacing={1.5} alignItems="center">
             <Grid item xs={12} sm={3}>
@@ -394,7 +394,7 @@ export default function TaskTrackerBoard() {
       {loading ? (
         <TaskTrackerSkeleton />
       ) : (
-        <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '4px', bgcolor: '#ffffff' }}>
+        <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '10px', bgcolor: '#ffffff' }}>
           <CardContent sx={{ p: 0 }}>
             {filteredTasks.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -433,7 +433,7 @@ export default function TaskTrackerBoard() {
                             {t.task_title}
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.3, flexWrap: 'wrap' }}>
-                            <Chip label={t.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: 11, height: 20, borderRadius: '4px' }} />
+                            <Chip label={t.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: 11, height: 20, borderRadius: '6px' }} />
                             {(t.assigned_to_name || '').includes(',') && (
                               <Chip
                                 icon={<GroupIcon style={{ fontSize: 13, marginLeft: 4 }} />}
@@ -445,7 +445,7 @@ export default function TaskTrackerBoard() {
                                   fontWeight: 700,
                                   bgcolor: '#e0f2fe',
                                   color: '#0369a1',
-                                  borderRadius: '3px'
+                                  borderRadius: '6px'
                                 }}
                               />
                             )}
@@ -506,7 +506,7 @@ export default function TaskTrackerBoard() {
                                 variant="determinate"
                                 value={progressNum}
                                 color={progressNum >= 100 ? 'success' : progressNum >= 50 ? 'primary' : 'warning'}
-                                sx={{ height: 6, borderRadius: '4px' }}
+                                sx={{ height: 6, borderRadius: '10px' }}
                               />
                             </Box>
                             <Typography variant="caption" sx={{ fontWeight: 800, color: '#0f172a', minWidth: 32 }}>
@@ -532,7 +532,7 @@ export default function TaskTrackerBoard() {
                                   color="primary"
                                   startIcon={<StartIcon />}
                                   onClick={() => handleQuickStart(t)}
-                                  sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11, py: 0.3 }}
+                                  sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 11, py: 0.3 }}
                                 >
                                   Start
                                 </Button>
@@ -542,7 +542,7 @@ export default function TaskTrackerBoard() {
                                 variant="contained"
                                 color="primary"
                                 onClick={() => handleOpenProgressModal(t)}
-                                sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11, py: 0.3 }}
+                                sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 11, py: 0.3 }}
                               >
                                 Update Progress
                               </Button>
@@ -562,7 +562,7 @@ export default function TaskTrackerBoard() {
                                 variant="outlined"
                                 color="primary"
                                 onClick={() => handleOpenProgressModal(t)}
-                                sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 11, py: 0.3 }}
+                                sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 11, py: 0.3 }}
                               >
                                 Edit Progress
                               </Button>

@@ -126,11 +126,11 @@ export default function SplashScreen({ message = 'Loading workspace environment.
           <LinearProgress
             sx={{
               height: 4,
-              borderRadius: '2px',
+              borderRadius: '10px',
               bgcolor: 'rgba(255, 255, 255, 0.12)',
               '& .MuiLinearProgress-bar': {
                 bgcolor: '#34d399',
-                borderRadius: '2px'
+                borderRadius: '10px'
               }
             }}
           />

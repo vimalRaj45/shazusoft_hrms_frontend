@@ -329,7 +329,7 @@ export default function IssueResolutionChatHub({ user }) {
               px: 0.75,
               py: 0.15,
               mx: 0.2,
-              borderRadius: '4px',
+              borderRadius: '8px',
               fontWeight: 700,
               fontSize: '0.82rem',
               verticalAlign: 'middle',
@@ -495,7 +495,7 @@ export default function IssueResolutionChatHub({ user }) {
               size="small"
               startIcon={<CampaignIcon />}
               onClick={() => setOpenBroadcastDialog(true)}
-              sx={{ borderRadius: '4px', textTransform: 'none', fontWeight: 600, flex: { xs: 1, sm: 'none' } }}
+              sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600, flex: { xs: 1, sm: 'none' } }}
             >
               Broadcast Notice
             </Button>
@@ -505,7 +505,7 @@ export default function IssueResolutionChatHub({ user }) {
             size="small"
             startIcon={<AddIcon />}
             onClick={() => setOpenNewDialog(true)}
-            sx={{ borderRadius: '4px', textTransform: 'none', fontWeight: 600, flex: { xs: 1, sm: 'none' } }}
+            sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600, flex: { xs: 1, sm: 'none' } }}
           >
             + Raise New Issue
           </Button>
@@ -517,7 +517,7 @@ export default function IssueResolutionChatHub({ user }) {
         <Alert
           severity={broadcasts[0].priority === 'Urgent' ? 'error' : 'info'}
           icon={<CampaignIcon />}
-          sx={{ mb: 2, borderRadius: '4px', border: '1px solid', borderColor: 'divider' }}
+          sx={{ mb: 2, borderRadius: '10px', border: '1px solid', borderColor: 'divider' }}
         >
           <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 0.75 }}>
             {broadcasts[0].title}
@@ -553,7 +553,7 @@ export default function IssueResolutionChatHub({ user }) {
             onClick={() => setStatusFilter(kpi.label === 'All Issues' ? 'all' : kpi.label)}
             sx={{
               p: 1.2,
-              borderRadius: '4px',
+              borderRadius: '10px',
               border: '1px solid',
               borderColor: statusFilter === (kpi.label === 'All Issues' ? 'all' : kpi.label) ? kpi.color : 'divider',
               bgcolor: statusFilter === (kpi.label === 'All Issues' ? 'all' : kpi.label) ? kpi.bg : 'background.paper',
@@ -578,7 +578,7 @@ export default function IssueResolutionChatHub({ user }) {
         sx={{
           border: '1px solid',
           borderColor: 'divider',
-          borderRadius: '4px',
+          borderRadius: '10px',
           overflow: 'hidden',
           minHeight: '620px',
           height: { xs: 'auto', md: 'calc(100vh - 280px)' },
@@ -614,7 +614,7 @@ export default function IssueResolutionChatHub({ user }) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
                   startAdornment: <SearchIcon sx={{ color: 'text.secondary', fontSize: 18, mr: 0.75 }} />,
-                  sx: { borderRadius: '4px', fontSize: '0.85rem' }
+                  sx: { borderRadius: '8px', fontSize: '0.85rem' }
                 }}
                 fullWidth
               />
@@ -646,7 +646,7 @@ export default function IssueResolutionChatHub({ user }) {
                           fontWeight: isSelected ? 800 : 600,
                           textTransform: 'none',
                           minWidth: 0,
-                          borderRadius: '4px',
+                          borderRadius: '8px',
                           bgcolor: isSelected ? '#15803d' : 'transparent',
                           color: isSelected ? '#ffffff' : '#475569',
                           borderColor: isSelected ? '#15803d' : '#e2e8f0',
@@ -668,7 +668,7 @@ export default function IssueResolutionChatHub({ user }) {
                   <Select
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
-                    sx={{ borderRadius: '4px', fontSize: '0.75rem', height: 32 }}
+                    sx={{ borderRadius: '8px', fontSize: '0.75rem', height: 32 }}
                   >
                     <MenuItem value="all">All Categories</MenuItem>
                     {CATEGORIES.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
@@ -679,7 +679,7 @@ export default function IssueResolutionChatHub({ user }) {
                   <Select
                     value={priorityFilter}
                     onChange={(e) => setPriorityFilter(e.target.value)}
-                    sx={{ borderRadius: '4px', fontSize: '0.75rem', height: 32 }}
+                    sx={{ borderRadius: '8px', fontSize: '0.75rem', height: 32 }}
                   >
                     <MenuItem value="all">All Priority</MenuItem>
                     {PRIORITIES.map(p => <MenuItem key={p.label} value={p.label}>{p.label}</MenuItem>)}
@@ -754,7 +754,7 @@ export default function IssueResolutionChatHub({ user }) {
                                 bgcolor: '#ede9fe',
                                 color: '#6d28d9',
                                 border: '1px solid #ddd6fe',
-                                borderRadius: '4px',
+                                borderRadius: '6px',
                                 px: 0.2
                               }}
                             />
@@ -768,7 +768,7 @@ export default function IssueResolutionChatHub({ user }) {
                               fontWeight: 700,
                               bgcolor: prioConf.bg,
                               color: prioConf.color,
-                              borderRadius: '4px',
+                              borderRadius: '6px',
                               px: 0.25
                             }}
                           />
@@ -781,7 +781,7 @@ export default function IssueResolutionChatHub({ user }) {
                               fontWeight: 700,
                               bgcolor: statusConf.bg,
                               color: statusConf.color,
-                              borderRadius: '4px',
+                              borderRadius: '6px',
                               px: 0.25
                             }}
                           />
@@ -911,7 +911,7 @@ export default function IssueResolutionChatHub({ user }) {
                             value={selectedTicket.status}
                             onChange={(e) => handleStatusChange(e.target.value)}
                             sx={{
-                              borderRadius: '4px',
+                              borderRadius: '8px',
                               fontSize: '0.75rem',
                               fontWeight: 700,
                               height: 28,
@@ -933,7 +933,7 @@ export default function IssueResolutionChatHub({ user }) {
                             color="success"
                             startIcon={<CheckCircleIcon />}
                             onClick={() => handleStatusChange('Resolved', 'Staff confirmed issue resolved.')}
-                            sx={{ borderRadius: '4px', textTransform: 'none', fontSize: '0.72rem', fontWeight: 600, height: 28 }}
+                            sx={{ borderRadius: '8px', textTransform: 'none', fontSize: '0.72rem', fontWeight: 600, height: 28 }}
                           >
                             Mark as Resolved
                           </Button>
@@ -985,7 +985,7 @@ export default function IssueResolutionChatHub({ user }) {
                               size="small"
                               icon={<InfoIcon style={{ fontSize: 14 }} />}
                               sx={{
-                                borderRadius: '4px',
+                                borderRadius: '6px',
                                 bgcolor: '#e2e8f0',
                                 fontSize: '0.72rem',
                                 color: '#334155',
@@ -1031,7 +1031,7 @@ export default function IssueResolutionChatHub({ user }) {
                                   fontWeight: 700,
                                   bgcolor: '#dbeafe',
                                   color: '#1e40af',
-                                  borderRadius: '2px',
+                                  borderRadius: '6px',
                                   px: 0
                                 }}
                               />
@@ -1043,7 +1043,7 @@ export default function IssueResolutionChatHub({ user }) {
                             elevation={0}
                             sx={{
                               p: 1.5,
-                              borderRadius: '4px',
+                              borderRadius: '10px',
                               maxWidth: { xs: '85%', sm: '75%' },
                               bgcolor: isMe ? '#133829' : '#ffffff',
                               color: isMe ? '#ffffff' : '#0f172a',
@@ -1082,7 +1082,7 @@ export default function IssueResolutionChatHub({ user }) {
                       borderTop: '1px solid',
                       borderColor: 'divider',
                       '&::-webkit-scrollbar': { height: 4 },
-                      '&::-webkit-scrollbar-thumb': { bgcolor: '#cbd5e1', borderRadius: '2px' }
+                      '&::-webkit-scrollbar-thumb': { bgcolor: '#cbd5e1', borderRadius: '10px' }
                     }}
                   >
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.68rem', textTransform: 'uppercase', flexShrink: 0, mr: 0.5 }}>
@@ -1100,7 +1100,7 @@ export default function IssueResolutionChatHub({ user }) {
                         size="small"
                         onClick={() => setInputMessage(tpl)}
                         sx={{
-                          borderRadius: '4px',
+                          borderRadius: '6px',
                           fontSize: '0.72rem',
                           cursor: 'pointer',
                           flexShrink: 0,
@@ -1164,7 +1164,7 @@ export default function IssueResolutionChatHub({ user }) {
                             button
                             onClick={() => handleSelectMention(staff)}
                             sx={{
-                              borderRadius: '4px',
+                              borderRadius: '10px',
                               py: 0.6,
                               px: 1,
                               '&:hover': { bgcolor: '#f1f5f9' }
@@ -1223,7 +1223,7 @@ export default function IssueResolutionChatHub({ user }) {
                       sx={{
                         color: mentionOpen ? 'primary.main' : '#64748b',
                         bgcolor: mentionOpen ? 'rgba(19, 56, 41, 0.08)' : 'transparent',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         p: 0.75,
                         flexShrink: 0,
                         '&:hover': { bgcolor: 'rgba(19, 56, 41, 0.08)' }
@@ -1254,7 +1254,7 @@ export default function IssueResolutionChatHub({ user }) {
                     multiline
                     maxRows={3}
                     fullWidth
-                    InputProps={{ sx: { borderRadius: '4px', fontSize: '0.85rem' } }}
+                    InputProps={{ sx: { borderRadius: '10px', fontSize: '0.85rem' } }}
                   />
 
                   <Button
@@ -1265,7 +1265,7 @@ export default function IssueResolutionChatHub({ user }) {
                       minWidth: '42px',
                       width: '42px',
                       height: '40px',
-                      borderRadius: '4px',
+                      borderRadius: '8px',
                       p: 0,
                       bgcolor: '#133829',
                       flexShrink: 0,
@@ -1295,7 +1295,7 @@ export default function IssueResolutionChatHub({ user }) {
         onClose={() => setOpenNewDialog(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '4px' } }}
+        PaperProps={{ sx: { borderRadius: '12px' } }}
       >
         <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
           Raise New Support Issue / Query
@@ -1308,7 +1308,7 @@ export default function IssueResolutionChatHub({ user }) {
                 value={newTicketData.category}
                 label="Issue Category"
                 onChange={(e) => setNewTicketData({ ...newTicketData, category: e.target.value })}
-                sx={{ borderRadius: '4px' }}
+                sx={{ borderRadius: '8px' }}
               >
                 {CATEGORIES.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
               </Select>
@@ -1320,7 +1320,7 @@ export default function IssueResolutionChatHub({ user }) {
                 value={newTicketData.priority}
                 label="Priority Level"
                 onChange={(e) => setNewTicketData({ ...newTicketData, priority: e.target.value })}
-                sx={{ borderRadius: '4px' }}
+                sx={{ borderRadius: '8px' }}
               >
                 {PRIORITIES.map(p => <MenuItem key={p.label} value={p.label}>{p.label}</MenuItem>)}
               </Select>
@@ -1333,7 +1333,7 @@ export default function IssueResolutionChatHub({ user }) {
               value={newTicketData.subject}
               onChange={(e) => setNewTicketData({ ...newTicketData, subject: e.target.value })}
               fullWidth
-              InputProps={{ sx: { borderRadius: '4px' } }}
+              InputProps={{ sx: { borderRadius: '8px' } }}
             />
 
             <TextField
@@ -1345,18 +1345,18 @@ export default function IssueResolutionChatHub({ user }) {
               value={newTicketData.description}
               onChange={(e) => setNewTicketData({ ...newTicketData, description: e.target.value })}
               fullWidth
-              InputProps={{ sx: { borderRadius: '4px' } }}
+              InputProps={{ sx: { borderRadius: '8px' } }}
             />
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOpenNewDialog(false)} sx={{ borderRadius: '4px', textTransform: 'none' }}>
+          <Button onClick={() => setOpenNewDialog(false)} sx={{ borderRadius: '8px', textTransform: 'none' }}>
             Cancel
           </Button>
           <Button
             variant="contained"
             onClick={handleCreateTicket}
-            sx={{ borderRadius: '4px', textTransform: 'none', fontWeight: 600 }}
+            sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600 }}
           >
             Submit Issue
           </Button>
@@ -1369,7 +1369,7 @@ export default function IssueResolutionChatHub({ user }) {
         onClose={() => setOpenBroadcastDialog(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '4px' } }}
+        PaperProps={{ sx: { borderRadius: '12px' } }}
       >
         <DialogTitle sx={{ fontWeight: 700, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
           <CampaignIcon color="primary" /> Broadcast Company Notice
@@ -1382,7 +1382,7 @@ export default function IssueResolutionChatHub({ user }) {
                 value={newBroadcast.priority}
                 label="Priority"
                 onChange={(e) => setNewBroadcast({ ...newBroadcast, priority: e.target.value })}
-                sx={{ borderRadius: '4px' }}
+                sx={{ borderRadius: '8px' }}
               >
                 <MenuItem value="Normal">Normal Announcement</MenuItem>
                 <MenuItem value="Important">Important</MenuItem>
@@ -1397,7 +1397,7 @@ export default function IssueResolutionChatHub({ user }) {
               value={newBroadcast.title}
               onChange={(e) => setNewBroadcast({ ...newBroadcast, title: e.target.value })}
               fullWidth
-              InputProps={{ sx: { borderRadius: '4px' } }}
+              InputProps={{ sx: { borderRadius: '8px' } }}
             />
 
             <TextField
@@ -1409,18 +1409,18 @@ export default function IssueResolutionChatHub({ user }) {
               value={newBroadcast.content}
               onChange={(e) => setNewBroadcast({ ...newBroadcast, content: e.target.value })}
               fullWidth
-              InputProps={{ sx: { borderRadius: '4px' } }}
+              InputProps={{ sx: { borderRadius: '8px' } }}
             />
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOpenBroadcastDialog(false)} sx={{ borderRadius: '4px', textTransform: 'none' }}>
+          <Button onClick={() => setOpenBroadcastDialog(false)} sx={{ borderRadius: '8px', textTransform: 'none' }}>
             Cancel
           </Button>
           <Button
             variant="contained"
             onClick={handleCreateBroadcast}
-            sx={{ borderRadius: '4px', textTransform: 'none', fontWeight: 600 }}
+            sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600 }}
           >
             Broadcast to All Staff
           </Button>

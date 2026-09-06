@@ -36,7 +36,7 @@ export default function MetricCards({
               flexDirection: 'column',
               bgcolor: '#ffffff',
               border: '1px solid #e5e7eb',
-              borderRadius: '4px',
+              borderRadius: '10px',
               position: 'relative',
               '&::before': {
                 content: '""',
@@ -46,8 +46,8 @@ export default function MetricCards({
                 right: 0,
                 height: 3,
                 bgcolor: '#3b82f6', // Royal Blue
-                borderTopLeftRadius: '4px',
-                borderTopRightRadius: '4px'
+                borderTopLeftRadius: '10px',
+                borderTopRightRadius: '10px'
               }
             }}
           >
@@ -72,7 +72,7 @@ export default function MetricCards({
                   borderColor: '#e5e7eb',
                   color: '#0f172a',
                   py: 0.4,
-                  borderRadius: '4px',
+                  borderRadius: '8px',
                   alignSelf: 'flex-start'
                 }}
               >
@@ -92,7 +92,7 @@ export default function MetricCards({
               flexDirection: 'column',
               bgcolor: '#ffffff',
               border: '1px solid #e5e7eb',
-              borderRadius: '4px',
+              borderRadius: '10px',
               position: 'relative',
               '&::before': {
                 content: '""',
@@ -102,8 +102,8 @@ export default function MetricCards({
                 right: 0,
                 height: 3,
                 bgcolor: '#0284c7', // Sky Blue
-                borderTopLeftRadius: '4px',
-                borderTopRightRadius: '4px'
+                borderTopLeftRadius: '10px',
+                borderTopRightRadius: '10px'
               }
             }}
           >
@@ -133,7 +133,7 @@ export default function MetricCards({
               flexDirection: 'column',
               bgcolor: '#ffffff',
               border: '1px solid #e5e7eb',
-              borderRadius: '4px',
+              borderRadius: '10px',
               position: 'relative',
               '&::before': {
                 content: '""',
@@ -143,8 +143,8 @@ export default function MetricCards({
                 right: 0,
                 height: 3,
                 bgcolor: '#10b981', // Emerald Green
-                borderTopLeftRadius: '4px',
-                borderTopRightRadius: '4px'
+                borderTopLeftRadius: '10px',
+                borderTopRightRadius: '10px'
               }
             }}
           >
@@ -174,7 +174,7 @@ export default function MetricCards({
               flexDirection: 'column',
               bgcolor: '#ffffff',
               border: '1px solid #e5e7eb',
-              borderRadius: '4px',
+              borderRadius: '10px',
               position: 'relative',
               '&::before': {
                 content: '""',
@@ -184,8 +184,8 @@ export default function MetricCards({
                 right: 0,
                 height: 3,
                 bgcolor: '#f59e0b', // Amber Orange
-                borderTopLeftRadius: '4px',
-                borderTopRightRadius: '4px'
+                borderTopLeftRadius: '10px',
+                borderTopRightRadius: '10px'
               }
             }}
           >

@@ -61,7 +61,7 @@ export default function Sidebar({
           py: 0.9,
           px: isCollapsed ? 1 : 1.5,
           mb: 0.5,
-          borderRadius: '4px',
+          borderRadius: '8px',
           bgcolor: isActive ? '#e8f5e9' : 'transparent',
           color: isActive ? '#133829' : '#475569',
           fontWeight: isActive ? 700 : 500,
@@ -105,7 +105,7 @@ export default function Sidebar({
                   fontWeight: 800,
                   bgcolor: isActive ? '#c8e6c9' : '#f1f5f9',
                   color: isActive ? '#1b5e20' : '#475569',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   ml: 0.5,
                   flexShrink: 0
                 }}
@@ -201,7 +201,7 @@ export default function Sidebar({
                 width: 34,
                 height: 34,
                 objectFit: 'contain',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 flexShrink: 0
               }}
             />
@@ -254,7 +254,7 @@ export default function Sidebar({
                 px: 1.5,
                 py: 0.6,
                 mb: 0.6,
-                borderRadius: '4px',
+                borderRadius: '8px',
                 cursor: 'pointer',
                 transition: 'background-color 0.15s ease',
                 '&:hover': {
@@ -298,7 +298,7 @@ export default function Sidebar({
                 px: 1.5,
                 py: 0.6,
                 mb: 0.6,
-                borderRadius: '4px',
+                borderRadius: '8px',
                 cursor: 'pointer',
                 transition: 'background-color 0.15s ease',
                 '&:hover': {
@@ -349,7 +349,7 @@ export default function Sidebar({
                     px: 1.5,
                     py: 0.6,
                     mb: 0.6,
-                    borderRadius: '4px',
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     transition: 'background-color 0.15s ease',
                     '&:hover': {
@@ -398,7 +398,7 @@ export default function Sidebar({
           <Box
             sx={{
               p: 1.5,
-              borderRadius: '4px',
+              borderRadius: '10px',
               bgcolor: '#f8fafc',
               border: '1px solid #e5e7eb',
               textAlign: 'center'
@@ -419,7 +419,7 @@ export default function Sidebar({
             <Box
               sx={{
                 p: 1,
-                borderRadius: '4px',
+                borderRadius: '10px',
                 bgcolor: '#f8fafc',
                 border: '1px solid #e5e7eb',
                 display: 'flex',

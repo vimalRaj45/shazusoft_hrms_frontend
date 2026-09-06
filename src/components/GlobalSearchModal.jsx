@@ -209,17 +209,17 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
   const getItemTypeBadge = (type) => {
     switch (type) {
       case 'employee':
-        return <Chip label="Staff" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#e8f5e9', color: '#133829', borderRadius: '4px' }} />;
+        return <Chip label="Staff" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#e8f5e9', color: '#133829', borderRadius: '6px' }} />;
       case 'task':
-        return <Chip label="Task" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#e0f2fe', color: '#0369a1', borderRadius: '4px' }} />;
+        return <Chip label="Task" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#e0f2fe', color: '#0369a1', borderRadius: '6px' }} />;
       case 'leave':
-        return <Chip label="Leave" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#fef3c7', color: '#b45309', borderRadius: '4px' }} />;
+        return <Chip label="Leave" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#fef3c7', color: '#b45309', borderRadius: '6px' }} />;
       case 'weeklyReport':
-        return <Chip label="Weekly" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '4px' }} />;
+        return <Chip label="Weekly" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '6px' }} />;
       case 'evaluation':
-        return <Chip label="Monthly" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#f3e8ff', color: '#7e22ce', borderRadius: '4px' }} />;
+        return <Chip label="Monthly" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#f3e8ff', color: '#7e22ce', borderRadius: '6px' }} />;
       default:
-        return <Chip label="Action" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '4px' }} />;
+        return <Chip label="Action" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569', borderRadius: '6px' }} />;
     }
   };
 
@@ -231,7 +231,7 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: '4px',
+          borderRadius: '12px',
           overflow: 'hidden',
           top: { xs: 0, sm: -100 },
           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
@@ -263,7 +263,7 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 )}
-                <Chip label="ESC" size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700, borderRadius: '4px', bgcolor: '#f1f5f9' }} />
+                <Chip label="ESC" size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700, borderRadius: '6px', bgcolor: '#f1f5f9' }} />
               </InputAdornment>
             ),
             sx: { fontSize: '1.05rem', fontWeight: 600 }
@@ -279,7 +279,7 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
               onClick={() => setActiveCategory('ALL')}
               sx={{
                 fontWeight: 700,
-                borderRadius: '4px',
+                borderRadius: '6px',
                 bgcolor: activeCategory === 'ALL' ? '#133829' : '#f1f5f9',
                 color: activeCategory === 'ALL' ? '#ffffff' : '#475569'
               }}
@@ -291,7 +291,7 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
                 onClick={() => setActiveCategory('EMPLOYEES')}
                 sx={{
                   fontWeight: 700,
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   bgcolor: activeCategory === 'EMPLOYEES' ? '#133829' : '#f1f5f9',
                   color: activeCategory === 'EMPLOYEES' ? '#ffffff' : '#475569'
                 }}
@@ -304,7 +304,7 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
                 onClick={() => setActiveCategory('TASKS')}
                 sx={{
                   fontWeight: 700,
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   bgcolor: activeCategory === 'TASKS' ? '#133829' : '#f1f5f9',
                   color: activeCategory === 'TASKS' ? '#ffffff' : '#475569'
                 }}
@@ -317,7 +317,7 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
                 onClick={() => setActiveCategory('LEAVES')}
                 sx={{
                   fontWeight: 700,
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   bgcolor: activeCategory === 'LEAVES' ? '#133829' : '#f1f5f9',
                   color: activeCategory === 'LEAVES' ? '#ffffff' : '#475569'
                 }}
@@ -330,7 +330,7 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
                 onClick={() => setActiveCategory('REPORTS')}
                 sx={{
                   fontWeight: 700,
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   bgcolor: activeCategory === 'REPORTS' ? '#133829' : '#f1f5f9',
                   color: activeCategory === 'REPORTS' ? '#ffffff' : '#475569'
                 }}
@@ -391,7 +391,7 @@ export default function GlobalSearchModal({ open, onClose, onNavigate, onTrigger
                         </Typography>
                         {getItemTypeBadge(item.type)}
                         {item.priority && (
-                          <Chip label={item.priority} size="small" color={item.priority === 'High' || item.priority === 'Urgent' ? 'error' : 'default'} sx={{ height: 16, fontSize: 9, fontWeight: 700, borderRadius: '4px' }} />
+                          <Chip label={item.priority} size="small" color={item.priority === 'High' || item.priority === 'Urgent' ? 'error' : 'default'} sx={{ height: 16, fontSize: 9, fontWeight: 700, borderRadius: '6px' }} />
                         )}
                       </Box>
                     }

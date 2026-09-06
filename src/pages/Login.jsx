@@ -145,7 +145,7 @@ export default function Login() {
           width: '100%',
           maxWidth: { xs: 440, sm: 500, md: 940 },
           maxHeight: { xs: 'none', md: '92vh' },
-          borderRadius: '4px',
+          borderRadius: '12px',
           border: '1px solid rgba(229, 231, 235, 0.8)',
           boxShadow: '0 20px 45px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.04)',
           backdropFilter: 'blur(20px)',
@@ -197,7 +197,7 @@ export default function Login() {
                     height: 44,
                     objectFit: 'contain',
                     bgcolor: '#ffffff',
-                    borderRadius: '4px',
+                    borderRadius: '8px',
                     p: 0.5,
                     boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                   }}
@@ -226,7 +226,7 @@ export default function Login() {
                     key={i}
                     sx={{
                       p: 1.2,
-                      borderRadius: '4px',
+                      borderRadius: '8px',
                       bgcolor: 'rgba(255, 255, 255, 0.08)',
                       border: '1px solid rgba(255, 255, 255, 0.12)',
                       display: 'flex',
@@ -281,7 +281,7 @@ export default function Login() {
                   width: 42,
                   height: 42,
                   objectFit: 'contain',
-                  borderRadius: '4px',
+                  borderRadius: '8px',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
                 }}
               />
@@ -326,7 +326,7 @@ export default function Login() {
                     }}
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         bgcolor: '#ffffff'
                       }
                     }}
@@ -344,7 +344,7 @@ export default function Login() {
                     py: 1.2,
                     fontWeight: 800,
                     fontSize: '0.95rem',
-                    borderRadius: '4px',
+                    borderRadius: '8px',
                     bgcolor: '#133829',
                     color: '#ffffff',
                     boxShadow: '0 4px 12px rgba(19, 56, 41, 0.2)',
@@ -357,7 +357,7 @@ export default function Login() {
             ) : (
               /* STEP 2: Enter OTP */
               <form onSubmit={handleVerifyOTP}>
-                <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
                     <Typography variant="caption" sx={{ color: '#166534', fontWeight: 600, display: 'block' }}>
                       Verification code sent to:
@@ -399,7 +399,7 @@ export default function Login() {
                     }}
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         bgcolor: '#ffffff'
                       }
                     }}
@@ -417,7 +417,7 @@ export default function Login() {
                     py: 1.2,
                     fontWeight: 800,
                     fontSize: '0.95rem',
-                    borderRadius: '4px',
+                    borderRadius: '8px',
                     bgcolor: '#133829',
                     color: '#ffffff',
                     boxShadow: '0 4px 12px rgba(19, 56, 41, 0.2)',

@@ -73,7 +73,7 @@ export default function EmployeeReportViewer({ reportData }) {
   return (
     <Box sx={{ mt: 2 }}>
       {/* Report Header Card */}
-      <Card sx={{ mb: 3, borderLeft: '6px solid #133829', borderRadius: '4px' }}>
+      <Card sx={{ mb: 3, borderLeft: '6px solid #133829', borderRadius: '10px' }}>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
             <Box>
@@ -86,13 +86,13 @@ export default function EmployeeReportViewer({ reportData }) {
                   size="small"
                   color="primary"
                   variant="outlined"
-                  sx={{ fontWeight: 700, borderRadius: '4px' }}
+                  sx={{ fontWeight: 700, borderRadius: '6px' }}
                 />
                 <Chip
                   label={employee?.role?.toUpperCase()}
                   size="small"
                   color={employee?.role === 'admin' ? 'secondary' : 'default'}
-                  sx={{ fontWeight: 600, borderRadius: '4px' }}
+                  sx={{ fontWeight: 600, borderRadius: '6px' }}
                 />
               </Box>
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -113,7 +113,7 @@ export default function EmployeeReportViewer({ reportData }) {
                   fontWeight: 700,
                   bgcolor: '#133829',
                   color: '#ffffff',
-                  borderRadius: '4px',
+                  borderRadius: '8px',
                   textTransform: 'none',
                   '&:hover': { bgcolor: '#0f2b20' }
                 }}
@@ -126,9 +126,9 @@ export default function EmployeeReportViewer({ reportData }) {
           <Divider sx={{ my: 2.5 }} />
 
           {/* High-Level Metric Tiles */}
-          <Grid container spacing={2}>
-            <Grid item xs={6} sm={3} md={2.4}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
+          <Grid container spacing={2} alignItems="stretch">
+            <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>DAYS LOGGED</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main', mt: 0.5 }}>
                   {summaryMetrics?.totalDaysLogged}
@@ -139,8 +139,8 @@ export default function EmployeeReportViewer({ reportData }) {
               </Box>
             </Grid>
 
-            <Grid item xs={6} sm={3} md={3}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
+            <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>NET WORKING TIME</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: '#059669', mt: 0.5 }}>
                   {summaryMetrics?.totalNetHours} hrs
@@ -151,8 +151,8 @@ export default function EmployeeReportViewer({ reportData }) {
               </Box>
             </Grid>
 
-            <Grid item xs={6} sm={3} md={3}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
+            <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>TASKS COMPLETED</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: '#2563eb', mt: 0.5 }}>
                   {summaryMetrics?.completedTasks} / {summaryMetrics?.totalTasks}
@@ -163,8 +163,8 @@ export default function EmployeeReportViewer({ reportData }) {
               </Box>
             </Grid>
 
-            <Grid item xs={6} sm={3} md={3}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
+            <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
+              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>EFFORT VARIANCE</Typography>
                 <Typography
                   variant="h5"
@@ -248,28 +248,168 @@ export default function EmployeeReportViewer({ reportData }) {
               </Box>
               <Divider sx={{ mb: 2 }} />
 
-              <Grid container spacing={1.5} sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Box sx={{ p: 1, bgcolor: '#fef2f2', borderRadius: 1.5, textAlign: 'center', border: '1px solid #fecaca' }}>
-                    <Typography variant="caption" sx={{ color: '#dc2626', fontWeight: 700 }}>OVERRUNS</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#dc2626' }}>
-                      {estimationAnalysis.overrunCount || 0} tasks
+              <Grid container spacing={1.5} sx={{ mb: 2 }} alignItems="stretch">
+                <Grid item xs={4} sx={{ display: 'flex' }}>
+                  <Box
+                    sx={{
+                      p: { xs: 1, sm: 1.5 },
+                      bgcolor: '#fef2f2',
+                      borderRadius: '10px',
+                      textAlign: 'center',
+                      border: '1px solid #fee2e2',
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#dc2626',
+                        fontWeight: 800,
+                        fontSize: { xs: '9px', sm: '10.5px' },
+                        letterSpacing: '0.04em',
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1.2
+                      }}
+                    >
+                      OVERRUNS
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: 800,
+                        color: '#dc2626',
+                        fontSize: { xs: '18px', sm: '22px' },
+                        lineHeight: 1.1,
+                        my: 0.3
+                      }}
+                    >
+                      {estimationAnalysis.overrunCount || 0}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#ef4444',
+                        fontWeight: 600,
+                        fontSize: { xs: '9.5px', sm: '11px' },
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1
+                      }}
+                    >
+                      tasks
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={4}>
-                  <Box sx={{ p: 1, bgcolor: '#f0fdf4', borderRadius: 1.5, textAlign: 'center', border: '1px solid #bbf7d0' }}>
-                    <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700 }}>EFFICIENT</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#059669' }}>
-                      {estimationAnalysis.aheadCount || 0} tasks
+
+                <Grid item xs={4} sx={{ display: 'flex' }}>
+                  <Box
+                    sx={{
+                      p: { xs: 1, sm: 1.5 },
+                      bgcolor: '#f0fdf4',
+                      borderRadius: '10px',
+                      textAlign: 'center',
+                      border: '1px solid #dcfce7',
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#059669',
+                        fontWeight: 800,
+                        fontSize: { xs: '9px', sm: '10.5px' },
+                        letterSpacing: '0.04em',
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1.2
+                      }}
+                    >
+                      EFFICIENT
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: 800,
+                        color: '#059669',
+                        fontSize: { xs: '18px', sm: '22px' },
+                        lineHeight: 1.1,
+                        my: 0.3
+                      }}
+                    >
+                      {estimationAnalysis.aheadCount || 0}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#10b981',
+                        fontWeight: 600,
+                        fontSize: { xs: '9.5px', sm: '11px' },
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1
+                      }}
+                    >
+                      tasks
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={4}>
-                  <Box sx={{ p: 1, bgcolor: '#f8fafc', borderRadius: 1.5, textAlign: 'center', border: '1px solid #e2e8f0' }}>
-                    <Typography variant="caption" sx={{ color: '#475569', fontWeight: 700 }}>EXACT ON TIME</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                      {estimationAnalysis.onTargetCount || 0} tasks
+
+                <Grid item xs={4} sx={{ display: 'flex' }}>
+                  <Box
+                    sx={{
+                      p: { xs: 1, sm: 1.5 },
+                      bgcolor: '#f8fafc',
+                      borderRadius: '10px',
+                      textAlign: 'center',
+                      border: '1px solid #e2e8f0',
+                      width: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#475569',
+                        fontWeight: 800,
+                        fontSize: { xs: '9px', sm: '10.5px' },
+                        letterSpacing: '0.04em',
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1.2
+                      }}
+                    >
+                      ON TARGET
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: 800,
+                        color: '#0f172a',
+                        fontSize: { xs: '18px', sm: '22px' },
+                        lineHeight: 1.1,
+                        my: 0.3
+                      }}
+                    >
+                      {estimationAnalysis.onTargetCount || 0}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#64748b',
+                        fontWeight: 600,
+                        fontSize: { xs: '9.5px', sm: '11px' },
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1
+                      }}
+                    >
+                      tasks
                     </Typography>
                   </Box>
                 </Grid>

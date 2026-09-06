@@ -24,7 +24,8 @@ import {
   History as HistoryIcon,
   CalendarToday as CalendarIcon,
   Assessment as ReportIcon,
-  AssignmentTurnedIn as EvalIcon
+  AssignmentTurnedIn as EvalIcon,
+  AccessTime as TimeIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { attendanceAPI, reportsAPI, evaluationsAPI } from '../services/api';
@@ -98,13 +99,18 @@ export default function EmployeeDashboard() {
     }
   };
 
+  const [currentTime, setCurrentTime] = useState(new Date());
+
   useEffect(() => {
     fetchTodayData();
     fetchHistory();
     fetchMyEvaluations();
-  }, []);
 
-  const currentDateFormatted = format(new Date(), 'EEEE, MMMM do, yyyy');
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -114,11 +120,37 @@ export default function EmployeeDashboard() {
           <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary' }}>
             Welcome back, {user?.name?.split(' ')[0]}
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, color: 'text.secondary' }}>
-            <CalendarIcon fontSize="small" />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {currentDateFormatted} • <strong>{user?.designation || 'Staff'}</strong> ({user?.department})
-            </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary', mt: 0.5 }}>
+            <strong>{user?.designation || 'Staff'}</strong> ({user?.department})
+          </Typography>
+
+          {/* Live Date & Time Display Badge (Matching TopNavbar format) */}
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1.2,
+              px: 1.5,
+              py: 0.6,
+              mt: 1.2,
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              bgcolor: '#f8fafc'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+              <CalendarIcon sx={{ fontSize: 15, color: '#133829' }} />
+              <Typography variant="body2" sx={{ fontWeight: 700, fontSize: 12.5, color: '#0f172a' }}>
+                {format(currentTime, 'EEE, dd MMM yyyy')}
+              </Typography>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800 }}>|</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <TimeIcon sx={{ fontSize: 14, color: '#059669' }} />
+              <Typography variant="body2" sx={{ fontWeight: 800, fontSize: 12.5, color: '#059669', fontFamily: 'monospace' }}>
+                {format(currentTime, 'hh:mm:ss a')}
+              </Typography>
+            </Box>
           </Box>
         </Box>
 

@@ -123,7 +123,7 @@ export function AlertConfirmProvider({ children }) {
         <Box sx={{
           width: 44,
           height: 44,
-          borderRadius: '4px',
+          borderRadius: '10px',
           bgcolor: 'rgba(239, 68, 68, 0.12)',
           color: '#ef4444',
           display: 'flex',
@@ -141,7 +141,7 @@ export function AlertConfirmProvider({ children }) {
           <Box sx={{
             width: 44,
             height: 44,
-            borderRadius: '4px',
+            borderRadius: '10px',
             bgcolor: 'rgba(239, 68, 68, 0.12)',
             color: '#ef4444',
             display: 'flex',
@@ -157,7 +157,7 @@ export function AlertConfirmProvider({ children }) {
           <Box sx={{
             width: 44,
             height: 44,
-            borderRadius: '4px',
+            borderRadius: '10px',
             bgcolor: 'rgba(59, 130, 246, 0.12)',
             color: '#3b82f6',
             display: 'flex',
@@ -173,7 +173,7 @@ export function AlertConfirmProvider({ children }) {
           <Box sx={{
             width: 44,
             height: 44,
-            borderRadius: '4px',
+            borderRadius: '10px',
             bgcolor: 'rgba(16, 185, 129, 0.12)',
             color: '#10b981',
             display: 'flex',
@@ -190,7 +190,7 @@ export function AlertConfirmProvider({ children }) {
           <Box sx={{
             width: 44,
             height: 44,
-            borderRadius: '4px',
+            borderRadius: '10px',
             bgcolor: 'rgba(245, 158, 11, 0.12)',
             color: '#f59e0b',
             display: 'flex',
@@ -229,7 +229,7 @@ export function AlertConfirmProvider({ children }) {
           sx={{
             minWidth: '320px',
             maxWidth: '460px',
-            borderRadius: '4px',
+            borderRadius: '10px',
             fontFamily: 'Inter, -apple-system, sans-serif',
             fontSize: '0.9rem',
             fontWeight: 500,
@@ -275,7 +275,7 @@ export function AlertConfirmProvider({ children }) {
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '4px',
+            borderRadius: '12px',
             border: '1px solid',
             borderColor: 'divider',
             boxShadow: '0 16px 36px rgba(0,0,0,0.22)',
@@ -293,7 +293,7 @@ export function AlertConfirmProvider({ children }) {
           <IconButton
             size="small"
             onClick={() => handleConfirmClose(false)}
-            sx={{ color: 'text.secondary', borderRadius: '4px' }}
+            sx={{ color: 'text.secondary', borderRadius: '8px' }}
           >
             <CloseIcon fontSize="small" />
           </IconButton>
@@ -310,7 +310,7 @@ export function AlertConfirmProvider({ children }) {
             variant="outlined"
             onClick={() => handleConfirmClose(false)}
             sx={{
-              borderRadius: '4px',
+              borderRadius: '8px',
               textTransform: 'none',
               fontWeight: 600,
               px: 2.5,
@@ -328,7 +328,7 @@ export function AlertConfirmProvider({ children }) {
             variant="contained"
             onClick={() => handleConfirmClose(true)}
             sx={{
-              borderRadius: '4px',
+              borderRadius: '8px',
               textTransform: 'none',
               fontWeight: 600,
               px: 3,

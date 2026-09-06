@@ -75,7 +75,7 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: '4px',
+          borderRadius: '12px',
           border: '1px solid #e2e8f0',
           boxShadow: '0 20px 45px rgba(0,0,0,0.1)'
         }
@@ -97,7 +97,7 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
 
       <form onSubmit={handleSubmit}>
         <DialogContent sx={{ py: 2.5 }}>
-          <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
+          <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px' }}>
             <Typography variant="caption" sx={{ color: '#166534', fontWeight: 600, display: 'block' }}>
               ℹ️ Management will verify your request against office records before regularizing your attendance.
             </Typography>
@@ -114,7 +114,7 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
 
@@ -128,7 +128,7 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
                 value={loginTime}
                 onChange={(e) => setLoginTime(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
 
@@ -141,7 +141,7 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
                 value={logoutTime}
                 onChange={(e) => setLogoutTime(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
 
@@ -153,10 +153,10 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
                 label="Reason Category"
                 value={reasonCategory}
                 onChange={(e) => setReasonCategory(e.target.value)}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               >
                 {COMMON_REASONS.map((r) => (
-                  <MenuItem key={r} value={r} sx={{ fontSize: 13, borderRadius: '4px' }}>
+                  <MenuItem key={r} value={r} sx={{ fontSize: 13, borderRadius: '8px' }}>
                     {r}
                   </MenuItem>
                 ))}
@@ -173,14 +173,14 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
                 placeholder="Provide details about why regular check-in was missed..."
                 value={explanation}
                 onChange={(e) => setExplanation(e.target.value)}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
           </Grid>
         </DialogContent>
 
         <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #f1f5f9' }}>
-          <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600, borderRadius: '4px' }}>
+          <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600, borderRadius: '8px' }}>
             Cancel
           </Button>
           <Button
@@ -191,7 +191,7 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
             sx={{
               bgcolor: '#133829',
               fontWeight: 700,
-              borderRadius: '4px',
+              borderRadius: '8px',
               px: 2.5,
               '&:hover': { bgcolor: '#0b2319' }
             }}

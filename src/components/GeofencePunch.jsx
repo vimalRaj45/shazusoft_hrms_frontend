@@ -20,7 +20,9 @@ import {
   Refresh as RefreshIcon,
   HelpOutline as RegularizeIcon,
   WorkOutline as WorkIcon,
-  Event as EventIcon
+  Event as EventIcon,
+  CalendarMonth as CalendarIcon,
+  AccessTime as TimeIcon
 } from '@mui/icons-material';
 import confetti from 'canvas-confetti';
 import toast from '../utils/muiToast';
@@ -33,6 +35,15 @@ import { format } from 'date-fns';
 export default function GeofencePunch({ todayData, onRefresh }) {
   const { user } = useAuth();
   const isWfh = user?.work_mode === 'wfh';
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const [coords, setCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState(null);
@@ -186,7 +197,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
       ? 'Today is Sunday — official non-working day.'
       : `Today is a scheduled company holiday: "${todayHoliday?.name}" (${todayHoliday?.type || 'Holiday'}). No check-in required.`;
     return (
-      <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '4px' }}>
+      <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '10px' }}>
         <Box sx={{ height: 4, bgcolor: '#8b5cf6' }} />
         <CardContent sx={{ p: { xs: 2.5, sm: 3 }, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 180, textAlign: 'center', gap: 1.5 }}>
           <Box sx={{ p: 1.5, bgcolor: '#f3e8ff', borderRadius: '50%', color: '#7c3aed', display: 'flex' }}>
@@ -194,7 +205,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: '#6d28d9' }}>{label} — Non-Working Day</Typography>
           <Typography variant="body2" sx={{ color: '#64748b', maxWidth: 360 }}>{subtitle}</Typography>
-          <Chip label="No check-in required" size="small" sx={{ fontWeight: 700, bgcolor: '#ede9fe', color: '#6d28d9', borderRadius: '4px', mt: 0.5 }} />
+          <Chip label="No check-in required" size="small" sx={{ fontWeight: 700, bgcolor: '#ede9fe', color: '#6d28d9', borderRadius: '6px', mt: 0.5 }} />
         </CardContent>
       </Card>
     );
@@ -202,7 +213,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   // ───────────────────────────────────────────────────────────
 
   return (
-    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '4px' }}>
+    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '10px' }}>
       {/* Decorative gradient bar */}
       <Box
         sx={{
@@ -218,12 +229,40 @@ export default function GeofencePunch({ todayData, onRefresh }) {
               {isWfh ? 'Work From Home (WFH) Attendance' : 'Office Location Attendance'}
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            {/* Live Date & Time Display Badge (Identical to TopNavbar) */}
+            <Box
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 1.2,
+                px: 1.5,
+                py: 0.6,
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+                bgcolor: '#f8fafc'
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                <CalendarIcon sx={{ fontSize: 15, color: '#133829' }} />
+                <Typography variant="body2" sx={{ fontWeight: 700, fontSize: { xs: 11.5, sm: 12.5 }, color: '#0f172a' }}>
+                  {format(currentTime, 'EEE, dd MMM yyyy')}
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800 }}>|</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TimeIcon sx={{ fontSize: 14, color: '#059669' }} />
+                <Typography variant="body2" sx={{ fontWeight: 800, fontSize: { xs: 11.5, sm: 12.5 }, color: '#059669', fontFamily: 'monospace' }}>
+                  {format(currentTime, 'hh:mm:ss a')}
+                </Typography>
+              </Box>
+            </Box>
+
             {isWorkingSunday && (
               <Chip
                 label="Working Sunday Active"
                 size="small"
-                sx={{ fontWeight: 700, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '4px' }}
+                sx={{ fontWeight: 700, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '6px' }}
               />
             )}
             {!isWfh && (
@@ -234,7 +273,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                     startIcon={<RefreshIcon />}
                     onClick={captureLocation}
                     disabled={loadingLocation}
-                    sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
+                    sx={{ color: 'text.secondary', fontSize: '0.75rem', borderRadius: '8px' }}
                   >
                     Refresh
                   </Button>
@@ -250,7 +289,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
             sx={{
               p: 2,
               mb: 2.5,
-              borderRadius: '4px',
+              borderRadius: '10px',
               backgroundColor: '#f0f9ff',
               border: '1px solid #bae6fd',
               display: 'flex',
@@ -275,7 +314,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
               size="small"
               label="REMOTE ALLOWED"
               color="secondary"
-              sx={{ fontWeight: 800, borderRadius: '4px', fontSize: 10 }}
+              sx={{ fontWeight: 800, borderRadius: '6px', fontSize: 10 }}
             />
           </Box>
         ) : (
@@ -283,7 +322,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
             sx={{
               p: 2,
               mb: 2.5,
-              borderRadius: '4px',
+              borderRadius: '10px',
               backgroundColor: geoStatus?.inside ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
               border: geoStatus?.inside ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)',
               display: 'flex',
@@ -321,7 +360,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
               size="small"
               label={geoStatus?.inside ? 'VERIFIED' : 'LOCATION CHECK REQUIRED'}
               color={geoStatus?.inside ? 'success' : 'error'}
-              sx={{ fontWeight: 700, borderRadius: '4px' }}
+              sx={{ fontWeight: 700, borderRadius: '6px' }}
             />
           </Box>
         )}

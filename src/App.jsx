@@ -361,7 +361,7 @@ function AppContent() {
 
               {/* Monthly Review Cycle Open Alert (Within Final 5 Days of Month) */}
               {monthlyStatus?.isWindowOpen && !monthlyStatus?.hasSubmittedThisMonth && (
-                <Card sx={{ mb: 2.5, bgcolor: '#fffbeb', border: '1.5px solid #f59e0b', borderRadius: '4px' }}>
+                <Card sx={{ mb: 2.5, bgcolor: '#fffbeb', border: '1.5px solid #f59e0b', borderRadius: '10px' }}>
                   <CardContent sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <AnnouncementIcon sx={{ color: '#d97706', fontSize: 24 }} />
@@ -370,7 +370,7 @@ function AppContent() {
                           <Typography variant="body2" sx={{ fontWeight: 800, color: '#92400e' }}>
                             {monthlyStatus.currentMonthLabel} Self-Evaluation Review is Now Open!
                           </Typography>
-                          <Chip label={`Final ${monthlyStatus.daysUntilMonthEnd} Day(s) of Month`} size="small" color="warning" sx={{ fontWeight: 800, height: 20, fontSize: 10, borderRadius: '4px' }} />
+                          <Chip label={`Final ${monthlyStatus.daysUntilMonthEnd} Day(s) of Month`} size="small" color="warning" sx={{ fontWeight: 800, height: 20, fontSize: 10, borderRadius: '6px' }} />
                         </Box>
                         <Typography variant="caption" sx={{ color: '#78350f', fontWeight: 600 }}>
                           The 13-section appraisal unlocks in the last 5 days of each month. Please submit before month-end.
@@ -383,7 +383,7 @@ function AppContent() {
                       onClick={() => setOpenEvalModal(true)}
                       sx={{
                         fontWeight: 700,
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         bgcolor: '#133829',
                         color: '#ffffff',
                         textTransform: 'none',
@@ -398,7 +398,7 @@ function AppContent() {
 
               {/* Submitted Monthly Appraisal Status */}
               {myEvaluations.length > 0 && (
-                <Card sx={{ mb: 2.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px' }}>
+                <Card sx={{ mb: 2.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px' }}>
                   <CardContent sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <CheckIcon sx={{ color: '#15803d', fontSize: 22 }} />
@@ -419,7 +419,7 @@ function AppContent() {
                         setSelectedEvaluation(myEvaluations[0]);
                         setOpenEvalViewerModal(true);
                       }}
-                      sx={{ fontWeight: 700, borderRadius: '4px', textTransform: 'none' }}
+                      sx={{ fontWeight: 700, borderRadius: '8px', textTransform: 'none' }}
                     >
                       View Submitted Appraisal Form
                     </Button>
@@ -428,7 +428,7 @@ function AppContent() {
               )}
 
               {/* Weekly Check-in Quick Bar (Always Open) */}
-              <Card sx={{ mb: 3, border: '1px solid #e2e8f0', bgcolor: '#f8fafc', borderRadius: '4px' }}>
+              <Card sx={{ mb: 3, border: '1px solid #e2e8f0', bgcolor: '#f8fafc', borderRadius: '10px' }}>
                 <CardContent sx={{ p: 1.8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
                     <TrackerIcon sx={{ color: '#133829', fontSize: 22 }} />
@@ -437,7 +437,7 @@ function AppContent() {
                         <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a' }}>
                           Weekly Check-in & Challenges Sync
                         </Typography>
-                        <Chip label="Open All Time" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#e2e8f0', borderRadius: '4px' }} />
+                        <Chip label="Open All Time" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#e2e8f0', borderRadius: '6px' }} />
                       </Box>
                       <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
                         {myWeeklyReports.length > 0 ? `${myWeeklyReports.length} weekly report(s) on file` : 'No check-in submitted for this week yet'} • Auto-imports your week’s tasks
@@ -452,7 +452,7 @@ function AppContent() {
                         variant="outlined"
                         color="inherit"
                         onClick={() => setActiveTab('weekly-report')}
-                        sx={{ fontWeight: 600, borderRadius: '4px', textTransform: 'none' }}
+                        sx={{ fontWeight: 600, borderRadius: '8px', textTransform: 'none' }}
                       >
                         View Timeline
                       </Button>
@@ -463,7 +463,7 @@ function AppContent() {
                       onClick={() => setOpenWeeklyModal(true)}
                       sx={{
                         fontWeight: 700,
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         bgcolor: '#133829',
                         color: '#ffffff',
                         textTransform: 'none',
@@ -485,7 +485,7 @@ function AppContent() {
               <Grid container spacing={2.5} sx={{ mb: 3 }}>
                 {/* Column 1: Tasks & Workflow Snapshot */}
                 <Grid item xs={12} md={6}>
-                  <Card sx={{ height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <Card sx={{ height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -498,7 +498,7 @@ function AppContent() {
                           label={`${myTasks.length} Active`}
                           size="small"
                           color="primary"
-                          sx={{ fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 11 }}
+                          sx={{ fontWeight: 800, borderRadius: '6px', height: 22, fontSize: 11 }}
                         />
                       </Box>
                       <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2 }}>
@@ -506,7 +506,7 @@ function AppContent() {
                       </Typography>
 
                       {myTasks.length === 0 ? (
-                        <Box sx={{ p: 2.5, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: '4px', border: '1px dashed #cbd5e1' }}>
+                        <Box sx={{ p: 2.5, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
                           <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
                             No pending tasks assigned right now.
                           </Typography>
@@ -520,7 +520,7 @@ function AppContent() {
                                 p: 1.2,
                                 bgcolor: '#f8fafc',
                                 border: '1px solid #e2e8f0',
-                                borderRadius: '4px',
+                                borderRadius: '10px',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
@@ -542,7 +542,7 @@ function AppContent() {
                                   height: 20,
                                   fontSize: 10,
                                   fontWeight: 700,
-                                  borderRadius: '4px',
+                                  borderRadius: '6px',
                                   bgcolor: t.status === 'Completed' ? '#dcfce7' : '#e0f2fe',
                                   color: t.status === 'Completed' ? '#15803d' : '#0369a1'
                                 }}
@@ -559,7 +559,7 @@ function AppContent() {
                         variant="outlined"
                         color="primary"
                         onClick={() => setActiveTab('task-tracker')}
-                        sx={{ fontWeight: 700, borderRadius: '4px', textTransform: 'none' }}
+                        sx={{ fontWeight: 700, borderRadius: '8px', textTransform: 'none' }}
                       >
                         Open Full Task Hub →
                       </Button>
@@ -569,7 +569,7 @@ function AppContent() {
 
                 {/* Column 2: Quick Operations & Leave Summary */}
                 <Grid item xs={12} md={6}>
-                  <Card sx={{ height: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <Card sx={{ height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -581,7 +581,7 @@ function AppContent() {
                         <Chip
                           label="Live Quota"
                           size="small"
-                          sx={{ fontWeight: 800, borderRadius: '4px', height: 22, fontSize: 11, bgcolor: '#e0f2fe', color: '#0369a1' }}
+                          sx={{ fontWeight: 800, borderRadius: '6px', height: 22, fontSize: 11, bgcolor: '#e0f2fe', color: '#0369a1' }}
                         />
                       </Box>
                       <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2 }}>
@@ -590,7 +590,7 @@ function AppContent() {
 
                       <Grid container spacing={1.5} sx={{ mb: 2 }}>
                         <Grid item xs={6}>
-                          <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px', textAlign: 'center' }}>
+                          <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', textAlign: 'center' }}>
                             <Typography variant="caption" sx={{ color: '#166534', fontWeight: 700, display: 'block' }}>
                               CASUAL LEAVE
                             </Typography>
@@ -603,7 +603,7 @@ function AppContent() {
                           </Box>
                         </Grid>
                         <Grid item xs={6}>
-                          <Box sx={{ p: 1.5, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '4px', textAlign: 'center' }}>
+                          <Box sx={{ p: 1.5, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '10px', textAlign: 'center' }}>
                             <Typography variant="caption" sx={{ color: '#0369a1', fontWeight: 700, display: 'block' }}>
                               SICK LEAVE
                             </Typography>
@@ -616,7 +616,7 @@ function AppContent() {
                           </Box>
                         </Grid>
                         <Grid item xs={12}>
-                          <Box sx={{ p: 1.2, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                          <Box sx={{ p: 1.2, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
                               <Typography variant="caption" sx={{ color: '#92400e', fontWeight: 800, fontSize: 11 }}>
                                 SHORT PERMISSIONS:
@@ -641,7 +641,7 @@ function AppContent() {
                           bgcolor: '#133829',
                           color: '#fff',
                           fontWeight: 700,
-                          borderRadius: '4px',
+                          borderRadius: '8px',
                           textTransform: 'none',
                           '&:hover': { bgcolor: '#0b2319' }
                         }}
@@ -654,7 +654,7 @@ function AppContent() {
                         variant="outlined"
                         color="inherit"
                         onClick={() => setActiveTab('attendance')}
-                        sx={{ fontWeight: 600, borderRadius: '4px', textTransform: 'none', borderColor: '#cbd5e1' }}
+                        sx={{ fontWeight: 600, borderRadius: '8px', textTransform: 'none', borderColor: '#cbd5e1' }}
                       >
                         View Full Monthly Timesheet →
                       </Button>
@@ -749,7 +749,7 @@ function AppContent() {
                     color="primary"
                     startIcon={<EvalIcon />}
                     onClick={() => setOpenEvalModal(true)}
-                    sx={{ fontWeight: 800, px: 3, py: 1, borderRadius: '4px' }}
+                    sx={{ fontWeight: 800, px: 3, py: 1, borderRadius: '8px' }}
                   >
                     Fill / Update Appraisal Form
                   </Button>
@@ -758,7 +758,7 @@ function AppContent() {
 
               {/* Outside Window Notice */}
               {!monthlyStatus?.isWindowOpen && myEvaluations.length === 0 && (
-                <Card sx={{ p: 4, textAlign: 'center', border: '1.5px dashed #cbd5e1', borderRadius: '4px', bgcolor: '#ffffff', mb: 3 }}>
+                <Card sx={{ p: 4, textAlign: 'center', border: '1.5px dashed #cbd5e1', borderRadius: '10px', bgcolor: '#ffffff', mb: 3 }}>
                   <AnnouncementIcon sx={{ fontSize: 48, color: '#f59e0b', mb: 1.5 }} />
                   <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 1 }}>
                     Monthly Appraisal Window Currently Closed
@@ -769,7 +769,7 @@ function AppContent() {
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5 }}>
                     <Button
                       variant="contained"
-                      sx={{ bgcolor: '#133829', color: '#fff', fontWeight: 700, borderRadius: '4px', '&:hover': { bgcolor: '#0f291e' } }}
+                      sx={{ bgcolor: '#133829', color: '#fff', fontWeight: 700, borderRadius: '8px', '&:hover': { bgcolor: '#0f291e' } }}
                       onClick={() => setOpenWeeklyModal(true)}
                     >
                       Submit Weekly Check-in →
@@ -780,7 +780,7 @@ function AppContent() {
 
               {/* Inside Window with No Submission */}
               {monthlyStatus?.isWindowOpen && myEvaluations.length === 0 && (
-                <Card sx={{ p: 4, textAlign: 'center', border: '2px solid #133829', borderRadius: '4px', bgcolor: '#f0fdf4', mb: 3 }}>
+                <Card sx={{ p: 4, textAlign: 'center', border: '2px solid #133829', borderRadius: '10px', bgcolor: '#f0fdf4', mb: 3 }}>
                   <EvalIcon sx={{ fontSize: 48, color: '#133829', mb: 1.5 }} />
                   <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.5 }}>
                     {monthlyStatus.currentMonthLabel} Appraisal is Now Active!
@@ -790,7 +790,7 @@ function AppContent() {
                   </Typography>
                   <Button
                     variant="contained"
-                    sx={{ bgcolor: '#133829', color: '#ffffff', fontWeight: 800, px: 3, py: 1, borderRadius: '4px', '&:hover': { bgcolor: '#0f291e' } }}
+                    sx={{ bgcolor: '#133829', color: '#ffffff', fontWeight: 800, px: 3, py: 1, borderRadius: '8px', '&:hover': { bgcolor: '#0f291e' } }}
                     onClick={() => setOpenEvalModal(true)}
                   >
                     Start 13-Section Appraisal Form
@@ -800,7 +800,7 @@ function AppContent() {
 
               {/* Submitted Evaluation Viewer Card */}
               {myEvaluations.length > 0 && (
-                <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '4px', mb: 3 }}>
+                <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '10px', mb: 3 }}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1.5 }}>
                       <Box>
@@ -817,7 +817,7 @@ function AppContent() {
                             variant="outlined"
                             color="primary"
                             onClick={() => setOpenEvalModal(true)}
-                            sx={{ fontWeight: 700, borderRadius: '4px' }}
+                            sx={{ fontWeight: 700, borderRadius: '8px' }}
                           >
                             Update Appraisal
                           </Button>
@@ -829,7 +829,7 @@ function AppContent() {
                             setSelectedEvaluation(myEvaluations[0]);
                             setOpenEvalViewerModal(true);
                           }}
-                          sx={{ fontWeight: 700, borderRadius: '4px' }}
+                          sx={{ fontWeight: 700, borderRadius: '8px' }}
                         >
                           View Full Document & Export PDF
                         </Button>
@@ -845,7 +845,7 @@ function AppContent() {
           {/* TAB: MY INDIVIDUAL REPORT */}
           {activeTab === 'my-report' && (
             <Box>
-              <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '4px', mb: 3 }}>
+              <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '10px', mb: 3 }}>
                 <CardContent sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                   <Box>
                     <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
@@ -868,7 +868,7 @@ function AppContent() {
                       color="primary"
                       onClick={handleGenerateReport}
                       disabled={loadingReport}
-                      sx={{ fontWeight: 700, borderRadius: '4px' }}
+                      sx={{ fontWeight: 700, borderRadius: '8px' }}
                     >
                       {loadingReport ? 'Generating...' : 'Generate Report'}
                     </Button>
@@ -933,7 +933,7 @@ function AppContent() {
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
                 Shazu Soft HRMS Quick User Guide
               </Typography>
-              <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '4px' }}>
+              <Card sx={{ border: '1px solid #e5e7eb', borderRadius: '10px' }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.8 }}>
                     1. Task Assignment & Real-Time Tracking

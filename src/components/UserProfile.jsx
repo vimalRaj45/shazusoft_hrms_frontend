@@ -564,7 +564,7 @@ export default function UserProfile() {
         sx={{
           p: { xs: 2.5, sm: 3 },
           mb: 3,
-          borderRadius: '4px',
+          borderRadius: '10px',
           border: '1px solid #e2e8f0',
           bgcolor: '#ffffff',
           display: 'flex',
@@ -587,7 +587,7 @@ export default function UserProfile() {
               sx={{
                 width: { xs: 74, sm: 88 },
                 height: { xs: 74, sm: 88 },
-                borderRadius: '4px',
+                borderRadius: '10px',
                 bgcolor: '#133829',
                 fontSize: 28,
                 fontWeight: 800,
@@ -609,7 +609,7 @@ export default function UserProfile() {
                   bgcolor: '#133829',
                   color: '#ffffff',
                   p: 0.7,
-                  borderRadius: '4px',
+                  borderRadius: '8px',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
                   '&:hover': { bgcolor: '#0f291e' }
                 }}
@@ -627,13 +627,13 @@ export default function UserProfile() {
               <Chip
                 label={profileData.id}
                 size="small"
-                sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#133829', borderRadius: '4px', fontSize: 11 }}
+                sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#133829', borderRadius: '6px', fontSize: 11 }}
               />
               <Chip
                 label={profileData.role?.toUpperCase()}
                 size="small"
                 color={profileData.role === 'admin' ? 'primary' : 'default'}
-                sx={{ fontWeight: 700, borderRadius: '4px', fontSize: 10, height: 20 }}
+                sx={{ fontWeight: 700, borderRadius: '6px', fontSize: 10, height: 20 }}
               />
             </Box>
             <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, mt: 0.3 }}>
@@ -644,7 +644,7 @@ export default function UserProfile() {
               Company Verified Employee Record • Work Mode: <strong>{profileData.work_mode === 'wfh' ? 'Remote (WFH)' : 'In-Office (GPS)'}</strong>
             </Typography>
             {profileData.documents_frozen && (
-              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.6, px: 1.2, py: 0.4, bgcolor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '4px', mt: 1 }}>
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.6, px: 1.2, py: 0.4, bgcolor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', mt: 1 }}>
                 <LockIcon sx={{ fontSize: 14, color: '#dc2626' }} />
                 <Typography variant="caption" sx={{ fontWeight: 800, color: '#dc2626', fontSize: 11 }}>
                   Documents Frozen & Verified {profileData.frozen_by_name ? `by ${profileData.frozen_by_name}` : ''}
@@ -669,7 +669,7 @@ export default function UserProfile() {
             value={completeness}
             sx={{
               height: 6,
-              borderRadius: '3px',
+              borderRadius: '10px',
               bgcolor: '#e2e8f0',
               '& .MuiLinearProgress-bar': {
                 bgcolor: completeness === 100 ? '#16a34a' : completeness >= 70 ? '#2563eb' : '#f59e0b'
@@ -688,7 +688,7 @@ export default function UserProfile() {
               fontWeight: 700,
               bgcolor: (!isAdmin && profileData.documents_frozen) ? '#94a3b8' : '#133829',
               color: '#ffffff',
-              borderRadius: '4px',
+              borderRadius: '8px',
               textTransform: 'none',
               '&:hover': { bgcolor: (!isAdmin && profileData.documents_frozen) ? '#94a3b8' : '#0f291e' }
             }}
@@ -708,7 +708,7 @@ export default function UserProfile() {
               sx={{
                 mt: 1,
                 fontWeight: 700,
-                borderRadius: '4px',
+                borderRadius: '8px',
                 textTransform: 'none',
                 fontSize: 12
               }}
@@ -721,7 +721,7 @@ export default function UserProfile() {
 
       {/* Frozen Alert Banner */}
       {profileData.documents_frozen && (
-        <Paper elevation={0} sx={{ p: 2, mb: 2.5, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Paper elevation={0} sx={{ p: 2, mb: 2.5, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <LockIcon sx={{ color: '#d97706', fontSize: 24 }} />
           <Box>
             <Typography variant="body2" sx={{ fontWeight: 800, color: '#92400e' }}>
@@ -735,7 +735,7 @@ export default function UserProfile() {
       )}
 
       {/* Navigation Tabs for Profile Categories */}
-      <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: '4px', bgcolor: '#ffffff', overflow: 'hidden' }}>
+      <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', bgcolor: '#ffffff', overflow: 'hidden' }}>
         <Tabs
           value={activeTab}
           onChange={(e, val) => setActiveTab(val)}
@@ -1084,7 +1084,7 @@ export default function UserProfile() {
 
                   return (
                     <Grid item xs={12} sm={6} key={docDef.key}>
-                      <Card sx={{ border: '1px solid', borderColor: uploaded ? '#bbf7d0' : '#e2e8f0', bgcolor: uploaded ? '#f0fdf4' : '#ffffff', borderRadius: '4px' }}>
+                      <Card sx={{ border: '1px solid', borderColor: uploaded ? '#bbf7d0' : '#e2e8f0', bgcolor: uploaded ? '#f0fdf4' : '#ffffff', borderRadius: '10px' }}>
                         <CardContent sx={{ p: 2 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1094,13 +1094,13 @@ export default function UserProfile() {
                               </Typography>
                             </Box>
                             {docDef.required && (
-                              <Chip label="Required" size="small" sx={{ height: 18, fontSize: 9, fontWeight: 800, bgcolor: uploaded ? '#dcfce7' : '#fee2e2', color: uploaded ? '#15803d' : '#dc2626', borderRadius: '4px' }} />
+                              <Chip label="Required" size="small" sx={{ height: 18, fontSize: 9, fontWeight: 800, bgcolor: uploaded ? '#dcfce7' : '#fee2e2', color: uploaded ? '#15803d' : '#dc2626', borderRadius: '6px' }} />
                             )}
                           </Box>
 
                           {uploaded ? (
                             <Box sx={{ mt: 1 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#ffffff', p: 1, borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#ffffff', p: 1, borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                                 <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
                                   <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {uploaded.name}
@@ -1155,7 +1155,7 @@ export default function UserProfile() {
                                 textTransform: 'none',
                                 fontWeight: 700,
                                 fontSize: '0.78rem',
-                                borderRadius: '4px',
+                                borderRadius: '10px',
                                 borderColor: (!isAdmin && profileData.documents_frozen) ? '#e2e8f0' : '#cbd5e1',
                                 color: (!isAdmin && profileData.documents_frozen) ? '#94a3b8' : '#334155',
                                 '&:hover': { bgcolor: '#f8fafc', borderColor: '#133829' }

@@ -136,7 +136,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: '4px',
+          borderRadius: '12px',
           border: '1px solid #e2e8f0',
           boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
         }
@@ -159,7 +159,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
               sx={{
                 width: 38,
                 height: 38,
-                borderRadius: '4px',
+                borderRadius: '12px',
                 bgcolor: 'rgba(255,255,255,0.12)',
                 display: 'flex',
                 alignItems: 'center',
@@ -179,7 +179,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
             </Box>
           </Box>
 
-          <IconButton size="small" onClick={onClose} sx={{ color: 'rgba(255,255,255,0.7)', borderRadius: '4px' }}>
+          <IconButton size="small" onClick={onClose} sx={{ color: 'rgba(255,255,255,0.7)', borderRadius: '8px' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -196,7 +196,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
               mb: 3,
               bgcolor: '#f0fdf4',
               border: '1px solid #bbf7d0',
-              borderRadius: '4px',
+              borderRadius: '12px',
               flexWrap: 'wrap',
               gap: 1.5
             }}
@@ -206,7 +206,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
                 label="Always Open"
                 size="small"
                 color="success"
-                sx={{ fontWeight: 800, borderRadius: '4px', fontSize: 11 }}
+                sx={{ fontWeight: 800, borderRadius: '6px', fontSize: 11 }}
               />
               <Typography variant="body2" sx={{ color: '#166534', fontWeight: 600 }}>
                 Submit anytime each week. Focused strictly on your key highlights, blockers & next goals.
@@ -220,7 +220,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
               startIcon={importing ? <CircularProgress size={14} color="inherit" /> : <AutoImportIcon />}
               onClick={handleAutoImport}
               disabled={importing}
-              sx={{ fontWeight: 700, borderRadius: '4px', textTransform: 'none' }}
+              sx={{ fontWeight: 700, borderRadius: '8px', textTransform: 'none' }}
             >
               {importing ? 'Importing...' : "Auto-Import This Week's Tasks"}
             </Button>
@@ -244,7 +244,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
                 placeholder="List major features built, bugs resolved, client deliverables completed this week..."
                 value={formData.accomplishments}
                 onChange={(e) => setFormData({ ...formData, accomplishments: e.target.value })}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
 
@@ -265,7 +265,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
                 placeholder="Any technical hurdles, dependency delays, or operational blockers faced this week..."
                 value={formData.challenges_blockers}
                 onChange={(e) => setFormData({ ...formData, challenges_blockers: e.target.value })}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
 
@@ -285,7 +285,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
                 placeholder="New tools, techniques, best practices, or architectural patterns explored..."
                 value={formData.learnings_skills}
                 onChange={(e) => setFormData({ ...formData, learnings_skills: e.target.value })}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
 
@@ -306,7 +306,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
                 placeholder="What are your top 2-3 target deliverables for next week?"
                 value={formData.next_week_goals}
                 onChange={(e) => setFormData({ ...formData, next_week_goals: e.target.value })}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '4px' } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
           </Grid>
@@ -317,7 +317,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
           <Button
             onClick={onClose}
             color="inherit"
-            sx={{ borderRadius: '4px', textTransform: 'none', fontWeight: 600 }}
+            sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600 }}
           >
             Cancel
           </Button>
@@ -327,7 +327,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
             disabled={loading}
             startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
             sx={{
-              borderRadius: '4px',
+              borderRadius: '8px',
               bgcolor: '#133829',
               color: '#ffffff',
               textTransform: 'none',

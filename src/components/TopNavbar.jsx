@@ -174,7 +174,7 @@ export default function TopNavbar({
               alignItems: 'center',
               cursor: 'pointer',
               p: 0.5,
-              borderRadius: '4px',
+              borderRadius: '10px',
               transition: 'all 0.15s ease',
               '&:hover': { bgcolor: '#f1f5f9' },
               '&:active': { transform: 'scale(0.95)' }
@@ -188,7 +188,7 @@ export default function TopNavbar({
                 width: 26,
                 height: 26,
                 objectFit: 'contain',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 flexShrink: 0
               }}
             />
@@ -205,7 +205,7 @@ export default function TopNavbar({
               sx={{
                 display: { xs: 'none', md: 'inline-flex' },
                 color: '#475569',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 p: 0.8,
                 '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
               }}
@@ -222,7 +222,7 @@ export default function TopNavbar({
               gap: 1.2,
               px: 1.5,
               py: 0.6,
-              borderRadius: '4px',
+              borderRadius: '8px',
               border: '1px solid #e2e8f0',
               bgcolor: '#f8fafc'
             }}
@@ -248,7 +248,7 @@ export default function TopNavbar({
               gap: 0.8,
               px: 1.2,
               py: 0.6,
-              borderRadius: '4px',
+              borderRadius: '8px',
               border: '1px solid #e2e8f0',
               bgcolor: '#f8fafc'
             }}
@@ -256,6 +256,36 @@ export default function TopNavbar({
             <CalendarIcon sx={{ fontSize: 15, color: '#133829' }} />
             <Typography variant="body2" sx={{ fontWeight: 700, fontSize: 12, color: '#0f172a' }}>
               {format(currentTime, 'dd MMM')} • {format(currentTime, 'hh:mm a')}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: { xs: 'flex', sm: 'none' },
+              alignItems: 'center',
+              gap: 0.4,
+              px: 0.6,
+              py: 0.25,
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              bgcolor: '#f8fafc',
+              flexShrink: 0,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <TimeIcon sx={{ fontSize: 11, color: '#059669', flexShrink: 0 }} />
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 800,
+                fontSize: 10,
+                color: '#059669',
+                fontFamily: 'monospace',
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {format(currentTime, 'hh:mm a')}
             </Typography>
           </Box>
         </Box>
@@ -266,13 +296,15 @@ export default function TopNavbar({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.2,
-            px: { xs: 1.2, sm: 2 },
-            py: 0.7,
-            width: { xs: 120, sm: 220, md: 360, lg: 420 },
+            gap: { xs: 0.5, sm: 1.2 },
+            px: { xs: 0.8, sm: 2 },
+            py: { xs: 0.4, sm: 0.6 },
+            flex: { xs: '1 1 auto', sm: '0 0 auto' },
+            minWidth: 0,
+            maxWidth: { xs: 110, sm: 220, md: 360, lg: 420 },
             bgcolor: '#f8fafc',
             border: '1.5px solid #e2e8f0',
-            borderRadius: '4px',
+            borderRadius: '10px',
             cursor: 'pointer',
             transition: 'all 0.15s ease',
             '&:hover': {
@@ -281,9 +313,9 @@ export default function TopNavbar({
             }
           }}
         >
-          <SearchIcon sx={{ fontSize: 18, color: '#133829' }} />
-          <Typography variant="body2" sx={{ color: '#64748b', fontSize: 13, fontWeight: 500, flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            Search staff, tasks, reports...
+          <SearchIcon sx={{ fontSize: 16, color: '#133829', flexShrink: 0 }} />
+          <Typography variant="body2" sx={{ color: '#64748b', fontSize: { xs: 11, sm: 13 }, fontWeight: 500, flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Search...
           </Typography>
           <Chip
             label="Ctrl K"
@@ -295,20 +327,21 @@ export default function TopNavbar({
               fontWeight: 800,
               bgcolor: '#ffffff',
               border: '1px solid #cbd5e1',
-              borderRadius: '4px',
+              borderRadius: '6px',
               color: '#475569'
             }}
           />
         </Box>
 
         {/* Right Side: Push Notification Bell + User Profile */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, flexShrink: 0 }}>
 
-          {/* Quick Refresh Page Button */}
+          {/* Quick Refresh Page Button (Hidden on tiny mobile to preserve profile icon space) */}
           <Tooltip title="Refresh Application Data (F5 / Reload)" placement="bottom" arrow>
             <IconButton
               onClick={() => window.location.reload()}
               sx={{
+                display: { xs: 'none', sm: 'inline-flex' },
                 color: '#64748b',
                 borderRadius: '8px',
                 p: 0.9,
@@ -317,23 +350,6 @@ export default function TopNavbar({
               }}
             >
               <RefreshIcon sx={{ fontSize: 20 }} />
-            </IconButton>
-          </Tooltip>
-
-          {/* System Guide & Feature Showcase Button */}
-          <Tooltip title="System Guide & Feature Showcase" placement="bottom" arrow>
-            <IconButton
-              onClick={() => onSelectView && onSelectView('system-guide')}
-              sx={{
-                color: activeView === 'system-guide' ? '#133829' : '#64748b',
-                bgcolor: activeView === 'system-guide' ? '#e8f5e9' : 'transparent',
-                borderRadius: '8px',
-                p: 0.9,
-                transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
-              }}
-            >
-              <HelpOutlineIcon sx={{ fontSize: 22 }} />
             </IconButton>
           </Tooltip>
 
@@ -346,7 +362,7 @@ export default function TopNavbar({
               sx={{
                 color: pushSubscribed ? '#133829' : '#94a3b8',
                 borderRadius: '8px',
-                p: 0.9,
+                p: { xs: 0.6, sm: 0.9 },
                 transition: 'all 0.15s ease',
                 '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
               }}
@@ -409,15 +425,18 @@ export default function TopNavbar({
               {pushLoading ? 'Processing...' : pushSubscribed ? 'Disable Notifications' : 'Enable Notifications'}
             </MenuItem>
           </Menu>
+
+          {/* User Profile Avatar & Menu Toggle */}
           <Box
             onClick={handleOpenMenu}
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1.2,
+              gap: { xs: 0.5, sm: 1.2 },
               cursor: 'pointer',
-              p: 0.6,
+              p: { xs: 0.3, sm: 0.6 },
               borderRadius: '50px',
+              flexShrink: 0,
               transition: 'all 0.15s ease',
               '&:hover': { bgcolor: '#f1f5f9' }
             }}
@@ -430,15 +449,16 @@ export default function TopNavbar({
                 : ''}
               alt={user?.name || 'User Profile'}
               sx={{
-                width: 38,
-                height: 38,
+                width: { xs: 34, sm: 38 },
+                height: { xs: 34, sm: 38 },
                 borderRadius: '50%',
                 bgcolor: '#0f172a',
                 color: '#ffffff',
                 fontWeight: 800,
                 fontSize: 14,
                 border: '2px solid #e2e8f0',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+                flexShrink: 0
               }}
             >
               {user?.name?.charAt(0) || 'U'}
@@ -451,7 +471,7 @@ export default function TopNavbar({
                 {user?.designation || user?.department || 'System Admin'}
               </Typography>
             </Box>
-            <ArrowDownIcon sx={{ fontSize: 16, color: '#64748b' }} />
+            <ArrowDownIcon sx={{ display: { xs: 'none', sm: 'block' }, fontSize: 16, color: '#64748b' }} />
           </Box>
 
           {/* User Profile Menu */}
@@ -488,7 +508,7 @@ export default function TopNavbar({
                 label={user?.role?.toUpperCase()}
                 size="small"
                 color={isAdmin ? 'primary' : 'default'}
-                sx={{ height: 20, fontSize: 10, fontWeight: 800, borderRadius: '4px' }}
+                sx={{ height: 20, fontSize: 10, fontWeight: 800, borderRadius: '6px' }}
               />
             </Box>
 

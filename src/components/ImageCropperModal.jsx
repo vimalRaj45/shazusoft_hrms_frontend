@@ -375,8 +375,10 @@ export default function ImageCropperModal({
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
             <Box
               sx={{
-                width: CANVAS_SIZE,
-                height: CANVAS_SIZE,
+                width: { xs: 'calc(100vw - 48px)', sm: CANVAS_SIZE },
+                height: { xs: 'calc(100vw - 48px)', sm: CANVAS_SIZE },
+                maxWidth: CANVAS_SIZE,
+                maxHeight: CANVAS_SIZE,
                 position: 'relative',
                 borderRadius: '6px',
                 overflow: 'hidden',
@@ -430,11 +432,12 @@ export default function ImageCropperModal({
             <Paper
               elevation={0}
               sx={{
-                width: CANVAS_SIZE,
+                width: { xs: 'calc(100vw - 48px)', sm: CANVAS_SIZE },
+                maxWidth: CANVAS_SIZE,
                 p: 1.5,
                 bgcolor: '#f8fafc',
                 border: '1px solid #e2e8f0',
-                borderRadius: '4px'
+                borderRadius: '10px'
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
@@ -559,7 +562,7 @@ export default function ImageCropperModal({
             </Box>
 
             {/* Small Circular Avatar Preview (Navbar size) */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px solid #e2e8f0', width: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', width: '100%' }}>
               <Avatar
                 src={previewDataUrl}
                 sx={{
@@ -582,14 +585,14 @@ export default function ImageCropperModal({
             </Box>
 
             {/* Square 4px Border Radius Preview (Staff Timesheet / Cards) */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1, bgcolor: '#f8fafc', borderRadius: '4px', border: '1px solid #e2e8f0', width: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', width: '100%' }}>
               <Avatar
                 src={previewDataUrl}
                 variant="rounded"
                 sx={{
                   width: 36,
                   height: 36,
-                  borderRadius: '4px',
+                  borderRadius: '8px',
                   border: '1.5px solid #133829',
                   bgcolor: '#133829'
                 }}
@@ -606,7 +609,7 @@ export default function ImageCropperModal({
               </Box>
             </Box>
 
-            <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '4px', width: '100%' }}>
+            <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', width: '100%' }}>
               <Typography variant="caption" sx={{ color: '#15803d', fontWeight: 600, display: 'block', lineHeight: 1.4 }}>
                 ✓ Exported at <strong>512x512 High-Res</strong>
                 <br />✓ Optimized client-side before Cloudflare R2 upload
@@ -622,7 +625,7 @@ export default function ImageCropperModal({
           disabled={isUploading}
           variant="outlined"
           color="inherit"
-          sx={{ borderRadius: '4px', fontWeight: 600, textTransform: 'none' }}
+          sx={{ borderRadius: '8px', fontWeight: 600, textTransform: 'none' }}
         >
           Cancel
         </Button>
@@ -632,7 +635,7 @@ export default function ImageCropperModal({
           variant="contained"
           startIcon={isUploading ? <CircularProgress size={16} color="inherit" /> : <CheckIcon />}
           sx={{
-            borderRadius: '4px',
+            borderRadius: '8px',
             fontWeight: 800,
             textTransform: 'none',
             bgcolor: '#133829',
