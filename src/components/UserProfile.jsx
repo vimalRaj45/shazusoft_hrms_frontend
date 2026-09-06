@@ -43,6 +43,7 @@ import { authAPI, adminAPI, uploadsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import toast, { muiToast } from '../utils/muiToast';
 import { format } from 'date-fns';
+import ImageCropperModal from './ImageCropperModal';
 
 /**
  * Resolves a stored file URL to an absolute backend URL.
@@ -117,6 +118,9 @@ export default function UserProfile() {
   const [freezing, setFreezing] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingDocKey, setUploadingDocKey] = useState(null);
+  const [openCropperModal, setOpenCropperModal] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState('');
+  const [cropFileName, setCropFileName] = useState('');
 
   // Form State
   const [profileData, setProfileData] = useState({
@@ -287,8 +291,8 @@ export default function UserProfile() {
     }
   };
 
-  // Avatar Image Upload Handler (Compressed client-side before Cloudflare R2 upload)
-  const handleAvatarFile = async (e) => {
+  // Avatar Image Selection Handler (Opens Interactive Crop & Fit Modal)
+  const handleAvatarFile = (e) => {
     if (!isAdmin && profileData.documents_frozen) {
       toast.error('Profile records are frozen & locked by HR. Contact HR for changes.');
       return;
@@ -302,18 +306,28 @@ export default function UserProfile() {
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image size exceeds 10MB limit. Please select a smaller photo.');
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error('Image size exceeds 15MB limit. Please select a smaller photo.');
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setCropImageSrc(event.target.result);
+      setCropFileName(file.name);
+      setOpenCropperModal(true);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Avatar Crop Completed: Upload cropped DataURL to Cloudflare R2
+  const handleCropComplete = async ({ croppedDataUrl, filename }) => {
     setUploadingAvatar(true);
     try {
-      const compressedDataUrl = await compressImageFile(file, 800, 0.85);
-
       const uploadRes = await uploadsAPI.uploadBase64({
-        data_url: compressedDataUrl,
-        filename: file.name,
+        data_url: croppedDataUrl,
+        filename: filename || 'avatar_cropped.jpg',
         folder: 'avatars'
       });
 
@@ -343,7 +357,8 @@ export default function UserProfile() {
         updateUser({ avatar_url: r2UrlWithBust });
       }
 
-      toast.success('Profile avatar optimized & uploaded to Cloudflare R2 storage.');
+      setOpenCropperModal(false);
+      toast.success('Profile avatar cropped & uploaded to Cloudflare R2 storage.');
     } catch (err) {
       console.error('Avatar upload error:', err);
       toast.error('Failed to upload avatar to Cloudflare R2.');
@@ -516,6 +531,16 @@ export default function UserProfile() {
           </Typography>
         </Box>
       </Backdrop>
+
+      {/* Interactive Avatar Crop & Fit Modal */}
+      <ImageCropperModal
+        open={openCropperModal}
+        imageSrc={cropImageSrc}
+        fileName={cropFileName}
+        onClose={() => setOpenCropperModal(false)}
+        onCropComplete={handleCropComplete}
+        isUploading={uploadingAvatar}
+      />
 
       {/* Hidden File Inputs */}
       <input

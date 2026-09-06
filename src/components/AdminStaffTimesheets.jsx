@@ -51,7 +51,7 @@ import { format, addMonths, subMonths } from 'date-fns';
 import { attendanceAPI, adminAPI, reportsAPI } from '../services/api';
 import toast from '../utils/muiToast';
 import { generateExecutivePDFReport } from '../utils/pdfReportGenerator';
-import { formatTime12h } from '../utils/timeUtils';
+import { formatTime12h, timeTo24h } from '../utils/timeUtils';
 
 export default function AdminStaffTimesheets({ initialEmployeeId, employees = [], onRefreshParent }) {
   const [selectedEmpId, setSelectedEmpId] = useState(initialEmployeeId || '');
@@ -255,8 +255,8 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
     setOverrideForm({
       employee_id: selectedEmpId,
       date: dayItem.date,
-      login_time: dayItem.login_time && dayItem.login_time !== '--' ? dayItem.login_time.slice(0, 5) : '09:30',
-      logout_time: dayItem.logout_time && dayItem.logout_time !== '--' && dayItem.logout_time !== 'In Progress' ? dayItem.logout_time.slice(0, 5) : '18:30',
+      login_time: dayItem.login_time && dayItem.login_time !== '--' ? timeTo24h(dayItem.login_time, '09:30') : '09:30',
+      logout_time: dayItem.logout_time && dayItem.logout_time !== '--' && dayItem.logout_time !== 'In Progress' ? timeTo24h(dayItem.logout_time, '18:30') : '18:30',
       status: 'Present',
       reason: `Manual correction for ${dayItem.date}`
     });
