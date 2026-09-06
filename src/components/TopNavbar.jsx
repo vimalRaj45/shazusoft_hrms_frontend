@@ -61,9 +61,13 @@ export default function TopNavbar({
     return () => clearInterval(timer);
   }, []);
 
-  // Check current push subscription status on mount
+  // Check current push subscription status on mount and sync after auto-enable
   React.useEffect(() => {
     isSubscribed().then(setPushSubscribed).catch(() => setPushSubscribed(false));
+    const timer = setTimeout(() => {
+      isSubscribed().then(setPushSubscribed).catch(() => {});
+    }, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleOpenMenu = (event) => {

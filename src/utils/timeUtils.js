@@ -102,4 +102,5 @@ export function timeTo24h(timeStr, defaultFallback = '09:30') {
   return defaultFallback;
 }
 
+export const formatTime24h = timeTo24h;
 export default formatTime12h;

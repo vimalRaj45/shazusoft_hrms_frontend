@@ -383,7 +383,7 @@ export default function Sidebar({
                 {renderNavItem('admin-weekly', 'Weekly Staff Reports', WeekIcon)}
                 {renderNavItem('admin-evals', 'Monthly Appraisals', EvalIcon)}
                 {renderNavItem('admin-directory', 'Staff Directory', DirectoryIcon)}
-                {renderNavItem('admin-holidays', 'Calendar & Geofence', CalendarIcon)}
+                {renderNavItem('admin-holidays', 'Office Timings & Calendar', CalendarIcon)}
                 {renderNavItem('admin-audit', 'Audit & Security Logs', ShieldIcon)}
                 {renderNavItem('ai-reports', 'Reports & Analytics', SparklesIcon)}
               </List>

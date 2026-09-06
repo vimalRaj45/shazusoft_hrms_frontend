@@ -121,6 +121,9 @@ export default function UserProfile() {
   const [openCropperModal, setOpenCropperModal] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState('');
   const [cropFileName, setCropFileName] = useState('');
+  const [autoSaveStatus, setAutoSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
+  const isDirtyRef = useRef(false);
+  const isInitialLoadRef = useRef(true);
 
   // Form State
   const [profileData, setProfileData] = useState({
@@ -220,6 +223,10 @@ export default function UserProfile() {
           documents: p.documents || [],
           profile_completeness: p.profile_completeness || 0
         });
+        setTimeout(() => {
+          isInitialLoadRef.current = false;
+          isDirtyRef.current = false;
+        }, 300);
       }
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -233,8 +240,17 @@ export default function UserProfile() {
     fetchProfile();
   }, []);
 
+  const handlePhoneChange = (value) => {
+    if (!isAdmin && profileData.documents_frozen) return;
+    isDirtyRef.current = true;
+    setAutoSaveStatus('saving');
+    setProfileData(prev => ({ ...prev, phone: value }));
+  };
+
   const handlePersonalChange = (field, value) => {
     if (!isAdmin && profileData.documents_frozen) return;
+    isDirtyRef.current = true;
+    setAutoSaveStatus('saving');
     setProfileData(prev => ({
       ...prev,
       personal_info: { ...prev.personal_info, [field]: value }
@@ -243,6 +259,8 @@ export default function UserProfile() {
 
   const handleStatutoryChange = (field, value) => {
     if (!isAdmin && profileData.documents_frozen) return;
+    isDirtyRef.current = true;
+    setAutoSaveStatus('saving');
     setProfileData(prev => ({
       ...prev,
       statutory_info: { ...prev.statutory_info, [field]: value }
@@ -251,11 +269,49 @@ export default function UserProfile() {
 
   const handleEmergencyChange = (field, value) => {
     if (!isAdmin && profileData.documents_frozen) return;
+    isDirtyRef.current = true;
+    setAutoSaveStatus('saving');
     setProfileData(prev => ({
       ...prev,
       emergency_contacts: { ...prev.emergency_contacts, [field]: value }
     }));
   };
+
+  // Real-time Debounced Autosave (1.2s after user stops typing)
+  useEffect(() => {
+    if (isInitialLoadRef.current) return;
+    if (!isDirtyRef.current) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await authAPI.updateProfile({
+          phone: profileData.phone,
+          avatar_url: profileData.avatar_url,
+          personal_info: profileData.personal_info,
+          statutory_info: profileData.statutory_info,
+          emergency_contacts: profileData.emergency_contacts,
+          documents: profileData.documents
+        });
+
+        if (res.data?.profile) {
+          setProfileData(prev => ({
+            ...prev,
+            profile_completeness: res.data.profile.profile_completeness
+          }));
+          if (updateUser) {
+            updateUser(res.data.profile);
+          }
+        }
+        setAutoSaveStatus('saved');
+        isDirtyRef.current = false;
+      } catch (err) {
+        console.error('Autosave error:', err);
+        setAutoSaveStatus('error');
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [profileData.phone, profileData.personal_info, profileData.statutory_info, profileData.emergency_contacts]);
 
   // Admin Toggle Freeze / Lock Handler
   const handleToggleFreeze = async () => {
@@ -485,11 +541,14 @@ export default function UserProfile() {
         if (updateUser) {
           updateUser(res.data.profile);
         }
+        isDirtyRef.current = false;
+        setAutoSaveStatus('saved');
       }
 
       toast.success('Employee profile & documents saved to secure company records.');
     } catch (err) {
       console.error('Error saving profile:', err);
+      setAutoSaveStatus('error');
       toast.error('Failed to update employee profile.');
     } finally {
       setSaving(false);
@@ -677,6 +736,33 @@ export default function UserProfile() {
             }}
           />
 
+          {/* Real-time Cloud Autosave Status Indicator */}
+          <Box sx={{ minHeight: 20, mt: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            {autoSaveStatus === 'saving' && (
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.7, color: '#0284c7' }}>
+                <CircularProgress size={11} thickness={5} color="inherit" />
+                <Typography variant="caption" sx={{ fontWeight: 700, fontSize: 10.5 }}>
+                  Autosaving to cloud...
+                </Typography>
+              </Box>
+            )}
+            {autoSaveStatus === 'saved' && (
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: '#16a34a' }}>
+                <VerifiedIcon sx={{ fontSize: 13, color: '#16a34a' }} />
+                <Typography variant="caption" sx={{ fontWeight: 700, fontSize: 10.5 }}>
+                  All changes autosaved
+                </Typography>
+              </Box>
+            )}
+            {autoSaveStatus === 'error' && (
+              <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: '#dc2626' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, fontSize: 10.5 }}>
+                  Autosave failed (offline)
+                </Typography>
+              </Box>
+            )}
+          </Box>
+
           <Button
             variant="contained"
             fullWidth
@@ -684,7 +770,7 @@ export default function UserProfile() {
             onClick={handleSaveProfile}
             disabled={saving || (!isAdmin && profileData.documents_frozen)}
             sx={{
-              mt: 2,
+              mt: 1,
               fontWeight: 700,
               bgcolor: (!isAdmin && profileData.documents_frozen) ? '#94a3b8' : '#133829',
               color: '#ffffff',
@@ -783,7 +869,7 @@ export default function UserProfile() {
                   fullWidth
                   placeholder="+91 98765 43210"
                   value={profileData.phone}
-                  onChange={(e) => setProfileData(p => ({ ...p, phone: e.target.value }))}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
                 />
               </Grid>
 

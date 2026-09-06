@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import { autoEnablePushNotificationsOnLogin } from '../utils/pushManager';
 
 const AuthContext = createContext(null);
 
@@ -19,6 +20,8 @@ export const AuthProvider = ({ children }) => {
           const res = await authAPI.getMe();
           setUser(res.data.user);
           localStorage.setItem('shazusoft_user', JSON.stringify(res.data.user));
+          // Auto-enable web push notifications for active session
+          autoEnablePushNotificationsOnLogin().catch(() => {});
         } catch (err) {
           logout();
         }
@@ -35,6 +38,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('shazusoft_user', JSON.stringify(userData));
     setToken(jwtToken);
     setUser(userData);
+    // Automatically enable push notifications on every login
+    autoEnablePushNotificationsOnLogin().catch(() => {});
     return userData;
   };
 
@@ -45,6 +50,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('shazusoft_user', JSON.stringify(userData));
     setToken(jwtToken);
     setUser(userData);
+    // Automatically enable push notifications on every login
+    autoEnablePushNotificationsOnLogin().catch(() => {});
     return userData;
   };
 

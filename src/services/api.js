@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || (typeof process !== 'undefined' && process.env?.VITE_API_URL) || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Request Interceptor: Attach JWT Token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('shazusoft_token');
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('shazusoft_token') : null;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -31,12 +31,14 @@ api.interceptors.response.use((response) => response, (error) => {
     );
 
     if (is401 || isDeactivated) {
-      localStorage.removeItem('shazusoft_token');
-      localStorage.removeItem('shazusoft_user');
-      if (isDeactivated) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('shazusoft_token');
+        localStorage.removeItem('shazusoft_user');
+      }
+      if (typeof sessionStorage !== 'undefined' && isDeactivated) {
         sessionStorage.setItem('shazusoft_deactivated_msg', error.response.data?.error || 'Your account has been deactivated or marked as resigned. You have been automatically logged out. Please contact company administration.');
       }
-      if (window.location.pathname !== '/login') {
+      if (typeof window !== 'undefined' && window.location?.pathname !== '/login') {
         window.location.href = '/login';
       }
     }
@@ -47,7 +49,9 @@ api.interceptors.response.use((response) => response, (error) => {
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   sendOTP: (data) => api.post('/auth/send-otp', data),
+  sendOtp: (data) => api.post('/auth/send-otp', data),
   verifyOTP: (data) => api.post('/auth/verify-otp', data),
+  verifyOtp: (data) => api.post('/auth/verify-otp', data),
   getMe: () => api.get('/auth/me'),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data)
@@ -56,6 +60,7 @@ export const authAPI = {
 export const attendanceAPI = {
   checkGeofence: (coords) => api.post('/attendance/check-geofence', coords),
   getToday: () => api.get('/attendance/today'),
+  getTodayStatus: () => api.get('/attendance/today'),
   punchIn: (coords) => api.post('/attendance/punch-in', coords),
   punchOut: (coords) => api.post('/attendance/punch-out', coords),
   getMyHistory: () => api.get('/attendance/my-history'),
@@ -136,7 +141,9 @@ export const adminAPI = {
   // Geofence is read-only (ENV only) — no updateGeofence
   getHolidays: () => api.get('/admin/holidays'),
   addHoliday: (data) => api.post('/admin/holidays', data),
-  deleteHoliday: (date) => api.delete(`/admin/holidays/${date}`)
+  deleteHoliday: (date) => api.delete(`/admin/holidays/${date}`),
+  getOfficeTimings: () => api.get('/admin/office-timings'),
+  updateOfficeTimings: (data) => api.put('/admin/office-timings', data)
 };
 
 export const searchAPI = {

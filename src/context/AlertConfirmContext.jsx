@@ -7,12 +7,11 @@ import {
   DialogActions,
   Button,
   Snackbar,
-  Alert,
-  AlertTitle,
   Slide,
   Box,
   Typography,
-  IconButton
+  IconButton,
+  Avatar
 } from '@mui/material';
 import {
   WarningAmberRounded as WarningIcon,
@@ -23,18 +22,49 @@ import {
   Close as CloseIcon,
   DeleteOutlineRounded as DeleteIcon
 } from '@mui/icons-material';
+import { useAuth } from './AuthContext';
 
 const AlertConfirmContext = createContext(null);
+
+const BACKEND_BASE = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
+  : (typeof window !== 'undefined' && window.location.origin === 'http://localhost:3000' ? 'http://localhost:5000' : '');
+
+function resolveAvatarUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  return `${BACKEND_BASE}${url.startsWith('/') ? url : '/' + url}`;
+}
 
 // Global bridge emitter so functions outside React lifecycle can also trigger Material UI Alerts
 let globalNotifyHandler = null;
 let globalConfirmHandler = null;
 
 export const muiToast = {
-  success: (message, title) => globalNotifyHandler?.({ message, title, severity: 'success' }),
-  error: (message, title) => globalNotifyHandler?.({ message, title, severity: 'error' }),
-  warning: (message, title) => globalNotifyHandler?.({ message, title, severity: 'warning' }),
-  info: (message, title) => globalNotifyHandler?.({ message, title, severity: 'info' }),
+  success: (message, options) => {
+    const title = typeof options === 'string' ? options : options?.title;
+    const avatar = typeof options === 'object' ? options?.avatar : undefined;
+    const autoHideDuration = typeof options === 'object' ? (options?.autoHideDuration || options?.duration) : undefined;
+    return globalNotifyHandler?.({ message, title, avatar, autoHideDuration, severity: 'success' });
+  },
+  error: (message, options) => {
+    const title = typeof options === 'string' ? options : options?.title;
+    const avatar = typeof options === 'object' ? options?.avatar : undefined;
+    const autoHideDuration = typeof options === 'object' ? (options?.autoHideDuration || options?.duration) : undefined;
+    return globalNotifyHandler?.({ message, title, avatar, autoHideDuration, severity: 'error' });
+  },
+  warning: (message, options) => {
+    const title = typeof options === 'string' ? options : options?.title;
+    const avatar = typeof options === 'object' ? options?.avatar : undefined;
+    const autoHideDuration = typeof options === 'object' ? (options?.autoHideDuration || options?.duration) : undefined;
+    return globalNotifyHandler?.({ message, title, avatar, autoHideDuration, severity: 'warning' });
+  },
+  info: (message, options) => {
+    const title = typeof options === 'string' ? options : options?.title;
+    const avatar = typeof options === 'object' ? options?.avatar : undefined;
+    const autoHideDuration = typeof options === 'object' ? (options?.autoHideDuration || options?.duration) : undefined;
+    return globalNotifyHandler?.({ message, title, avatar, autoHideDuration, severity: 'info' });
+  },
   confirm: (options) => globalConfirmHandler ? globalConfirmHandler(options) : Promise.resolve(false)
 };
 
@@ -43,13 +73,24 @@ function SlideTransition(props) {
 }
 
 export function AlertConfirmProvider({ children }) {
+  const auth = useAuth();
+  const user = auth?.user || (() => {
+    try {
+      const saved = localStorage.getItem('shazusoft_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  })();
+
   // Snackbar Alert State
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     title: '',
+    avatar: '',
     severity: 'success', // 'success' | 'error' | 'warning' | 'info'
-    autoHideDuration: 4000
+    autoHideDuration: 3500
   });
 
   // Confirmation Modal State
@@ -66,11 +107,12 @@ export function AlertConfirmProvider({ children }) {
   const confirmPromiseResolveRef = useRef(null);
 
   // Notify Alert Trigger
-  const notify = useCallback(({ message, title = '', severity = 'success', autoHideDuration = 4000 }) => {
+  const notify = useCallback(({ message, title = '', avatar = '', severity = 'success', autoHideDuration = 3500 }) => {
     setSnackbar({
       open: true,
       message: typeof message === 'string' ? message : JSON.stringify(message),
       title,
+      avatar,
       severity,
       autoHideDuration
     });
@@ -208,7 +250,7 @@ export function AlertConfirmProvider({ children }) {
     <AlertConfirmContext.Provider value={{ notify, confirm, muiToast }}>
       {children}
 
-      {/* Global Material UI Snackbar Alert */}
+      {/* Sleek, Compact Toast Notification with Profile Photo */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={snackbar.autoHideDuration}
@@ -216,55 +258,110 @@ export function AlertConfirmProvider({ children }) {
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         TransitionComponent={SlideTransition}
         sx={{
-          top: { xs: 16, sm: 24 },
-          right: { xs: 16, sm: 24 },
+          top: { xs: 12, sm: 18 },
+          right: { xs: 12, sm: 18 },
           zIndex: 99999
         }}
       >
-        <Alert
-          onClose={closeSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          elevation={6}
+        <Box
           sx={{
-            minWidth: '320px',
-            maxWidth: '460px',
+            minWidth: { xs: 260, sm: 300 },
+            maxWidth: { xs: 'calc(100vw - 28px)', sm: 400 },
             borderRadius: '10px',
-            fontFamily: 'Inter, -apple-system, sans-serif',
-            fontSize: '0.9rem',
-            fontWeight: 500,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            px: 1.3,
+            py: 0.8,
+            display: 'flex',
             alignItems: 'center',
+            gap: 1.2,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.12)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid',
+            transition: 'all 0.2s ease',
             ...(snackbar.severity === 'success' && {
-              bgcolor: '#133829',
-              color: '#ffffff',
-              '& .MuiAlert-icon': { color: '#10b981' }
+              bgcolor: '#0c271b',
+              borderColor: 'rgba(52, 211, 153, 0.35)',
+              color: '#ffffff'
             }),
             ...(snackbar.severity === 'error' && {
-              bgcolor: '#7f1d1d',
-              color: '#ffffff',
-              '& .MuiAlert-icon': { color: '#fca5a5' }
+              bgcolor: '#3b0d0c',
+              borderColor: 'rgba(248, 113, 113, 0.35)',
+              color: '#ffffff'
             }),
             ...(snackbar.severity === 'warning' && {
-              bgcolor: '#78350f',
-              color: '#ffffff',
-              '& .MuiAlert-icon': { color: '#fcd34d' }
+              bgcolor: '#331804',
+              borderColor: 'rgba(251, 191, 36, 0.35)',
+              color: '#ffffff'
             }),
             ...(snackbar.severity === 'info' && {
-              bgcolor: '#1e3a5f',
-              color: '#ffffff',
-              '& .MuiAlert-icon': { color: '#93c5fd' }
+              bgcolor: '#08283d',
+              borderColor: 'rgba(56, 189, 248, 0.35)',
+              color: '#ffffff'
             })
           }}
         >
-          {snackbar.title && (
-            <AlertTitle sx={{ fontWeight: 700, mb: 0.5, fontSize: '0.95rem' }}>
-              {snackbar.title}
-            </AlertTitle>
-          )}
-          {snackbar.message}
-        </Alert>
+          {/* User Profile Avatar with Severity Indicator Pill */}
+          <Box sx={{ position: 'relative', flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}>
+            <Avatar
+              src={resolveAvatarUrl(snackbar.avatar || user?.avatar_url)}
+              alt={user?.name || 'User'}
+              sx={{
+                width: 28,
+                height: 28,
+                borderRadius: '8px',
+                fontSize: 12,
+                fontWeight: 800,
+                bgcolor: 'rgba(255, 255, 255, 0.18)',
+                color: '#ffffff',
+                border: '1.5px solid rgba(255, 255, 255, 0.35)'
+              }}
+            >
+              {user?.name?.charAt(0) || 'U'}
+            </Avatar>
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: -2,
+                right: -2,
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                bgcolor:
+                  snackbar.severity === 'success' ? '#10b981' :
+                  snackbar.severity === 'error' ? '#ef4444' :
+                  snackbar.severity === 'warning' ? '#f59e0b' : '#3b82f6',
+                border: '1.5px solid #0f172a',
+                boxShadow: '0 0 4px rgba(0,0,0,0.3)'
+              }}
+            />
+          </Box>
+
+          {/* Compact Message Typography */}
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            {snackbar.title && (
+              <Typography sx={{ fontWeight: 800, fontSize: '0.78rem', lineHeight: 1.2, color: '#ffffff', mb: 0.2 }}>
+                {snackbar.title}
+              </Typography>
+            )}
+            <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', lineHeight: 1.3, color: 'rgba(255, 255, 255, 0.95)', wordBreak: 'break-word' }}>
+              {snackbar.message}
+            </Typography>
+          </Box>
+
+          {/* Minimalist Close Action */}
+          <IconButton
+            size="small"
+            onClick={closeSnackbar}
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              p: 0.3,
+              borderRadius: '6px',
+              ml: 0.2,
+              '&:hover': { color: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.12)' }
+            }}
+          >
+            <CloseIcon sx={{ fontSize: 15 }} />
+          </IconButton>
+        </Box>
       </Snackbar>
 
       {/* Global Material UI Confirmation Modal */}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Grid,
   Box,
   Typography,
@@ -91,7 +90,7 @@ const SECTION_META = [
   { id: 7, title: 'Staff Monthly Timesheets', subtitle: 'Detailed monthly attendance history, punctuality, and hours audit', category: 'Approvals & Timesheets' },
   { id: 8, title: 'Staff Directory & Status', subtitle: 'Manage employee profiles, work modes, and account deactivations', category: 'Directory & Settings' },
   { id: 9, title: 'Audit Trail & Security Logs', subtitle: 'System communication logs, resignation audits, and security trail', category: 'Directory & Settings' },
-  { id: 10, title: 'Company Calendar & Geofence', subtitle: 'Official holidays, working Sunday overrides, and GPS geofence perimeter', category: 'Directory & Settings' }
+  { id: 10, title: 'Office Timings, Calendar & Geofence', subtitle: 'Office shift hours, late grace cutoff, holidays, and GPS perimeter', category: 'Directory & Settings' }
 ];
 
 export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpdate }) {
@@ -218,6 +217,46 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   const [holidayForm, setHolidayForm] = useState({ date: '', name: '', type: 'Public Holiday' });
   const [addingHoliday, setAddingHoliday] = useState(false);
 
+  // Office Shift Timings & Late Grace Period state
+  const [officeTimings, setOfficeTimings] = useState({
+    opening_time: '09:30',
+    closing_time: '18:30',
+    late_grace_time: '09:45',
+    half_day_hours: 4.5,
+    full_day_hours: 8.5
+  });
+  const [savingTimings, setSavingTimings] = useState(false);
+
+  const getShiftDuration = (start, end) => {
+    if (!start || !end) return '9.0';
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    const diff = (eh * 60 + em) - (sh * 60 + sm);
+    return diff > 0 ? (diff / 60).toFixed(1) : '9.0';
+  };
+
+  const getGraceMinutes = (start, grace) => {
+    if (!start || !grace) return 15;
+    const [sh, sm] = start.split(':').map(Number);
+    const [gh, gm] = grace.split(':').map(Number);
+    const diff = (gh * 60 + gm) - (sh * 60 + sm);
+    return diff >= 0 ? diff : 0;
+  };
+
+  const handleSaveOfficeTimings = async (e) => {
+    if (e) e.preventDefault();
+    setSavingTimings(true);
+    try {
+      const res = await adminAPI.updateOfficeTimings(officeTimings);
+      toast.success(res.data?.message || 'Office shift timings updated successfully!');
+      if (res.data?.timings) setOfficeTimings(res.data.timings);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update office shift timings.');
+    } finally {
+      setSavingTimings(false);
+    }
+  };
+
   // Monthly Leave Quotas & Permission Policy state
   const [leavePolicy, setLeavePolicy] = useState({
     casual_leave: 1,
@@ -300,7 +339,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [liveRes, tasksRes, leavesRes, permsRes, empRes, evalRes, settingsRes, regRes, logsRes, weeklyRes, holidaysRes, policyRes] = await Promise.all([
+      const [liveRes, tasksRes, leavesRes, permsRes, empRes, evalRes, settingsRes, regRes, logsRes, weeklyRes, holidaysRes, policyRes, timingsRes] = await Promise.all([
         adminAPI.getLiveStatus().catch(() => ({ data: null })),
         workDoneAPI.getAllTasks().catch(() => ({ data: { tasks: [] } })),
         leavesAPI.getAllLeaves().catch(() => ({ data: { leaves: [] } })),
@@ -312,7 +351,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         communicationsAPI.getLogs().catch(() => ({ data: { logs: [] } })),
         evaluationsAPI.getAllWeekly().catch(() => ({ data: { reports: [] } })),
         adminAPI.getHolidays().catch(() => ({ data: { holidays: [] } })),
-        adminAPI.getLeavePolicy().catch(() => ({ data: { policy: null } }))
+        adminAPI.getLeavePolicy().catch(() => ({ data: { policy: null } })),
+        adminAPI.getOfficeTimings().catch(() => ({ data: { timings: null } }))
       ]);
 
       if (liveRes?.data) setLiveData(liveRes.data);
@@ -320,6 +360,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
       if (leavesRes?.data?.leaves) setAllLeaves(leavesRes.data.leaves);
       if (permsRes?.data?.permissions) setAllPermissions(permsRes.data.permissions);
       if (policyRes?.data?.policy) setLeavePolicy(policyRes.data.policy);
+      if (timingsRes?.data?.timings) setOfficeTimings(timingsRes.data.timings);
       if (empRes?.data?.employees) {
         setEmployees(empRes.data.employees);
         if (!manualForm.employee_id && empRes.data.employees.length > 0) {
@@ -724,7 +765,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box sx={{ width: '100%', py: { xs: 1, sm: 1.5 } }}>
       {/* Header Bar */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
@@ -807,10 +848,10 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
       </Box>
 
       {/* Live Presence Metric KPI Cards (4 Clean 3-col Grid) */}
-      <Grid container spacing={2} sx={{ mb: 4 }} alignItems="stretch">
+      <Grid container spacing={1.5} sx={{ mb: 2.5 }} alignItems="stretch">
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
           <Card sx={{ width: '100%', height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', borderTop: '3px solid #133829', display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <CardContent sx={{ p: 1.8, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>TOTAL STAFF</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: 'text.primary' }}>
                 {counts.totalStaff}
@@ -820,7 +861,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         </Grid>
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
           <Card sx={{ width: '100%', height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', borderTop: '3px solid #059669', display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <CardContent sx={{ p: 1.8, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PRESENT IN OFFICE</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: '#059669' }}>
                 {counts.present}
@@ -830,7 +871,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         </Grid>
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
           <Card sx={{ width: '100%', height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', borderTop: '3px solid #0891b2', display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <CardContent sx={{ p: 1.8, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: '#0891b2', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PUNCHED OUT</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: '#0891b2' }}>
                 {counts.punchedOut}
@@ -840,7 +881,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         </Grid>
         <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
           <Card sx={{ width: '100%', height: '100%', borderRadius: '10px', border: '1px solid #e2e8f0', borderTop: '3px solid #64748b', display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ p: 2.5, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <CardContent sx={{ p: 1.8, textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>ABSENT TODAY</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: 'text.secondary' }}>
                 {counts.absent}
@@ -851,8 +892,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
       </Grid>
 
       {/* Sleek Workspace Context Header */}
-      <Card sx={{ mb: 3, borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-        <Box sx={{ p: { xs: 2, sm: 2.5 }, bgcolor: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
+      <Card sx={{ mb: 2.5, borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+        <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexWrap: 'wrap', gap: 1.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box
@@ -950,10 +991,10 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </Box>
         </Box>
 
-        <CardContent id="admin-workspace-content" sx={{ p: 3 }}>
+        <CardContent id="admin-workspace-content" sx={{ p: { xs: 1.5, sm: 2 }, '&:last-child': { pb: 2 } }}>
           {/* Universal Section Search & Filter Toolbar */}
           {[0, 2, 3, 4, 5, 8, 9, 10].includes(activeTab) && (
-            <Box sx={{ mb: 3, p: 2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
+            <Box sx={{ mb: 2, p: 1.2, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
               <Grid container spacing={1.5} alignItems="center">
                 <Grid item xs={12} sm={hasDeptFilter ? (hasStatusFilter || hasWorkModeFilter ? 5 : 7) : (hasStatusFilter ? 7 : 12)} md={hasDeptFilter ? (hasStatusFilter || hasWorkModeFilter ? 6 : 8) : (hasStatusFilter ? 8 : 12)}>
                   <TextField
@@ -1893,6 +1934,130 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           {/* TAB 10: System Settings & Holidays */}
           {activeTab === 10 && (
             <Box>
+              {/* Office Shift Timings & Grace Period Settings (Configurable) */}
+              <Box sx={{ mb: 4, p: 2.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, mb: 2 }}>
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TimeIcon sx={{ color: '#133829' }} />
+                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                        Office Shift Hours & Grace Period
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                      Configure daily office opening, closing, late arrival grace cutoff, and standard minimum working hour requirements.
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Chip
+                      size="small"
+                      label={`Shift Span: ${getShiftDuration(officeTimings.opening_time, officeTimings.closing_time)} hrs (${formatTime12h(officeTimings.opening_time)} – ${formatTime12h(officeTimings.closing_time)})`}
+                      sx={{ fontWeight: 700, bgcolor: '#f0fdf4', color: '#166534', borderRadius: '6px' }}
+                    />
+                    <Chip
+                      size="small"
+                      label={`Late Grace: +${getGraceMinutes(officeTimings.opening_time, officeTimings.late_grace_time)}m (until ${formatTime12h(officeTimings.late_grace_time)})`}
+                      sx={{ fontWeight: 700, bgcolor: '#fffbeb', color: '#b45309', borderRadius: '6px' }}
+                    />
+                  </Box>
+                </Box>
+
+                <form onSubmit={handleSaveOfficeTimings}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="time"
+                        label="Opening Time"
+                        value={officeTimings.opening_time}
+                        onChange={(e) => setOfficeTimings(p => ({ ...p, opening_time: e.target.value }))}
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{ step: 300 }}
+                        helperText="Office starts (e.g. 09:30 AM)"
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="time"
+                        label="Late Entry Grace Cutoff"
+                        value={officeTimings.late_grace_time}
+                        onChange={(e) => setOfficeTimings(p => ({ ...p, late_grace_time: e.target.value }))}
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{ step: 300 }}
+                        helperText="After this, marked as Late"
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="time"
+                        label="Closing Time"
+                        value={officeTimings.closing_time}
+                        onChange={(e) => setOfficeTimings(p => ({ ...p, closing_time: e.target.value }))}
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{ step: 300 }}
+                        helperText="End of shift (e.g. 06:30 PM)"
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        label="Full-Day Min Hours"
+                        value={officeTimings.full_day_hours}
+                        onChange={(e) => setOfficeTimings(p => ({ ...p, full_day_hours: parseFloat(e.target.value) || 0 }))}
+                        inputProps={{ min: 1, max: 24, step: 0.5 }}
+                        helperText="Min hrs for 'Present'"
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={6} md={2.4}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        type="number"
+                        label="Half-Day Min Hours"
+                        value={officeTimings.half_day_hours}
+                        onChange={(e) => setOfficeTimings(p => ({ ...p, half_day_hours: parseFloat(e.target.value) || 0 }))}
+                        inputProps={{ min: 1, max: 24, step: 0.5 }}
+                        helperText="Min hrs for 'Half Day'"
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Box sx={{ mt: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                      Punches submitted after {formatTime12h(officeTimings.late_grace_time)} will automatically flag attendance as <strong>Late</strong>.
+                    </Typography>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={savingTimings}
+                      startIcon={savingTimings ? <CircularProgress size={16} color="inherit" /> : <TimeIcon fontSize="small" />}
+                      sx={{
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        bgcolor: '#133829',
+                        '&:hover': { bgcolor: '#0b2319' },
+                        whiteSpace: 'nowrap',
+                        px: 2.5
+                      }}
+                    >
+                      {savingTimings ? 'Saving Timings...' : 'Save Office Timings'}
+                    </Button>
+                  </Box>
+                </form>
+              </Box>
+
               {/* Geofence Info (Read-Only) */}
               <Box sx={{ mb: 4, p: 2.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -2843,6 +3008,6 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </DialogActions>
         </form>
       </Dialog>
-    </Container>
+    </Box>
   );
 }

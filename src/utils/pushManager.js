@@ -5,7 +5,7 @@
  *          browser PushSubscription creation, and backend API sync.
  */
 
-import api from '../services/api';
+import api from '../services/api.js';
 
 const SW_PATH = '/sw.js';
 const STORAGE_KEY = 'shazu_push_subscribed';
@@ -15,10 +15,10 @@ const STORAGE_KEY = 'shazu_push_subscribed';
 /**
  * Convert a URL-safe base64 string to a Uint8Array for VAPID applicationServerKey
  */
-function urlBase64ToUint8Array(base64String) {
+export function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
+  const rawData = typeof atob === 'function' ? atob(base64) : Buffer.from(base64, 'base64').toString('binary');
   return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
 }
 
@@ -172,6 +172,23 @@ export async function isSubscribed() {
   return true;
 }
 
+/**
+ * Automatically prompts and subscribes to push notifications upon user login.
+ */
+export async function autoEnablePushNotificationsOnLogin() {
+  if (typeof window === 'undefined') return { success: false };
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+    return { success: false, error: 'Push notifications not supported in this browser environment.' };
+  }
+  try {
+    const result = await subscribeToPushNotifications();
+    return result;
+  } catch (err) {
+    console.warn('[PushManager] Auto-enable notification error:', err);
+    return { success: false, error: err.message };
+  }
+}
+
 const pushManager = {
   registerServiceWorker,
   requestNotificationPermission,
@@ -179,7 +196,8 @@ const pushManager = {
   subscribeToPushNotifications,
   unsubscribeFromPushNotifications,
   sendTestNotification,
-  isSubscribed
+  isSubscribed,
+  autoEnablePushNotificationsOnLogin
 };
 
 export default pushManager;
