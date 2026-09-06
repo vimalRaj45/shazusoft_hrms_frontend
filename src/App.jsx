@@ -203,7 +203,7 @@ function AppContent() {
       });
       setFullReportData(res.data);
     } catch (err) {
-      toast.error('Failed to generate report from Google Sheets.');
+      toast.error('Failed to generate report from database.');
     } finally {
       setLoadingReport(false);
     }
@@ -953,7 +953,7 @@ function AppContent() {
                     3. August 13-Section Appraisal
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#475569' }}>
-                    Access the August Self-Evaluation tab to enter your targets, performance ratings, and achievements. Submitted forms are safely stored in Google Sheets.
+                    Access the August Self-Evaluation tab to enter your targets, performance ratings, and achievements. Submitted forms are safely stored in official company records.
                   </Typography>
                 </CardContent>
               </Card>

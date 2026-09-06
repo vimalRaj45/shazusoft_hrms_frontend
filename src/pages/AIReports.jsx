@@ -41,6 +41,25 @@ import { reportsAPI, adminAPI } from '../services/api';
 import EmployeeReportViewer from '../components/EmployeeReportViewer';
 import confetti from 'canvas-confetti';
 import { format } from 'date-fns';
+import toast from '../utils/muiToast';
+
+// Helper to strip legacy markdown hashes/labels and humanize text for executive presentation
+function cleanHumanizedSummary(text) {
+  if (!text) return [];
+  // Remove markdown headers like ### Monthly Performance...
+  let cleaned = text.replace(/^#{1,6}\s*.*$/gm, '');
+  // Remove Target Scope header if present
+  cleaned = cleaned.replace(/^\*\*Target Scope:\*\*.*$/gm, '');
+  cleaned = cleaned.replace(/^Target Scope:.*$/gm, '');
+  // Remove double asterisks
+  cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '$1');
+  // Split into paragraphs by double newlines or single newlines with spacing
+  const paragraphs = cleaned
+    .split(/\n\s*\n/)
+    .map(p => p.trim())
+    .filter(p => p.length > 0);
+  return paragraphs.length > 0 ? paragraphs : [cleaned.trim()];
+}
 
 export default function AIReports() {
   const [reportMode, setReportMode] = useState(0); // 0 = Standard Employee Full Report (Without AI), 1 = Mistral AI Analytics
@@ -211,7 +230,7 @@ export default function AIReports() {
                   disabled={loadingStandard}
                   sx={{ py: 1.8, fontWeight: 700 }}
                 >
-                  {loadingStandard ? 'Fetching Google Sheets Data...' : 'Generate Employee Full Report'}
+                  {loadingStandard ? 'Fetching Verified Timesheet Records...' : 'Generate Employee Full Report'}
                 </Button>
               ) : (
                 <Button
@@ -344,36 +363,59 @@ export default function AIReports() {
             {/* Executive Summary & Insights */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
               <Grid item xs={12} md={7}>
-                <Card sx={{ height: '100%' }}>
+                <Card sx={{ height: '100%', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                   <CardContent sx={{ p: 3.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      <SparklesIcon color="primary" />
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                        Executive Management Summary ({currentAIReport.month_year || currentAIReport.monthYear})
-                      </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <SparklesIcon color="primary" />
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                          Executive Operations Summary
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Chip
+                          label={`Period: ${currentAIReport.month_year || currentAIReport.monthYear}`}
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontWeight: 700 }}
+                        />
+                        <Chip
+                          label={currentAIReport.target === 'ALL' || !currentAIReport.target ? 'Organization-Wide' : `Scope: ${currentAIReport.target}`}
+                          size="small"
+                          color="primary"
+                          sx={{ fontWeight: 700 }}
+                        />
+                      </Box>
                     </Box>
-                    <Divider sx={{ mb: 2 }} />
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        lineHeight: 1.8,
-                        color: 'text.primary',
-                        whiteSpace: 'pre-line',
-                        '& strong': { color: 'primary.main' }
-                      }}
-                    >
-                      {currentAIReport.summary}
-                    </Typography>
+                    <Divider sx={{ mb: 2.5 }} />
+
+                    {/* Clean Humanized Paragraphs */}
+                    {cleanHumanizedSummary(currentAIReport.summary).map((paragraph, pIdx) => (
+                      <Typography
+                        key={pIdx}
+                        variant="body1"
+                        paragraph
+                        sx={{
+                          lineHeight: 1.8,
+                          color: '#334155',
+                          fontSize: '0.95rem',
+                          mb: 1.8,
+                          '&:last-child': { mb: 0 }
+                        }}
+                      >
+                        {paragraph}
+                      </Typography>
+                    ))}
                   </CardContent>
                 </Card>
               </Grid>
 
               <Grid item xs={12} md={5}>
-                <Card sx={{ height: '100%' }}>
+                <Card sx={{ height: '100%', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                   <CardContent sx={{ p: 3.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <LightbulbIcon color="warning" />
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
                         Actionable Management Insights
                       </Typography>
                     </Box>
@@ -389,10 +431,10 @@ export default function AIReports() {
                           <ListItemIcon sx={{ minWidth: 30, mt: 0.5 }}>
                             <Box
                               sx={{
-                                width: 20,
-                                height: 20,
+                                width: 22,
+                                height: 22,
                                 borderRadius: '50%',
-                                bgcolor: 'primary.main',
+                                bgcolor: '#133829',
                                 color: 'white',
                                 fontSize: 11,
                                 display: 'flex',
@@ -406,7 +448,7 @@ export default function AIReports() {
                           </ListItemIcon>
                           <ListItemText
                             primary={insight}
-                            primaryTypographyProps={{ variant: 'body2', fontWeight: 600, lineHeight: 1.5 }}
+                            primaryTypographyProps={{ variant: 'body2', fontWeight: 600, color: '#1e293b', lineHeight: 1.6 }}
                           />
                         </ListItem>
                       ))}
@@ -418,41 +460,61 @@ export default function AIReports() {
 
             {/* Historical Reports Archive */}
             {historyReports.length > 0 && (
-              <Card>
+              <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <HistoryIcon color="primary" />
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      Historical AI Reports Archive (Google Sheets)
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                      Historical Executive Reports Archive
                     </Typography>
                   </Box>
                   <Table size="small">
                     <TableHead>
-                      <TableRow>
-                        <TableCell>Month</TableCell>
-                        <TableCell>Scope</TableCell>
-                        <TableCell>Productivity</TableCell>
-                        <TableCell>Attendance</TableCell>
-                        <TableCell>Generated Date</TableCell>
-                        <TableCell align="right">Action</TableCell>
+                      <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b' }}>MONTH</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b' }}>SCOPE</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b' }}>PRODUCTIVITY</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b' }}>ATTENDANCE</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b' }}>GENERATED DATE</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 700, color: '#64748b' }}>ACTION</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {historyReports.map((rep) => (
                         <TableRow key={rep.id} hover>
-                          <TableCell sx={{ fontWeight: 700 }}>{rep.month_year}</TableCell>
-                          <TableCell>{rep.target || 'ALL'}</TableCell>
-                          <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
+                          <TableCell sx={{ fontWeight: 800, color: '#0f172a' }}>{rep.month_year}</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{rep.target || 'ALL'}</TableCell>
+                          <TableCell sx={{ fontWeight: 800, color: 'primary.main' }}>
                             {rep.productivity_score || '--'}/100
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 700, color: '#059669' }}>
+                          <TableCell sx={{ fontWeight: 800, color: '#059669' }}>
                             {rep.attendance_rate || '--'}
                           </TableCell>
                           <TableCell sx={{ fontSize: 13, color: 'text.secondary' }}>
                             {rep.generated_at ? new Date(rep.generated_at).toLocaleDateString() : '--'}
                           </TableCell>
                           <TableCell align="right">
-                            <Button size="small" variant="text" onClick={() => setCurrentAIReport(rep)}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                              sx={{
+                                fontWeight: 700,
+                                textTransform: 'none',
+                                borderRadius: '6px',
+                                px: 1.5
+                              }}
+                              onClick={() => {
+                                setCurrentAIReport(rep);
+                                setSelectedMonth(rep.month_year);
+                                if (rep.target && rep.target !== 'ALL') {
+                                  setSelectedEmployee(rep.target);
+                                }
+                                setReportMode(1);
+                                window.scrollTo({ top: 120, behavior: 'smooth' });
+                                toast.success(`Displaying Executive Report for ${rep.month_year}`);
+                              }}
+                            >
                               View Details
                             </Button>
                           </TableCell>

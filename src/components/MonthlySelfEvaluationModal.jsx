@@ -142,7 +142,7 @@ export default function MonthlySelfEvaluationModal({ open = false, onClose, user
   const ratingValues = Object.values(ratings);
   const overallAverage = (ratingValues.reduce((a, b) => a + b, 0) / (ratingValues.length || 1)).toFixed(1);
 
-  // Auto-import tasks from Google Sheets WorkDone log
+  // Auto-import tasks from WorkDone log
   const handleAutoImportTasks = async () => {
     setImporting(true);
     try {
@@ -152,10 +152,10 @@ export default function MonthlySelfEvaluationModal({ open = false, onClose, user
 
         const taskListStr = res.data.prefilledTargets.map((t, idx) => `${idx + 1}. ${t.task}`).join(', ');
         if (!workSummary) {
-          setWorkSummary(`During August 2026, successfully delivered key technical objectives across projects: ${taskListStr}. Focused on core architecture, real-time Google Sheets synchronization, and high performance.`);
+          setWorkSummary(`During August 2026, successfully delivered key technical objectives across projects: ${taskListStr}. Focused on core architecture, high reliability, and optimal performance.`);
         }
         if (!keyAccomplishments) {
-          setKeyAccomplishments(`- Completed ${res.data.prefilledTargets.length} key engineering deliverables on schedule.\n- Maintained stable architecture with zero data loss in Google Sheets.\n- Ensured high cross-platform compatibility.`);
+          setKeyAccomplishments(`- Completed ${res.data.prefilledTargets.length} key engineering deliverables on schedule.\n- Maintained stable architecture with verified cloud data synchronization.\n- Ensured high cross-platform compatibility.`);
         }
         toast.success(`Auto-imported ${res.data.prefilledTargets.length} tasks from your August WorkDone log!`);
       } else {
@@ -205,7 +205,7 @@ export default function MonthlySelfEvaluationModal({ open = false, onClose, user
 
     const confirmed = await muiToast.confirm({
       title: 'Submit Appraisal Evaluation',
-      message: `You are about to submit your official August Self-Evaluation (Score: ${overallAverage}/5) to Google Sheets. Would you like to proceed?`,
+      message: `You are about to submit your official August Self-Evaluation (Score: ${overallAverage}/5). Would you like to proceed?`,
       confirmText: 'Submit Appraisal',
       cancelText: 'Keep Editing',
       severity: 'info'
@@ -268,7 +268,7 @@ export default function MonthlySelfEvaluationModal({ open = false, onClose, user
                 Monthly Employee Self-Evaluation Appraisal
               </Typography>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
-                13 Official Review Sections • {details.review_month} Review Cycle • Direct Google Sheets
+                13 Official Review Sections • {details.review_month} Review Cycle • Direct HRMS Records
               </Typography>
             </Box>
           </Box>
@@ -495,7 +495,7 @@ export default function MonthlySelfEvaluationModal({ open = false, onClose, user
               multiline
               rows={3}
               required
-              placeholder="e.g. Successfully architected GPS geofence punch system, zero Google Sheets rate-limit errors, delivered 100% on-time..."
+              placeholder="e.g. Successfully architected GPS geofence punch system, zero API sync errors, delivered 100% on-time..."
               value={keyAccomplishments}
               onChange={(e) => setKeyAccomplishments(e.target.value)}
             />
@@ -535,7 +535,7 @@ export default function MonthlySelfEvaluationModal({ open = false, onClose, user
               fullWidth
               multiline
               rows={2}
-              placeholder="e.g. Google Sheets API v4 service account credentials, Fastify server optimization, Material UI alert and confirmation patterns..."
+              placeholder="e.g. Fastify server architecture, PostgreSQL schema design, Material UI responsive design patterns..."
               value={learningDev}
               onChange={(e) => setLearningDev(e.target.value)}
             />
@@ -678,7 +678,7 @@ export default function MonthlySelfEvaluationModal({ open = false, onClose, user
             startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <CheckCircleIcon />}
             sx={{ fontWeight: 800, px: 3 }}
           >
-            {loading ? 'Saving to Google Sheets...' : 'Submit August Self-Evaluation'}
+            {loading ? 'Saving Records...' : 'Submit August Self-Evaluation'}
           </Button>
         </DialogActions>
       </form>

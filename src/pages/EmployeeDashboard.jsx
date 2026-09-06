@@ -243,7 +243,7 @@ export default function EmployeeDashboard() {
         <DialogContent dividers>
           {historyRecords.length === 0 ? (
             <Typography variant="body2" sx={{ textAlign: 'center', py: 3, color: 'text.secondary' }}>
-              No past attendance records found in Google Sheets.
+              No past attendance records found in database.
             </Typography>
           ) : (
             <Table size="small">
@@ -290,7 +290,7 @@ export default function EmployeeDashboard() {
       <Dialog open={openReportModal} onClose={() => setOpenReportModal(false)} maxWidth="lg" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ReportIcon color="primary" /> My Complete Performance & Timesheet Report (Google Sheets)
+            <ReportIcon color="primary" /> My Complete Performance & Timesheet Report
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <TextField

@@ -95,7 +95,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
 
     const confirmed = await muiToast.confirm({
       title: 'Submit Weekly Check-in?',
-      message: `You are submitting your concise weekly progress report for ${weekInfo?.weekLabel || 'this week'} to Google Sheets.`,
+      message: `You are submitting your concise weekly progress report for ${weekInfo?.weekLabel || 'this week'} to company records.`,
       confirmText: 'Submit Check-in',
       cancelText: 'Keep Editing',
       severity: 'info'
@@ -174,7 +174,7 @@ export default function WeeklyCheckInModal({ open, onClose, user, onSuccess }) {
                 Weekly Check-in Report
               </Typography>
               <Typography variant="caption" sx={{ color: '#a7f3d0', fontWeight: 600 }}>
-                {weekInfo?.weekLabel || 'Fast & Focused Weekly Progress Sync • Google Sheets'}
+                {weekInfo?.weekLabel || 'Fast & Focused Weekly Progress Sync • HRMS Records'}
               </Typography>
             </Box>
           </Box>

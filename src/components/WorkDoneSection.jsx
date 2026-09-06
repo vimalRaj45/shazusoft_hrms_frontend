@@ -127,7 +127,7 @@ export default function WorkDoneSection() {
         toast.success('Task updated successfully!');
       } else {
         await workDoneAPI.create(formData);
-        toast.success('Task logged successfully to Google Sheets!');
+        toast.success('Task logged successfully!');
         confetti({ particleCount: 50, spread: 50 });
       }
       handleCloseModal();
@@ -140,7 +140,7 @@ export default function WorkDoneSection() {
   const handleDelete = async (id) => {
     const confirmed = await muiToast.confirm({
       title: 'Delete Task Record',
-      message: 'Are you sure you want to permanently delete this daily task entry? This will update your records in Google Sheets.',
+      message: 'Are you sure you want to permanently delete this daily task entry? This will update your task records in the database.',
       confirmText: 'Delete Task',
       cancelText: 'Cancel',
       isDestructive: true
@@ -411,7 +411,7 @@ export default function WorkDoneSection() {
                   fullWidth
                   label="Task Title"
                   required
-                  placeholder="e.g. Implemented Google Sheets sync and auth flow"
+                  placeholder="e.g. Implemented real-time database sync and auth flow"
                   value={formData.task_title}
                   onChange={(e) => setFormData({ ...formData, task_title: e.target.value })}
                 />
