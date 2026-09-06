@@ -62,7 +62,8 @@ import {
   Payments as PayrollIcon
 } from '@mui/icons-material';
 import toast, { muiToast } from '../utils/muiToast';
-import { adminAPI, workDoneAPI, leavesAPI, reportsAPI, evaluationsAPI, attendanceAPI, communicationsAPI } from '../services/api';
+import { adminAPI, workDoneAPI, leavesAPI, reportsAPI, evaluationsAPI, attendanceAPI, communicationsAPI, payrollAPI } from '../services/api';
+import { formatINR } from '../utils/payslipGenerator';
 import EmployeeReportViewer from '../components/EmployeeReportViewer';
 import SelfEvaluationViewer from '../components/SelfEvaluationViewer';
 import WeeklyReportsViewer from '../components/WeeklyReportsViewer';
@@ -164,6 +165,20 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     effective_date: format(new Date(), 'yyyy-MM-dd')
   });
   const [deactivateLoading, setDeactivateLoading] = useState(false);
+
+  // Staff Directory Salary Package Modal State
+  const [salaryStructures, setSalaryStructures] = useState([]);
+  const [openSalaryModal, setOpenSalaryModal] = useState(false);
+  const [selectedSalaryEmp, setSelectedSalaryEmp] = useState(null);
+  const [salaryForm, setSalaryForm] = useState({
+    monthly_salary: '',
+    bank_name: '',
+    account_number: '',
+    ifsc_code: '',
+    upi_id: '',
+    pan_number: ''
+  });
+  const [salarySaving, setSalarySaving] = useState(false);
 
   // Professional Rejection Modal State
   const [openRejectionModal, setOpenRejectionModal] = useState(false);
@@ -344,7 +359,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [liveRes, tasksRes, leavesRes, permsRes, empRes, evalRes, settingsRes, regRes, logsRes, weeklyRes, holidaysRes, policyRes, timingsRes] = await Promise.all([
+      const [liveRes, tasksRes, leavesRes, permsRes, empRes, evalRes, settingsRes, regRes, logsRes, weeklyRes, holidaysRes, policyRes, timingsRes, salaryRes] = await Promise.all([
         adminAPI.getLiveStatus().catch(() => ({ data: null })),
         workDoneAPI.getAllTasks().catch(() => ({ data: { tasks: [] } })),
         leavesAPI.getAllLeaves().catch(() => ({ data: { leaves: [] } })),
@@ -357,7 +372,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         evaluationsAPI.getAllWeekly().catch(() => ({ data: { reports: [] } })),
         adminAPI.getHolidays().catch(() => ({ data: { holidays: [] } })),
         adminAPI.getLeavePolicy().catch(() => ({ data: { policy: null } })),
-        adminAPI.getOfficeTimings().catch(() => ({ data: { timings: null } }))
+        adminAPI.getOfficeTimings().catch(() => ({ data: { timings: null } })),
+        payrollAPI.getSalaryStructures().catch(() => ({ data: { salary_structures: [] } }))
       ]);
 
       if (liveRes?.data) setLiveData(liveRes.data);
@@ -366,6 +382,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
       if (permsRes?.data?.permissions) setAllPermissions(permsRes.data.permissions);
       if (policyRes?.data?.policy) setLeavePolicy(policyRes.data.policy);
       if (timingsRes?.data?.timings) setOfficeTimings(timingsRes.data.timings);
+      if (salaryRes?.data?.salary_structures) setSalaryStructures(salaryRes.data.salary_structures);
       if (empRes?.data?.employees) {
         setEmployees(empRes.data.employees);
         if (!manualForm.employee_id && empRes.data.employees.length > 0) {
@@ -588,6 +605,39 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
       fetchDashboardData();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update permission.');
+    }
+  };
+
+  const handleOpenSalaryModal = (employee) => {
+    const struct = salaryStructures.find(s => s.employee_id === employee.id);
+    setSelectedSalaryEmp(employee);
+    setSalaryForm({
+      monthly_salary: struct?.monthly_salary ? String(struct.monthly_salary) : '',
+      bank_name: struct?.bank_name || employee.personal_info?.bank_details?.bank_name || '',
+      account_number: struct?.account_number || employee.personal_info?.bank_details?.account_number || '',
+      ifsc_code: struct?.ifsc_code || employee.personal_info?.bank_details?.ifsc_code || '',
+      upi_id: struct?.upi_id || employee.personal_info?.bank_details?.upi_id || '',
+      pan_number: struct?.pan_number || employee.personal_info?.bank_details?.pan_number || ''
+    });
+    setOpenSalaryModal(true);
+  };
+
+  const handleSaveSalaryStructure = async (e) => {
+    e.preventDefault();
+    if (!selectedSalaryEmp) return;
+    setSalarySaving(true);
+    try {
+      await payrollAPI.updateSalaryStructure(selectedSalaryEmp.id, salaryForm);
+      toast.success(`Salary package saved for ${selectedSalaryEmp.name}!`);
+      setOpenSalaryModal(false);
+      const res = await payrollAPI.getSalaryStructures().catch(() => ({ data: { salary_structures: [] } }));
+      if (res?.data?.salary_structures) {
+        setSalaryStructures(res.data.salary_structures);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update salary package');
+    } finally {
+      setSalarySaving(false);
     }
   };
 
@@ -1730,6 +1780,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       <TableCell sx={{ fontWeight: 700 }}>Work Mode</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Designation</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Base Salary</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -1787,8 +1838,52 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       </TableCell>
                       <TableCell>{e.department}</TableCell>
                       <TableCell>{e.designation}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const struct = salaryStructures.find(s => s.employee_id === e.id);
+                          const salary = parseFloat(struct?.monthly_salary) || 0;
+                          if (salary > 0) {
+                            return (
+                              <Box>
+                                <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f766e', fontFamily: 'monospace' }}>
+                                  {formatINR(salary)}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontSize: 10, display: 'block' }}>
+                                  / month
+                                </Typography>
+                              </Box>
+                            );
+                          }
+                          return (
+                            <Chip
+                              label="Not Set"
+                              size="small"
+                              sx={{ fontWeight: 700, borderRadius: '6px', bgcolor: '#f1f5f9', color: '#94a3b8', fontSize: 11 }}
+                            />
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<PayrollIcon />}
+                            onClick={() => handleOpenSalaryModal(e)}
+                            sx={{
+                              fontWeight: 700,
+                              borderRadius: '8px',
+                              fontSize: 11,
+                              bgcolor: '#0f766e',
+                              color: '#fff',
+                              '&:hover': { bgcolor: '#115e59' }
+                            }}
+                          >
+                            {(() => {
+                              const struct = salaryStructures.find(s => s.employee_id === e.id);
+                              return (parseFloat(struct?.monthly_salary) || 0) > 0 ? 'Edit Salary' : 'Set Salary';
+                            })()}
+                          </Button>
                           {(e.status === 'resigned' || e.status === 'inactive') ? (
                             <Button
                               size="small"
@@ -3016,6 +3111,140 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               sx={{ fontWeight: 800, borderRadius: '8px', px: 2.5 }}
             >
               {deactivateLoading ? 'Processing...' : 'Confirm Resignation & Deactivate'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Staff Directory: Configure Salary & Bank Package Modal */}
+      <Dialog
+        open={openSalaryModal}
+        onClose={() => !salarySaving && setOpenSalaryModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <form onSubmit={handleSaveSalaryStructure}>
+          <DialogTitle sx={{ fontWeight: 800, color: '#0f766e', borderBottom: '1px solid #ccfbf1', bgcolor: '#f0fdfa', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <PayrollIcon sx={{ color: '#0f766e' }} />
+            Configure Employee Salary & Bank Details
+          </DialogTitle>
+          <DialogContent dividers sx={{ p: 3 }}>
+            {selectedSalaryEmp && (
+              <Box sx={{ p: 2, mb: 2.5, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, textTransform: 'uppercase', display: 'block' }}>
+                  Target Staff Member
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  {selectedSalaryEmp.name} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>({selectedSalaryEmp.id})</span>
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#475569', fontSize: 13 }}>
+                  {selectedSalaryEmp.designation} • {selectedSalaryEmp.department} • {selectedSalaryEmp.email}
+                </Typography>
+              </Box>
+            )}
+
+            <Alert severity="info" sx={{ mb: 2.5, borderRadius: '10px' }}>
+              <strong>Startup Compensation Engine:</strong> Base monthly salary is divided by monthly working days (excluding Sundays, but including registered Working Sundays). LOP days are deducted automatically when generating payroll.
+            </Alert>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Monthly Base Salary (INR ₹)"
+                  type="number"
+                  required
+                  placeholder="e.g. 45000"
+                  value={salaryForm.monthly_salary}
+                  onChange={(e) => setSalaryForm({ ...salaryForm, monthly_salary: e.target.value })}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">₹</InputAdornment>
+                  }}
+                  helperText={salaryForm.monthly_salary ? `Calculated Gross: ${formatINR(salaryForm.monthly_salary)} / month` : 'Enter monthly base salary'}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Bank Name"
+                  placeholder="e.g. HDFC Bank, SBI, ICICI"
+                  value={salaryForm.bank_name}
+                  onChange={(e) => setSalaryForm({ ...salaryForm, bank_name: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Account Number"
+                  placeholder="e.g. 501004928172"
+                  value={salaryForm.account_number}
+                  onChange={(e) => setSalaryForm({ ...salaryForm, account_number: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="IFSC Code"
+                  placeholder="e.g. HDFC0001234"
+                  value={salaryForm.ifsc_code}
+                  onChange={(e) => setSalaryForm({ ...salaryForm, ifsc_code: e.target.value.toUpperCase() })}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="UPI ID"
+                  placeholder="e.g. staff@okhdfcbank"
+                  value={salaryForm.upi_id}
+                  onChange={(e) => setSalaryForm({ ...salaryForm, upi_id: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="PAN Number"
+                  placeholder="e.g. ABCDE1234F"
+                  value={salaryForm.pan_number}
+                  onChange={(e) => setSalaryForm({ ...salaryForm, pan_number: e.target.value.toUpperCase() })}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2, borderTop: '1px solid #e2e8f0' }}>
+            <Button
+              onClick={() => setOpenSalaryModal(false)}
+              disabled={salarySaving}
+              sx={{ fontWeight: 700, borderRadius: '8px' }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={salarySaving}
+              sx={{
+                fontWeight: 800,
+                borderRadius: '8px',
+                px: 3,
+                bgcolor: '#0f766e',
+                color: '#fff',
+                '&:hover': { bgcolor: '#115e59' }
+              }}
+            >
+              {salarySaving ? <CircularProgress size={18} sx={{ color: '#fff', mr: 1 }} /> : null}
+              {salarySaving ? 'Saving Package...' : 'Save Salary Package'}
             </Button>
           </DialogActions>
         </form>

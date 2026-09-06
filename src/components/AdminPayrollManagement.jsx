@@ -1,11 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import {
-  DollarSign, Calendar, Users, CheckCircle2, Clock, Download,
-  Edit3, Save, RefreshCw, AlertCircle, FileText, Building2,
-  CreditCard, Search, ArrowRight, ShieldCheck, ChevronRight
-} from 'lucide-react';
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
+  Grid,
+  TextField,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  InputAdornment,
+  CircularProgress,
+  Tooltip,
+  IconButton
+} from '@mui/material';
+import {
+  Payments as PayrollIcon,
+  CalendarMonth as CalendarIcon,
+  People as StaffIcon,
+  CheckCircle as CheckCircleIcon,
+  Schedule as ClockIcon,
+  Download as DownloadIcon,
+  Edit as EditIcon,
+  Refresh as RefreshIcon,
+  Save as SaveIcon,
+  Shield as ShieldIcon,
+  Search as SearchIcon,
+  AttachMoney as DollarIcon
+} from '@mui/icons-material';
 import { payrollAPI } from '../services/api';
 import { generatePayslipPDF, formatINR } from '../utils/payslipGenerator';
+import toast from '../utils/muiToast';
 
 export default function AdminPayrollManagement() {
   const [activeTab, setActiveTab] = useState('register'); // 'register' | 'structures'
@@ -16,7 +51,6 @@ export default function AdminPayrollManagement() {
   const [loading, setLoading] = useState(false);
   const [calculating, setCalculating] = useState(false);
   const [committing, setCommitting] = useState(false);
-  const [feedback, setFeedback] = useState({ message: '', type: '' });
   const [searchTerm, setSearchTerm] = useState('');
 
   // Editing Structure State
@@ -29,6 +63,7 @@ export default function AdminPayrollManagement() {
     upi_id: '',
     pan_number: ''
   });
+  const [savingStructure, setSavingStructure] = useState(false);
 
   // Mark Paid Modal State
   const [payingRecord, setPayingRecord] = useState(null);
@@ -38,11 +73,7 @@ export default function AdminPayrollManagement() {
     payment_date: new Date().toISOString().slice(0, 10),
     remarks: 'Disbursed via corporate payroll'
   });
-
-  const showToast = (message, type = 'success') => {
-    setFeedback({ message, type });
-    setTimeout(() => setFeedback({ message: '', type: '' }), 4000);
-  };
+  const [savingPayment, setSavingPayment] = useState(false);
 
   // 1. Fetch Month Records & Working Days metadata
   const fetchMonthData = async (month) => {
@@ -80,9 +111,9 @@ export default function AdminPayrollManagement() {
       const res = await payrollAPI.calculateMonth(selectedMonth);
       setRecords(res.data.records || []);
       setWorkingDaysMeta(res.data.workingDaysMeta || null);
-      showToast(`Calculation preview updated for ${selectedMonth}! Review line items before committing.`, 'info');
+      toast.success(`Calculation preview computed for ${selectedMonth}! Review line items before committing.`);
     } catch (err) {
-      showToast(err.response?.data?.error || 'Failed to calculate month payroll', 'error');
+      toast.error(err.response?.data?.error || 'Failed to calculate month payroll');
     } finally {
       setCalculating(false);
     }
@@ -90,7 +121,7 @@ export default function AdminPayrollManagement() {
 
   // 4. Commit & Publish Month Payroll
   const handleCommitPayroll = async () => {
-    if (!window.confirm(`Are you sure you want to commit and publish the payroll for ${selectedMonth}? Employees will be able to view their official payslips.`)) {
+    if (!window.confirm(`Are you sure you want to commit and publish payroll for ${selectedMonth}? Active employees will be able to view their official payslips.`)) {
       return;
     }
     setCommitting(true);
@@ -98,9 +129,9 @@ export default function AdminPayrollManagement() {
       const res = await payrollAPI.generateMonth(selectedMonth);
       setRecords(res.data.records || []);
       setWorkingDaysMeta(res.data.workingDaysMeta || null);
-      showToast(`Payroll for ${selectedMonth} published successfully!`, 'success');
+      toast.success(`Payroll for ${selectedMonth} published successfully!`);
     } catch (err) {
-      showToast(err.response?.data?.error || 'Failed to commit payroll', 'error');
+      toast.error(err.response?.data?.error || 'Failed to commit payroll');
     } finally {
       setCommitting(false);
     }
@@ -110,15 +141,17 @@ export default function AdminPayrollManagement() {
   const handleSaveStructure = async (e) => {
     e.preventDefault();
     if (!editingEmployee) return;
+    setSavingStructure(true);
     try {
       await payrollAPI.updateSalaryStructure(editingEmployee.employee_id, structureForm);
-      showToast(`Salary structure saved for ${editingEmployee.employee_name}!`, 'success');
+      toast.success(`Salary package saved for ${editingEmployee.employee_name}!`);
       setEditingEmployee(null);
       await fetchSalaryStructures();
-      // Also refresh month preview if on register
       fetchMonthData(selectedMonth);
     } catch (err) {
-      showToast(err.response?.data?.error || 'Failed to save salary structure', 'error');
+      toast.error(err.response?.data?.error || 'Failed to save salary structure');
+    } finally {
+      setSavingStructure(false);
     }
   };
 
@@ -126,16 +159,19 @@ export default function AdminPayrollManagement() {
   const handleMarkAsPaid = async (e) => {
     e.preventDefault();
     if (!payingRecord) return;
+    setSavingPayment(true);
     try {
       await payrollAPI.updateRecordStatus(payingRecord.id, {
         status: 'Paid',
         ...paymentForm
       });
-      showToast(`Marked ${payingRecord.employee_name}'s payslip as Paid!`, 'success');
+      toast.success(`Marked ${payingRecord.employee_name}'s payslip as Paid!`);
       setPayingRecord(null);
       fetchMonthData(selectedMonth);
     } catch (err) {
-      showToast(err.response?.data?.error || 'Failed to update payment status', 'error');
+      toast.error(err.response?.data?.error || 'Failed to update payment status');
+    } finally {
+      setSavingPayment(false);
     }
   };
 
@@ -152,563 +188,604 @@ export default function AdminPayrollManagement() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Toast Notification */}
-      {feedback.message && (
-        <div className={`p-4 rounded-xl flex items-center gap-3 transition-all duration-300 shadow-md ${
-          feedback.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
-          feedback.type === 'info' ? 'bg-blue-50 text-blue-800 border border-blue-200' :
-          'bg-emerald-50 text-emerald-800 border border-emerald-200'
-        }`}>
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm font-medium">{feedback.message}</span>
-        </div>
-      )}
-
-      {/* Top Header & Sub-Tabs */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-              <DollarSign className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-800">Automated Payroll & Payslips</h2>
-              <p className="text-xs text-slate-500">
-                Formula-based salary calculation with dynamic Working Sundays & instant 1-click PDF payslips.
-              </p>
-            </div>
-          </div>
-        </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {/* Top Header & Sub-Tabs Switcher */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PayrollIcon sx={{ color: '#133829' }} /> Automated Payroll & PDF Payslips
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#64748b' }}>
+            Formula-based salary calculation with dynamic Working Sundays & instant 1-click PDF payslips.
+          </Typography>
+        </Box>
 
         {/* View Switcher Tabs */}
-        <div className="flex items-center p-1.5 bg-slate-100 rounded-xl">
-          <button
+        <Box sx={{ display: 'flex', bgcolor: '#f1f5f9', p: 0.5, borderRadius: '10px' }}>
+          <Button
+            variant={activeTab === 'register' ? 'contained' : 'text'}
             onClick={() => setActiveTab('register')}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 ${
-              activeTab === 'register' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            startIcon={<CalendarIcon fontSize="small" />}
+            sx={{
+              fontWeight: 800,
+              fontSize: '0.8rem',
+              borderRadius: '8px',
+              bgcolor: activeTab === 'register' ? '#133829' : 'transparent',
+              color: activeTab === 'register' ? '#ffffff' : '#64748b',
+              '&:hover': { bgcolor: activeTab === 'register' ? '#0b2319' : '#e2e8f0' }
+            }}
           >
-            <Calendar className="w-3.5 h-3.5" />
             Monthly Payroll Register
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={activeTab === 'structures' ? 'contained' : 'text'}
             onClick={() => setActiveTab('structures')}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 ${
-              activeTab === 'structures' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            startIcon={<StaffIcon fontSize="small" />}
+            sx={{
+              fontWeight: 800,
+              fontSize: '0.8rem',
+              borderRadius: '8px',
+              bgcolor: activeTab === 'structures' ? '#133829' : 'transparent',
+              color: activeTab === 'structures' ? '#ffffff' : '#64748b',
+              '&:hover': { bgcolor: activeTab === 'structures' ? '#0b2319' : '#e2e8f0' }
+            }}
           >
-            <Users className="w-3.5 h-3.5" />
             Salary Packages ({salaryStructures.length})
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Box>
+      </Box>
 
       {activeTab === 'register' && (
         <>
           {/* Controls Bar: Month Picker & Action Buttons */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Payroll Month:</label>
-              <input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, '&:last-child': { pb: 2.5 } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <TextField
+                  type="month"
+                  size="small"
+                  label="Payroll Month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ width: 170, '& .MuiOutlinedInput-root': { borderRadius: '8px', fontWeight: 700 } }}
+                />
 
-              {/* Working Days Breakdown Chip */}
-              {workingDaysMeta && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50/80 border border-indigo-100 rounded-xl text-xs font-medium text-indigo-900">
-                  <span className="font-bold">{workingDaysMeta.totalWorkingDays} Working Days</span>
-                  <span className="text-indigo-400">•</span>
-                  <span>{workingDaysMeta.workingSundaysCount} Working Sun</span>
-                  <span className="text-indigo-400">•</span>
-                  <span>{workingDaysMeta.holidaysCount} Holidays</span>
-                </div>
-              )}
-            </div>
+                {/* Working Days Breakdown Chip */}
+                {workingDaysMeta && (
+                  <Chip
+                    color="primary"
+                    variant="outlined"
+                    label={`${workingDaysMeta.totalWorkingDays} Working Days • ${workingDaysMeta.workingSundaysCount} Working Sun • ${workingDaysMeta.holidaysCount} Holidays`}
+                    sx={{ fontWeight: 800, borderRadius: '8px', bgcolor: '#f0fdf4', color: '#166534', borderColor: '#bbf7d0' }}
+                  />
+                )}
+              </Box>
 
-            <div className="flex items-center gap-2.5 w-full lg:w-auto">
-              <button
-                onClick={handlePreviewCalculation}
-                disabled={calculating}
-                className="flex-1 lg:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${calculating ? 'animate-spin' : ''}`} />
-                {calculating ? 'Recalculating...' : 'Preview Month'}
-              </button>
-              <button
-                onClick={handleCommitPayroll}
-                disabled={committing}
-                className="flex-1 lg:flex-none px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2"
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                {committing ? 'Publishing...' : 'Commit & Publish Payroll'}
-              </button>
-            </div>
-          </div>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                <Button
+                  variant="outlined"
+                  onClick={handlePreviewCalculation}
+                  disabled={calculating}
+                  startIcon={calculating ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon fontSize="small" />}
+                  sx={{ fontWeight: 800, borderRadius: '8px', borderColor: '#cbd5e1', color: '#334155' }}
+                >
+                  {calculating ? 'Computing...' : 'Preview Month'}
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleCommitPayroll}
+                  disabled={committing}
+                  startIcon={committing ? <CircularProgress size={16} color="inherit" /> : <ShieldIcon fontSize="small" />}
+                  sx={{
+                    fontWeight: 800,
+                    borderRadius: '8px',
+                    bgcolor: '#133829',
+                    color: '#ffffff',
+                    '&:hover': { bgcolor: '#0b2319' }
+                  }}
+                >
+                  {committing ? 'Publishing...' : 'Commit & Publish Payroll'}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
 
-          {/* Metric Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">Total Net Disbursable</span>
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <DollarSign className="w-4 h-4" />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-slate-800 mt-2">{formatINR(totalPayrollAmount)}</p>
-              <span className="text-[11px] text-slate-400">Total net payable for {selectedMonth}</span>
-            </div>
+          {/* Metric Cards Grid */}
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: 'none' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Total Net Disbursable
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 900, color: '#15803d', mt: 0.5 }}>
+                    {formatINR(totalPayrollAmount)}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                    Total net payable for {selectedMonth}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">Active Salaried Staff</span>
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Users className="w-4 h-4" />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-slate-800 mt-2">{totalEmployeesWithPay} Staff</p>
-              <span className="text-[11px] text-slate-400">Configured salary packages</span>
-            </div>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: 'none' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Active Salaried Staff
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 900, color: '#0f172a', mt: 0.5 }}>
+                    {totalEmployeesWithPay} Staff
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                    Configured salary packages
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">Disbursed (Paid)</span>
-                <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4" />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-teal-700 mt-2">{totalPaidCount} Paid</p>
-              <span className="text-[11px] text-teal-600">Disbursement confirmed</span>
-            </div>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: 'none' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Disbursed (Paid)
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 900, color: '#166534', mt: 0.5 }}>
+                    {totalPaidCount} Paid
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#16a34a' }}>
+                    Disbursement confirmed
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
 
-            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">Pending Payment</span>
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
-                </div>
-              </div>
-              <p className="text-xl font-bold text-amber-700 mt-2">{totalPendingCount} Pending</p>
-              <span className="text-[11px] text-amber-600">Awaiting bank settlement</span>
-            </div>
-          </div>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: 'none' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Pending Payment
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 900, color: '#b45309', mt: 0.5 }}>
+                    {totalPendingCount} Pending
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#d97706' }}>
+                    Awaiting bank settlement
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
 
-          {/* Payroll Register Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-slate-800">Payroll Calculation Register ({selectedMonth})</h3>
-                <p className="text-xs text-slate-500">
-                  Daily Salary Rate = Monthly Base ÷ Working Days (including Working Sundays). LOP = Working Days - Present - Leaves.
-                </p>
-              </div>
-              <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 rounded-md text-slate-600">
-                {records.length} Records
-              </span>
-            </div>
+          {/* Payroll Calculation Register Table */}
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: 'none' }}>
+            <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+              <Box sx={{ p: 2.5, borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                    Payroll Calculation Register ({selectedMonth})
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b' }}>
+                    Daily Rate = Monthly Base ÷ Working Days (including Working Sundays). LOP = Working Days - Present - Leaves.
+                  </Typography>
+                </Box>
+                <Chip label={`${records.length} Records`} size="small" sx={{ fontWeight: 700, borderRadius: '6px' }} />
+              </Box>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-100">
-                    <th className="py-3 px-4">Employee</th>
-                    <th className="py-3 px-4">Base Salary</th>
-                    <th className="py-3 px-4 text-center">Working Days</th>
-                    <th className="py-3 px-4 text-center">Attended</th>
-                    <th className="py-3 px-4 text-center">Leaves</th>
-                    <th className="py-3 px-4 text-center">LOP Days</th>
-                    <th className="py-3 px-4">LOP Deduction</th>
-                    <th className="py-3 px-4">Net Payable</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {records.length === 0 ? (
-                    <tr>
-                      <td colSpan="10" className="py-12 text-center text-slate-400">
-                        <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm font-medium">No payroll records computed for {selectedMonth}.</p>
-                        <p className="text-xs mt-1">Click "Preview Month" or "Commit & Publish Payroll" above.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    records.map((rec) => {
-                      const baseSal = parseFloat(rec.monthly_salary) || 0;
-                      const lopDed = parseFloat(rec.lop_deduction) || 0;
-                      const netPay = parseFloat(rec.net_payable) || 0;
-                      const lopDays = parseFloat(rec.lop_days) || 0;
+              <Box sx={{ overflowX: 'auto', width: '100%' }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                      <TableCell sx={{ fontWeight: 700 }}>Employee</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Base Salary</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>Working Days</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>Attended</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>Leaves</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>LOP Days</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>LOP Deduction</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Net Payable</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {records.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} align="center" sx={{ py: 6, color: '#94a3b8' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            No payroll records computed for {selectedMonth}.
+                          </Typography>
+                          <Typography variant="caption">
+                            Click "Preview Month" or "Commit & Publish Payroll" above.
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      records.map((rec) => {
+                        const baseSal = parseFloat(rec.monthly_salary) || 0;
+                        const lopDed = parseFloat(rec.lop_deduction) || 0;
+                        const netPay = parseFloat(rec.net_payable) || 0;
+                        const lopDays = parseFloat(rec.lop_days) || 0;
 
-                      return (
-                        <tr key={rec.employee_id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <div className="font-semibold text-slate-800">{rec.employee_name}</div>
-                            <div className="text-[11px] text-slate-400">{rec.employee_id} • {rec.designation}</div>
-                          </td>
-                          <td className="py-3.5 px-4 font-semibold text-slate-700">
-                            {formatINR(baseSal)}
-                            {baseSal === 0 && (
-                              <span className="block text-[10px] text-amber-600 font-normal">Not Set</span>
-                            )}
-                          </td>
-                          <td className="py-3.5 px-4 text-center font-medium text-slate-600">
-                            {rec.total_working_days}
-                          </td>
-                          <td className="py-3.5 px-4 text-center font-semibold text-emerald-600">
-                            {rec.present_days}
-                          </td>
-                          <td className="py-3.5 px-4 text-center font-medium text-blue-600">
-                            {rec.paid_leaves}
-                          </td>
-                          <td className="py-3.5 px-4 text-center">
-                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                              lopDays > 0 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'
-                            }`}>
-                              {lopDays}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 font-medium text-red-600">
-                            {lopDed > 0 ? `-${formatINR(lopDed)}` : '₹0'}
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <span className="font-bold text-slate-900 text-sm">{formatINR(netPay)}</span>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                              rec.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                            }`}>
-                              {rec.status || 'Pending'}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {rec.status !== 'Paid' && (
-                                <button
-                                  onClick={() => {
-                                    setPayingRecord(rec);
-                                    setPaymentForm({
-                                      payment_mode: 'Bank Transfer / NEFT',
-                                      payment_reference: '',
-                                      payment_date: new Date().toISOString().slice(0, 10),
-                                      remarks: 'Salary paid via corporate banking'
-                                    });
-                                  }}
-                                  className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-lg text-[11px] transition-colors"
-                                  title="Mark as Paid"
-                                >
-                                  Mark Paid
-                                </button>
+                        return (
+                          <TableRow key={rec.employee_id} hover>
+                            <TableCell>
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                                {rec.employee_name}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#64748b' }}>
+                                {rec.employee_id} • {rec.designation}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: '#334155' }}>
+                                {formatINR(baseSal)}
+                              </Typography>
+                              {baseSal === 0 && (
+                                <Chip label="Not Set" size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 800, bgcolor: '#fef3c7', color: '#b45309', borderRadius: '4px' }} />
                               )}
-                              <button
-                                onClick={() => generatePayslipPDF(rec)}
-                                className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-lg text-[11px] transition-colors flex items-center gap-1"
-                                title="Download 1-page PDF Payslip"
-                              >
-                                <Download className="w-3 h-3" />
-                                Payslip
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                            </TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 600 }}>
+                              {rec.total_working_days}
+                            </TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 700, color: '#16a34a' }}>
+                              {rec.present_days}
+                            </TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 600, color: '#2563eb' }}>
+                              {rec.paid_leaves}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Chip
+                                label={lopDays}
+                                size="small"
+                                sx={{
+                                  height: 20,
+                                  fontWeight: 800,
+                                  borderRadius: '6px',
+                                  bgcolor: lopDays > 0 ? '#fee2e2' : '#f1f5f9',
+                                  color: lopDays > 0 ? '#991b1b' : '#64748b'
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 600, color: lopDed > 0 ? '#dc2626' : '#64748b' }}>
+                              {lopDed > 0 ? `-${formatINR(lopDed)}` : '₹0'}
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                                {formatINR(netPay)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={rec.status || 'Pending'}
+                                size="small"
+                                sx={{
+                                  fontWeight: 800,
+                                  borderRadius: '6px',
+                                  bgcolor: rec.status === 'Paid' ? '#dcfce7' : '#fef3c7',
+                                  color: rec.status === 'Paid' ? '#15803d' : '#b45309'
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell align="right">
+                              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                                {rec.status !== 'Paid' && (
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    color="success"
+                                    onClick={() => {
+                                      setPayingRecord(rec);
+                                      setPaymentForm({
+                                        payment_mode: 'Bank Transfer / NEFT',
+                                        payment_reference: '',
+                                        payment_date: new Date().toISOString().slice(0, 10),
+                                        remarks: 'Salary paid via corporate banking'
+                                      });
+                                    }}
+                                    sx={{ fontWeight: 700, borderRadius: '6px', fontSize: 11 }}
+                                  >
+                                    Mark Paid
+                                  </Button>
+                                )}
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  startIcon={<DownloadIcon fontSize="small" />}
+                                  onClick={() => generatePayslipPDF(rec)}
+                                  sx={{
+                                    fontWeight: 700,
+                                    borderRadius: '6px',
+                                    fontSize: 11,
+                                    bgcolor: '#133829',
+                                    '&:hover': { bgcolor: '#0b2319' }
+                                  }}
+                                >
+                                  Payslip
+                                </Button>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </Box>
+            </CardContent>
+          </Card>
         </>
       )}
 
       {activeTab === 'structures' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="text-base font-bold text-slate-800">Employee Base Salary Packages & Bank Details</h3>
-              <p className="text-xs text-slate-500">
-                Configure base monthly compensation and banking information for all active staff members.
-              </p>
-            </div>
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
+        <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: 'none' }}>
+          <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+            <Box sx={{ p: 2.5, borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Employee Base Salary Packages & Bank Details
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#64748b' }}>
+                  Configure base monthly compensation and banking information for all active staff members.
+                </Typography>
+              </Box>
+              <TextField
+                size="small"
+                placeholder="Search staff name or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search staff name or ID..."
-                className="pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>
+                }}
+                sx={{ width: 240, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
-            </div>
-          </div>
+            </Box>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-100">
-                  <th className="py-3 px-4">Employee</th>
-                  <th className="py-3 px-4">Monthly Base Salary</th>
-                  <th className="py-3 px-4">Bank Name</th>
-                  <th className="py-3 px-4">Account Number</th>
-                  <th className="py-3 px-4">IFSC Code</th>
-                  <th className="py-3 px-4">UPI ID</th>
-                  <th className="py-3 px-4">PAN Number</th>
-                  <th className="py-3 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredStructures.map((struct) => (
-                  <tr key={struct.employee_id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">{struct.employee_name}</div>
-                      <div className="text-[11px] text-slate-400">{struct.employee_id} • {struct.department}</div>
-                    </td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 text-sm">
-                      {struct.monthly_salary > 0 ? (
-                        formatINR(struct.monthly_salary)
-                      ) : (
-                        <span className="text-xs text-amber-600 font-medium">Not Configured</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-600">{struct.bank_name || '—'}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-700">
-                      {struct.account_number ? `•••• ${struct.account_number.slice(-4)}` : '—'}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-700">{struct.ifsc_code || '—'}</td>
-                    <td className="py-3.5 px-4 text-slate-600">{struct.upi_id || '—'}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-600">{struct.pan_number || '—'}</td>
-                    <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          setEditingEmployee(struct);
-                          setStructureForm({
-                            monthly_salary: struct.monthly_salary || '',
-                            bank_name: struct.bank_name || '',
-                            account_number: struct.account_number || '',
-                            ifsc_code: struct.ifsc_code || '',
-                            upi_id: struct.upi_id || '',
-                            pan_number: struct.pan_number || ''
-                          });
-                        }}
-                        className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-lg text-xs transition-colors inline-flex items-center gap-1.5"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        Edit Package
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+            <Box sx={{ overflowX: 'auto', width: '100%' }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                    <TableCell sx={{ fontWeight: 700 }}>Employee</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Monthly Base Salary</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Bank Name</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Account Number</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>IFSC Code</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>UPI ID</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>PAN Number</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700 }}>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredStructures.map((struct) => (
+                    <TableRow key={struct.employee_id} hover>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                          {struct.employee_name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>
+                          {struct.employee_id} • {struct.department}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {struct.monthly_salary > 0 ? (
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#133829' }}>
+                            {formatINR(struct.monthly_salary)}
+                          </Typography>
+                        ) : (
+                          <Chip label="Not Configured" size="small" sx={{ height: 20, fontSize: 10, fontWeight: 700, bgcolor: '#fef3c7', color: '#b45309', borderRadius: '6px' }} />
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ color: '#475569' }}>{struct.bank_name || '—'}</TableCell>
+                      <TableCell sx={{ fontFamily: 'monospace', color: '#475569' }}>
+                        {struct.account_number ? `•••• ${struct.account_number.slice(-4)}` : '—'}
+                      </TableCell>
+                      <TableCell sx={{ fontFamily: 'monospace', color: '#475569' }}>{struct.ifsc_code || '—'}</TableCell>
+                      <TableCell sx={{ color: '#475569' }}>{struct.upi_id || '—'}</TableCell>
+                      <TableCell sx={{ fontFamily: 'monospace', color: '#475569' }}>{struct.pan_number || '—'}</TableCell>
+                      <TableCell align="right">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<EditIcon fontSize="small" />}
+                          onClick={() => {
+                            setEditingEmployee(struct);
+                            setStructureForm({
+                              monthly_salary: struct.monthly_salary || '',
+                              bank_name: struct.bank_name || '',
+                              account_number: struct.account_number || '',
+                              ifsc_code: struct.ifsc_code || '',
+                              upi_id: struct.upi_id || '',
+                              pan_number: struct.pan_number || ''
+                            });
+                          }}
+                          sx={{
+                            fontWeight: 700,
+                            borderRadius: '6px',
+                            fontSize: 11,
+                            borderColor: '#cbd5e1',
+                            color: '#133829'
+                          }}
+                        >
+                          Edit Package
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          </CardContent>
+        </Card>
       )}
 
       {/* Edit Salary Structure Modal */}
-      {editingEmployee && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div>
-                <h3 className="text-base font-bold text-slate-800">Set Salary Package</h3>
-                <p className="text-xs text-slate-500">{editingEmployee.employee_name} ({editingEmployee.employee_id})</p>
-              </div>
-              <button
-                onClick={() => setEditingEmployee(null)}
-                className="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveStructure} className="mt-4 space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Monthly Base Salary (INR) <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="100"
-                    required
-                    value={structureForm.monthly_salary}
-                    onChange={(e) => setStructureForm({ ...structureForm, monthly_salary: e.target.value })}
-                    placeholder="e.g. 35000"
-                    className="w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-                <span className="text-[11px] text-slate-400 mt-1 block">
-                  Daily rate will automatically be calculated as Base Salary ÷ Monthly Working Days.
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Bank Name</label>
-                  <input
-                    type="text"
-                    value={structureForm.bank_name}
-                    onChange={(e) => setStructureForm({ ...structureForm, bank_name: e.target.value })}
-                    placeholder="e.g. HDFC Bank"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Account Number</label>
-                  <input
-                    type="text"
-                    value={structureForm.account_number}
-                    onChange={(e) => setStructureForm({ ...structureForm, account_number: e.target.value })}
-                    placeholder="e.g. 50100234567890"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">IFSC Code</label>
-                  <input
-                    type="text"
-                    value={structureForm.ifsc_code}
-                    onChange={(e) => setStructureForm({ ...structureForm, ifsc_code: e.target.value.toUpperCase() })}
-                    placeholder="e.g. HDFC0001234"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono uppercase text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">UPI ID</label>
-                  <input
-                    type="text"
-                    value={structureForm.upi_id}
-                    onChange={(e) => setStructureForm({ ...structureForm, upi_id: e.target.value })}
-                    placeholder="e.g. staff@okhdfcbank"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">PAN Number</label>
-                <input
-                  type="text"
+      <Dialog open={Boolean(editingEmployee)} onClose={() => setEditingEmployee(null)} maxWidth="sm" fullWidth>
+        <form onSubmit={handleSaveStructure}>
+          <DialogTitle sx={{ fontWeight: 800, color: '#0f172a' }}>
+            Configure Employee Salary Package
+          </DialogTitle>
+          <DialogContent dividers>
+            <Alert severity="info" sx={{ mb: 2, borderRadius: '10px', fontWeight: 600 }}>
+              Configuring remuneration for <strong>{editingEmployee?.employee_name}</strong> ({editingEmployee?.employee_id}).
+              Daily rate will automatically be computed as Base Salary ÷ Monthly Working Days (including Working Sundays).
+            </Alert>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  required
+                  type="number"
+                  label="Monthly Base Salary (INR)"
+                  value={structureForm.monthly_salary}
+                  onChange={(e) => setStructureForm({ ...structureForm, monthly_salary: e.target.value })}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">₹</InputAdornment>
+                  }}
+                  helperText="e.g. 25000, 35000, 45000"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px', fontWeight: 700 } }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Bank Name"
+                  value={structureForm.bank_name}
+                  onChange={(e) => setStructureForm({ ...structureForm, bank_name: e.target.value })}
+                  placeholder="e.g. HDFC Bank"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Account Number"
+                  value={structureForm.account_number}
+                  onChange={(e) => setStructureForm({ ...structureForm, account_number: e.target.value })}
+                  placeholder="e.g. 50100234567890"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="IFSC Code"
+                  value={structureForm.ifsc_code}
+                  onChange={(e) => setStructureForm({ ...structureForm, ifsc_code: e.target.value.toUpperCase() })}
+                  placeholder="e.g. HDFC0001234"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="UPI ID"
+                  value={structureForm.upi_id}
+                  onChange={(e) => setStructureForm({ ...structureForm, upi_id: e.target.value })}
+                  placeholder="e.g. staff@okhdfc"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="PAN Number"
                   value={structureForm.pan_number}
                   onChange={(e) => setStructureForm({ ...structureForm, pan_number: e.target.value.toUpperCase() })}
                   placeholder="e.g. ABCDE1234F"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono uppercase text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                 />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setEditingEmployee(null)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center gap-1.5"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  Save Salary Package
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setEditingEmployee(null)} color="inherit">Cancel</Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={savingStructure}
+              startIcon={savingStructure ? <CircularProgress size={16} color="inherit" /> : <SaveIcon fontSize="small" />}
+              sx={{ fontWeight: 800, bgcolor: '#133829', '&:hover': { bgcolor: '#0b2319' } }}
+            >
+              {savingStructure ? 'Saving...' : 'Save Salary Package'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
 
       {/* Mark Paid Modal */}
-      {payingRecord && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div>
-                <h3 className="text-base font-bold text-slate-800">Record Salary Disbursement</h3>
-                <p className="text-xs text-slate-500">{payingRecord.employee_name} • {formatINR(payingRecord.net_payable)}</p>
-              </div>
-              <button
-                onClick={() => setPayingRecord(null)}
-                className="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center"
+      <Dialog open={Boolean(payingRecord)} onClose={() => setPayingRecord(null)} maxWidth="xs" fullWidth>
+        <form onSubmit={handleMarkAsPaid}>
+          <DialogTitle sx={{ fontWeight: 800, color: '#0f172a' }}>
+            Record Salary Disbursement
+          </DialogTitle>
+          <DialogContent dividers>
+            <Alert severity="success" sx={{ mb: 2, borderRadius: '10px', fontWeight: 600 }}>
+              Disbursing <strong>{formatINR(payingRecord?.net_payable)}</strong> to <strong>{payingRecord?.employee_name}</strong>.
+            </Alert>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <TextField
+                select
+                fullWidth
+                size="small"
+                label="Payment Mode"
+                value={paymentForm.payment_mode}
+                onChange={(e) => setPaymentForm({ ...paymentForm, payment_mode: e.target.value })}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               >
-                ✕
-              </button>
-            </div>
+                <MenuItem value="Bank Transfer / NEFT">Bank Transfer / NEFT</MenuItem>
+                <MenuItem value="IMPS / Instant Transfer">IMPS / Instant Transfer</MenuItem>
+                <MenuItem value="UPI / QR Code">UPI / QR Code</MenuItem>
+                <MenuItem value="Corporate Cheque">Corporate Cheque</MenuItem>
+                <MenuItem value="Cash">Cash</MenuItem>
+              </TextField>
 
-            <form onSubmit={handleMarkAsPaid} className="mt-4 space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Payment Mode</label>
-                <select
-                  value={paymentForm.payment_mode}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, payment_mode: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="Bank Transfer / NEFT">Bank Transfer / NEFT</option>
-                  <option value="IMPS / Instant Transfer">IMPS / Instant Transfer</option>
-                  <option value="UPI / QR Code">UPI / QR Code</option>
-                  <option value="Cheque">Corporate Cheque</option>
-                  <option value="Cash">Cash</option>
-                </select>
-              </div>
+              <TextField
+                type="date"
+                fullWidth
+                size="small"
+                label="Payment Date"
+                value={paymentForm.payment_date}
+                onChange={(e) => setPaymentForm({ ...paymentForm, payment_date: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              />
 
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Payment Date</label>
-                <input
-                  type="date"
-                  required
-                  value={paymentForm.payment_date}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, payment_date: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+              <TextField
+                fullWidth
+                size="small"
+                label="UTR / Transaction Ref ID"
+                value={paymentForm.payment_reference}
+                onChange={(e) => setPaymentForm({ ...paymentForm, payment_reference: e.target.value })}
+                placeholder="e.g. UTR202609060123"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              />
 
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Transaction Ref / UTR No</label>
-                <input
-                  type="text"
-                  value={paymentForm.payment_reference}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, payment_reference: e.target.value })}
-                  placeholder="e.g. UTR202609060123"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Remarks</label>
-                <input
-                  type="text"
-                  value={paymentForm.remarks}
-                  onChange={(e) => setPaymentForm({ ...paymentForm, remarks: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setPayingRecord(null)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 transition-all flex items-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Confirm Disbursed
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+              <TextField
+                fullWidth
+                size="small"
+                label="Disbursement Remarks"
+                value={paymentForm.remarks}
+                onChange={(e) => setPaymentForm({ ...paymentForm, remarks: e.target.value })}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setPayingRecord(null)} color="inherit">Cancel</Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="success"
+              disabled={savingPayment}
+              startIcon={savingPayment ? <CircularProgress size={16} color="inherit" /> : <CheckCircleIcon fontSize="small" />}
+              sx={{ fontWeight: 800 }}
+            >
+              {savingPayment ? 'Confirming...' : 'Confirm Disbursed'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+    </Box>
   );
 }

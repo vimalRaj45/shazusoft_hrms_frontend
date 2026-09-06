@@ -349,7 +349,7 @@ async function runComprehensiveTestSuite() {
       { index: 2, label: 'Attendance Regularization Approvals', shot: null },
       { index: 4, label: 'Leave Requests & Approvals', shot: null },
       { index: 7, label: 'Staff Monthly Timesheets (Corporate Table)', shot: '10_admin_timesheets' },
-      { index: 8, label: 'Employee Directory Management', shot: null },
+      { index: 8, label: 'Employee Directory Management & Base Salary', shot: '15_admin_directory' },
       { index: 9, label: 'Compliance Document Freeze & Audit', shot: '11_admin_compliance' },
       { index: 10, label: 'Holiday Calendar & Office Shift Timings', shot: '12_admin_office_timings' },
       { index: 11, label: 'Automated Payroll & Payslips Register', shot: '14_admin_payroll' }
@@ -381,6 +381,47 @@ async function runComprehensiveTestSuite() {
           const tbl = await assertTableContainment(page);
           if (!tbl.isSafe) throw new Error('Unenclosed table causing page stretch');
         });
+
+        // If subtab 8 (Staff Directory), test Base Salary and Set/Edit Salary modal
+        if (subtab.index === 8) {
+          await runCheck(`[${vp.id}] Staff directory Base Salary column and modal interaction`, async () => {
+            const hasBaseSalaryTh = await page.evaluate(() => {
+              const ths = Array.from(document.querySelectorAll('th'));
+              return ths.some(th => th.textContent.includes('Base Salary'));
+            });
+            if (!hasBaseSalaryTh) throw new Error('Base Salary column header not found in Staff Directory');
+
+            // Find and click Set Salary or Edit Salary button
+            const salaryBtn = await page.evaluateHandle(() => {
+              const buttons = Array.from(document.querySelectorAll('button'));
+              return buttons.find(b => b.textContent.includes('Set Salary') || b.textContent.includes('Edit Salary'));
+            });
+            if (salaryBtn && salaryBtn.asElement()) {
+              await salaryBtn.asElement().click();
+              await new Promise((r) => setTimeout(r, 400));
+
+              // Verify modal is open
+              const modalOpen = await page.evaluate(() => {
+                return !!document.querySelector('input[type="number"]');
+              });
+              if (!modalOpen) throw new Error('Salary modal did not open');
+
+              if (vp.id === 'desktop') {
+                const modalShotPath = path.join(SCREENSHOTS_DIR, '16_admin_salary_modal_desktop.png');
+                await page.screenshot({ path: modalShotPath });
+                capturedScreenshots.push({ label: 'Admin Salary Configuration Modal (Desktop)', path: modalShotPath });
+              }
+
+              // Close modal by clicking Cancel
+              await page.evaluate(() => {
+                const buttons = Array.from(document.querySelectorAll('button'));
+                const cancelBtn = buttons.find(b => b.textContent.trim() === 'Cancel');
+                if (cancelBtn) cancelBtn.click();
+              });
+              await new Promise((r) => setTimeout(r, 300));
+            }
+          });
+        }
 
         // If subtab 7 (Staff Timesheet with new corporate table), perform employee switch action
         if (subtab.index === 7) {
