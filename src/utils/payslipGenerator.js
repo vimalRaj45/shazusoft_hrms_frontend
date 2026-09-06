@@ -3,6 +3,38 @@ import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 
 /**
+ * Loads an image URL into an HTMLImageElement and converts to base64 DataURL.
+ * Safely guards against Node.js / SSR environments.
+ */
+function loadImageAsDataUrl(url) {
+  if (typeof window === 'undefined' || typeof Image === 'undefined') {
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    try {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width || 120;
+          canvas.height = img.naturalHeight || img.height || 120;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } catch (err) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    } catch (e) {
+      resolve(null);
+    }
+  });
+}
+
+/**
  * Helper to convert numbers to Indian Rupee Words
  */
 export function numberToWordsINR(num) {
@@ -41,7 +73,8 @@ export function formatINR(val) {
 }
 
 /**
- * Generates an official, corporate, single-page PDF payslip
+ * Generates an executive, professional, monochrome / dark corporate PDF payslip
+ * precisely aligned with Shazu Soft's corporate reporting standards.
  */
 export async function generatePayslipPDF(payslipData) {
   if (!payslipData) return;
@@ -55,6 +88,7 @@ export async function generatePayslipPDF(payslipData) {
     monthly_salary = 0,
     daily_rate = 0,
     total_working_days = 0,
+    working_sundays = 0,
     present_days = 0,
     paid_leaves = 0,
     lop_days = 0,
@@ -90,321 +124,390 @@ export async function generatePayslipPDF(payslipData) {
     formattedMonth = format(dateObj, 'MMMM yyyy');
   } catch (e) {}
 
-  let y = margin;
+  // Attempt to load official logo
+  const logoDataUrl = await loadImageAsDataUrl('/logo.png');
 
-  // Outer border with subtle double-line elegance
-  doc.setDrawColor(200, 210, 225);
-  doc.setLineWidth(0.6);
-  doc.rect(margin - 4, margin - 4, contentWidth + 8, pageHeight - margin * 2 + 8);
-  doc.setLineWidth(0.2);
-  doc.rect(margin - 2, margin - 2, contentWidth + 4, pageHeight - margin * 2 + 4);
+  let currentY = 14;
 
-  // 1. Header Banner
-  doc.setFillColor(15, 23, 42); // Deep navy slate
-  doc.roundedRect(margin, y, contentWidth, 30, 2, 2, 'F');
+  // 1. BRAND HEADER & REPORT REFERENCE (Exact reference match)
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', margin, currentY, 15, 15);
+    } catch (e) {
+      // fallback
+    }
+  }
 
-  doc.setTextColor(255, 255, 255);
+  const headerTextLeft = logoDataUrl ? margin + 18 : margin;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text('SHAZU SOFT TECHNOLOGIES', margin + 6, y + 7);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(56, 189, 248); // Cyan
-  doc.text('Software Services • Research & Development • Education & Internships (MSME Recognized Entity)', margin + 6, y + 12);
+  doc.setFontSize(14);
+  doc.setTextColor(17, 24, 39); // Deep corporate black
+  doc.text('SHAZU SOFT', headerTextLeft, currentY + 5);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(203, 213, 225); // Slate 300
-  doc.text('2nd Agraharam, Chairman Rajarathinam Street, Near Kamala Hospital, Salem, Tamil Nadu – 636001', margin + 6, y + 17);
-  doc.text('Email: info@shazusofttechnologies.org  |  HR Helpline: +91 93616 80077  |  Web: shazusofttechnologies.org', margin + 6, y + 21.5);
+  doc.setFontSize(8.5);
+  doc.setTextColor(75, 85, 99);
+  doc.text('HUMAN RESOURCES MANAGEMENT SYSTEM', headerTextLeft, currentY + 9.5);
 
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(6.8);
-  doc.setTextColor(148, 163, 184);
-  doc.text('Official Monthly Salary Remuneration Advice & Confidential Statement of Earnings', margin + 6, y + 26);
-
-  // Month & MSME Badge (Right side of banner)
-  doc.setFillColor(30, 41, 59);
-  doc.roundedRect(pageWidth - margin - 52, y + 4, 46, 22, 2, 2, 'F');
+  // Top Right Meta Block
+  const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.5);
-  doc.setTextColor(56, 189, 248);
-  doc.text('PAYSLIP PERIOD', pageWidth - margin - 49, y + 9.5);
   doc.setFontSize(8);
-  doc.setTextColor(255, 255, 255);
-  doc.text(formattedMonth.toUpperCase(), pageWidth - margin - 49, y + 15.5);
-  doc.setFontSize(6.5);
-  doc.setTextColor(16, 185, 129); // Emerald
-  doc.text('MSME RECOGNIZED', pageWidth - margin - 49, y + 21);
+  doc.setTextColor(17, 24, 39);
+  doc.text(
+    `REPORT REF: SS-HRMS-PAY-${(employee_id || 'EMP').toUpperCase()}-${payroll_month}`,
+    pageWidth - margin,
+    currentY + 4.5,
+    { align: 'right' }
+  );
 
-  y += 36;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Generated: ${timestamp}`, pageWidth - margin, currentY + 9, { align: 'right' });
+  doc.text(
+    `Status: ${status === 'Paid' ? 'OFFICIAL DISBURSED RECORD' : 'OFFICIAL SALARY RECORD'}`,
+    pageWidth - margin,
+    currentY + 13.5,
+    { align: 'right' }
+  );
 
-  // 2. Employee & Bank Information Grid (2 columns)
-  const colWidth = (contentWidth - 6) / 2;
+  currentY += 18;
 
-  // Left Column Box: Employee Details
-  doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(margin, y, colWidth, 42, 2, 2, 'FD');
+  // Thin Top Divider Line
+  doc.setDrawColor(209, 213, 219);
+  doc.setLineWidth(0.5);
+  doc.line(margin, currentY, pageWidth - margin, currentY);
+  currentY += 5;
 
-  doc.setFillColor(241, 245, 249);
-  doc.rect(margin, y, colWidth, 7, 'F');
+  // Centered Document Title
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(30, 41, 59);
-  doc.text('EMPLOYEE DETAILS', margin + 4, y + 5);
+  doc.setFontSize(11);
+  doc.setTextColor(15, 23, 42);
+  doc.text('EMPLOYEE MONTHLY SALARY PAYSLIP & REMUNERATION STATEMENT', pageWidth / 2, currentY, { align: 'center' });
+  currentY += 5;
 
-  const empDetails = [
-    ['Employee Name:', employee_name],
-    ['Employee ID:', employee_id],
-    ['Designation:', designation],
-    ['Department:', department],
-    ['Status:', status === 'Paid' ? 'PAID / DISBURSED' : 'PENDING APPROVAL']
-  ];
-
-  let empY = y + 12;
-  empDetails.forEach(([lbl, val]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text(lbl, margin + 4, empY);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(15, 23, 42);
-    if (lbl === 'Status:') {
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(status === 'Paid' ? 16 : 217, status === 'Paid' ? 149 : 119, status === 'Paid' ? 193 : 6);
-    }
-    doc.text(String(val || '—'), margin + 34, empY);
-    empY += 6;
-  });
-
-  // Right Column Box: Bank & Disbursement Details
-  const rightX = margin + colWidth + 6;
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(rightX, y, colWidth, 42, 2, 2, 'FD');
-
-  doc.setFillColor(241, 245, 249);
-  doc.rect(rightX, y, colWidth, 7, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(30, 41, 59);
-  doc.text('BANK & DISBURSEMENT INFO', rightX + 4, y + 5);
-
+  // 2. EMPLOYEE IDENTIFICATION & RECORD SPECIFICATIONS MATRIX
   const maskedAccount = account_number
     ? (account_number.length > 4 ? `•••• •••• ${account_number.slice(-4)}` : account_number)
     : '—';
 
-  const bankDetails = [
-    ['Bank Name:', bank_name || '—'],
-    ['Account No:', maskedAccount],
-    ['IFSC Code:', ifsc_code || '—'],
-    ['Payment Mode:', payment_mode || 'Bank Transfer / UPI'],
-    ['Ref / Txn ID:', payment_reference || '—']
-  ];
-
-  let bankY = y + 12;
-  bankDetails.forEach(([lbl, val]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text(lbl, rightX + 4, bankY);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text(String(val || '—'), rightX + 34, bankY);
-    bankY += 6;
-  });
-
-  y += 48;
-
-  // 3. Attendance & Working Days Summary Strip
-  doc.setFillColor(240, 253, 250); // Mint/teal tint
-  doc.setDrawColor(153, 246, 228);
-  doc.roundedRect(margin, y, contentWidth, 20, 2, 2, 'FD');
-
-  const metricW = contentWidth / 4;
-  const metrics = [
-    { label: 'Total Working Days', value: total_working_days, hint: '(Incl. Working Sundays)' },
-    { label: 'Days Present', value: present_days, hint: '(Biometric/Geo Verified)' },
-    { label: 'Approved Paid Leaves', value: paid_leaves, hint: '(Casual/Sick/Paid)' },
-    { label: 'Loss of Pay (LOP) Days', value: lop_days, hint: '(Unpaid / Absent)' }
-  ];
-
-  metrics.forEach((m, idx) => {
-    const mx = margin + idx * metricW;
-    if (idx > 0) {
-      doc.setDrawColor(204, 251, 241);
-      doc.line(mx, y + 2, mx, y + 18);
-    }
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(13, 148, 136); // Teal
-    doc.text(m.label.toUpperCase(), mx + metricW / 2, y + 5.5, { align: 'center' });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42);
-    doc.text(String(m.value), mx + metricW / 2, y + 12, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
-    doc.setTextColor(100, 116, 139);
-    doc.text(m.hint, mx + metricW / 2, y + 16.5, { align: 'center' });
-  });
-
-  y += 26;
-
-  // 4. Earnings & Deductions AutoTable
-  const earningsData = [
-    ['Monthly Base Salary', formatINR(monthly_salary)],
-    ['Special Startup Allowances', formatINR(0)],
-    ['Overtime / Bonus', formatINR(0)],
-    ['Gross Earnings', formatINR(monthly_salary)]
-  ];
-
-  const deductionsData = [
-    [`Loss of Pay (LOP: ${lop_days} days @ ${formatINR(daily_rate)}/day)`, formatINR(lop_deduction)],
-    ['Provident Fund (PF - Startup Exempt)', formatINR(0)],
-    ['Professional Tax / TDS', formatINR(0)],
-    ['Total Deductions', formatINR(lop_deduction)]
-  ];
-
-  // Combine row by row
-  const tableRows = [];
-  for (let i = 0; i < 4; i++) {
-    const isLast = i === 3;
-    tableRows.push([
-      earningsData[i][0],
-      earningsData[i][1],
-      deductionsData[i][0],
-      deductionsData[i][1]
-    ]);
-  }
-
   autoTable(doc, {
-    startY: y,
+    startY: currentY,
     margin: { left: margin, right: margin },
-    head: [[
-      { content: 'EARNINGS & REMUNERATION', colSpan: 2, styles: { halign: 'left', fillColor: [30, 41, 59] } },
-      { content: 'DEDUCTIONS & RECOVERIES', colSpan: 2, styles: { halign: 'left', fillColor: [71, 85, 105] } }
-    ], [
-      'Description', 'Amount (INR)', 'Description', 'Amount (INR)'
-    ]],
-    body: tableRows,
     theme: 'grid',
-    headStyles: {
-      textColor: [255, 255, 255],
-      fontStyle: 'bold',
-      fontSize: 8,
-      cellPadding: 2.5
-    },
     styles: {
       fontSize: 8,
-      cellPadding: 2.8,
-      textColor: [30, 41, 59]
+      cellPadding: 2.2,
+      textColor: [30, 41, 59],
+      lineColor: [226, 232, 240],
+      lineWidth: 0.2
     },
-    columnStyles: {
-      0: { cellWidth: 55 },
-      1: { cellWidth: 35, halign: 'right' },
-      2: { cellWidth: 57 },
-      3: { cellWidth: 35, halign: 'right' }
+    head: [
+      [
+        { content: 'EMPLOYEE IDENTIFICATION', colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [15, 23, 42] } },
+        { content: 'RECORD SPECIFICATIONS', colSpan: 2, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [15, 23, 42] } }
+      ]
+    ],
+    body: [
+      [
+        { content: 'Employee Name:', styles: { fontStyle: 'bold', cellWidth: 32 } },
+        { content: employee_name || 'N/A' },
+        { content: 'Payroll Month / Period:', styles: { fontStyle: 'bold', cellWidth: 38 } },
+        { content: `${payroll_month} (${formattedMonth})` }
+      ],
+      [
+        { content: 'Employee ID:', styles: { fontStyle: 'bold' } },
+        { content: employee_id || 'N/A' },
+        { content: 'Disbursement Status:', styles: { fontStyle: 'bold' } },
+        { content: status === 'Paid' ? 'Paid / Settled' : 'Pending Settlement' }
+      ],
+      [
+        { content: 'Department:', styles: { fontStyle: 'bold' } },
+        { content: department || 'General' },
+        { content: 'Role / Designation:', styles: { fontStyle: 'bold' } },
+        { content: designation || 'Staff Member' }
+      ],
+      [
+        { content: 'Bank Name & A/C:', styles: { fontStyle: 'bold' } },
+        { content: bank_name ? `${bank_name} (${maskedAccount})` : 'Not Configured' },
+        { content: 'IFSC / UPI ID:', styles: { fontStyle: 'bold' } },
+        { content: `${ifsc_code || '—'} / ${upi_id || '—'}` }
+      ],
+      [
+        { content: 'PAN Identification:', styles: { fontStyle: 'bold' } },
+        { content: pan_number || '—' },
+        { content: 'Corporate Entity:', styles: { fontStyle: 'bold' } },
+        { content: 'Shazu Soft Technologies (MSME Recognized)' }
+      ]
+    ]
+  });
+
+  currentY = doc.lastAutoTable.finalY + 5;
+
+  // 3. SECTION I: ATTENDANCE & WORKING DAYS SUMMARY
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(17, 24, 39);
+  doc.text('I. EXECUTIVE ATTENDANCE & WORKING DAYS SUMMARY', margin, currentY);
+  currentY += 2;
+
+  const payableDays = Math.max(0, (total_working_days || 0) - (lop_days || 0));
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: margin, right: margin },
+    theme: 'plain',
+    styles: {
+      fontSize: 7.5,
+      cellPadding: 2.2,
+      textColor: [30, 41, 59],
+      lineColor: [203, 213, 225],
+      lineWidth: 0.3
     },
-    didParseCell: (data) => {
-      // Highlight totals row (index 3)
-      if (data.row.index === 3 && data.section === 'body') {
-        data.cell.styles.fontStyle = 'bold';
-        data.cell.styles.fillColor = [241, 245, 249];
-      }
+    head: [
+      [
+        'Total Working Days',
+        'Working Sundays',
+        'Present (Attended)',
+        'Approved Leaves',
+        'Loss of Pay (LOP)',
+        'Net Payable Days'
+      ]
+    ],
+    headStyles: {
+      fillColor: [30, 41, 59], // Dark corporate navy
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    body: [
+      [
+        String(total_working_days || 0),
+        String(working_sundays || 0),
+        String(present_days || 0),
+        String(paid_leaves || 0),
+        String(lop_days || 0),
+        String(payableDays)
+      ]
+    ],
+    bodyStyles: {
+      halign: 'center',
+      fillColor: [248, 250, 252],
+      fontStyle: 'bold'
     }
   });
 
-  y = doc.lastAutoTable.finalY + 8;
+  currentY = doc.lastAutoTable.finalY + 5;
 
-  // 5. Net Payable Banner
-  doc.setFillColor(238, 242, 255); // Indigo light
-  doc.setDrawColor(199, 210, 254);
-  doc.roundedRect(margin, y, contentWidth, 24, 2, 2, 'FD');
-
+  // 4. SECTION II: EARNINGS & DEDUCTIONS BREAKDOWN
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(67, 56, 202); // Indigo dark
-  doc.text('NET PAYABLE REMUNERATION (TAKE-HOME SALARY)', margin + 6, y + 8);
+  doc.setFontSize(9);
+  doc.setTextColor(17, 24, 39);
+  doc.text('II. EARNINGS & DEDUCTIONS STATEMENT', margin, currentY);
+  currentY += 2;
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(71, 85, 105);
-  doc.text(`Amount in Words: ${numberToWordsINR(net_payable)}`, margin + 6, y + 16);
+  const lopTitle = lop_days > 0
+    ? `Loss of Pay (LOP: ${lop_days} days @ ${formatINR(daily_rate)}/day)`
+    : 'Loss of Pay (LOP: 0 days)';
 
-  // Big Amount in Net Box
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.setTextColor(30, 27, 75);
-  doc.text(formatINR(net_payable), pageWidth - margin - 6, y + 15, { align: 'right' });
-
-  y += 32;
-
-  // 6. Notes & Digital Signature Block
-  const noteW = contentWidth * 0.58;
-  const sigW = contentWidth * 0.38;
-
-  // Left: Calculation note
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(100, 116, 139);
-  doc.text('CALCULATION NOTE & DISCLOSURE:', margin, y);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.8);
-  doc.setTextColor(148, 163, 184);
-  const noteLines = [
-    '• Daily Rate is computed as Monthly Base Salary ÷ Total Working Days in calendar month.',
-    '• Total Working Days strictly includes company-scheduled Working Sundays and excludes paid holidays.',
-    '• Loss of Pay (LOP) = max(0, Total Working Days - Days Present - Approved Paid Leaves).',
-    '• This is an authentic computer-generated digital payslip and requires no manual physical signature.'
-  ];
-  let noteY = y + 5;
-  noteLines.forEach(line => {
-    doc.text(line, margin, noteY);
-    noteY += 4.2;
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: margin, right: margin },
+    theme: 'grid',
+    styles: {
+      fontSize: 7.5,
+      cellPadding: 2,
+      textColor: [30, 41, 59],
+      lineColor: [226, 232, 240],
+      lineWidth: 0.2
+    },
+    head: [
+      ['Earnings Component', 'Amount (INR)', 'Deductions Component', 'Amount (INR)']
+    ],
+    headStyles: {
+      fillColor: [15, 23, 42],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    columnStyles: {
+      0: { cellWidth: contentWidth * 0.32 },
+      1: { cellWidth: contentWidth * 0.18, halign: 'right' },
+      2: { cellWidth: contentWidth * 0.32 },
+      3: { cellWidth: contentWidth * 0.18, halign: 'right' }
+    },
+    body: [
+      [
+        'Monthly Base Salary',
+        formatINR(monthly_salary),
+        lopTitle,
+        formatINR(lop_deduction)
+      ],
+      [
+        'Special Startup Allowances',
+        formatINR(0),
+        'Provident Fund (PF - Startup Exempt)',
+        formatINR(0)
+      ],
+      [
+        'Overtime / Performance Incentive',
+        formatINR(0),
+        'Professional Tax / TDS',
+        formatINR(0)
+      ],
+      [
+        { content: 'Total Gross Earnings', styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } },
+        { content: formatINR(monthly_salary), styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } },
+        { content: 'Total Deductions', styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } },
+        { content: formatINR(lop_deduction), styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } }
+      ]
+    ]
   });
 
-  // Right: Signature Stamp Area
-  const sigX = pageWidth - margin - sigW;
-  doc.setDrawColor(226, 232, 240);
-  doc.setFillColor(250, 250, 250);
-  doc.roundedRect(sigX, y - 2, sigW, 26, 2, 2, 'FD');
+  currentY = doc.lastAutoTable.finalY + 3;
 
+  // Net Salary Disbursed Highlight Block
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: margin, right: margin },
+    theme: 'plain',
+    styles: {
+      fontSize: 8,
+      cellPadding: 2.5,
+      textColor: [30, 41, 59],
+      lineColor: [203, 213, 225],
+      lineWidth: 0.3
+    },
+    head: [
+      [
+        {
+          content: 'NET SALARY REMUNERATION (TAKE-HOME DISBURSEMENT)',
+          colSpan: 2,
+          styles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 }
+        }
+      ]
+    ],
+    body: [
+      [
+        {
+          content: `NET PAYABLE: ${formatINR(net_payable)}`,
+          styles: { fontStyle: 'bold', fontSize: 10, textColor: [15, 23, 42] }
+        },
+        {
+          content: `Currency: INR (Indian Rupee)`,
+          styles: { halign: 'right', fontStyle: 'bold', textColor: [75, 85, 99] }
+        }
+      ],
+      [
+        {
+          content: `Amount in Words: ${numberToWordsINR(net_payable)}`,
+          colSpan: 2,
+          styles: { fontStyle: 'italic', textColor: [51, 65, 85], fontSize: 7.5 }
+        }
+      ]
+    ]
+  });
+
+  currentY = doc.lastAutoTable.finalY + 5;
+
+  // 5. SECTION III: DISBURSEMENT TRANSACTION RECORD
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(30, 41, 59);
-  doc.text('FOR SHAZU SOFT TECHNOLOGIES', sigX + sigW / 2, y + 4, { align: 'center' });
+  doc.setFontSize(9);
+  doc.setTextColor(17, 24, 39);
+  doc.text('III. DISBURSEMENT TRANSACTION RECORD', margin, currentY);
+  currentY += 2;
 
-  doc.setFont('courier', 'bold');
+  const defaultRef = status === 'Paid'
+    ? (payment_reference || `UTR-SS-${payroll_month.replace('-', '')}-${employee_id || '001'}`)
+    : 'Pending Settlement';
+
+  const defaultDate = payment_date || (status === 'Paid' ? format(new Date(), 'yyyy-MM-dd') : '—');
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: margin, right: margin },
+    theme: 'grid',
+    styles: {
+      fontSize: 7.5,
+      cellPadding: 2,
+      textColor: [30, 41, 59],
+      lineColor: [226, 232, 240],
+      lineWidth: 0.2
+    },
+    head: [
+      ['Disbursement Mode', 'Transaction / UTR Reference', 'Disbursement Date', 'Payment Status', 'Authorized By']
+    ],
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'left'
+    },
+    body: [
+      [
+        payment_mode || 'Bank Transfer / NEFT',
+        defaultRef,
+        defaultDate,
+        status.toUpperCase(),
+        'Corporate HR & Finance'
+      ]
+    ]
+  });
+
+  currentY = doc.lastAutoTable.finalY + 5;
+
+  // 6. SECTION IV: OFFICIAL VERIFICATION & AUTHORIZATION (Exact reference match)
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
-  doc.setTextColor(16, 185, 129); // Green digital verified tag
-  doc.text('[DIGITALLY SIGNED & VERIFIED]', sigX + sigW / 2, y + 13, { align: 'center' });
+  doc.setTextColor(15, 23, 42);
+  doc.text('IV. OFFICIAL VERIFICATION & AUTHORIZATION', margin, currentY);
+  currentY += 3;
 
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(75, 85, 99);
+  const declarationText = 'I hereby verify that the above salary computation, recorded attendance metrics, loss-of-pay deductions, and bank disbursement represent an authentic and verified record of remuneration for the designated payroll cycle.';
+  const splitDeclaration = doc.splitTextToSize(declarationText, contentWidth);
+  doc.text(splitDeclaration, margin, currentY);
+  currentY += splitDeclaration.length * 3.5 + 2;
+
+  const generatedDateStr = format(new Date(), 'yyyy-MM-dd');
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: margin, right: margin },
+    theme: 'plain',
+    styles: {
+      fontSize: 8,
+      cellPadding: 2.5,
+      textColor: [30, 41, 59],
+      lineColor: [203, 213, 225],
+      lineWidth: 0.4
+    },
+    body: [
+      [
+        {
+          content: `\n\n_____________________________________\nEMPLOYEE ACKNOWLEDGEMENT\nName: ${employee_name || 'Staff'}\nDate: ${generatedDateStr}`,
+          styles: { cellWidth: contentWidth / 2 - 2, fontStyle: 'bold' }
+        },
+        {
+          content: `\n\n_____________________________________\nAUTHORIZED MANAGEMENT SIGNATORY\nFor: SHAZU SOFT TECHNOLOGIES HR & OPERATIONS\nHQ: Salem, Tamil Nadu – 636001\nDate: ${generatedDateStr}`,
+          styles: { cellWidth: contentWidth / 2 - 2, fontStyle: 'bold' }
+        }
+      ]
+    ]
+  });
+
+  // 7. CORPORATE RUNNING FOOTER
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.8);
   doc.setTextColor(100, 116, 139);
-  doc.text('Authorized Signatory  |  Salem HQ, Tamil Nadu', sigX + sigW / 2, y + 20, { align: 'center' });
-
-  // 7. Footer line at the very bottom
-  const footerY = pageHeight - margin + 1;
-  doc.setDrawColor(226, 232, 240);
-  doc.line(margin, footerY - 4, pageWidth - margin, footerY - 4);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(148, 163, 184);
-  doc.text('Official Confidential Remuneration Record — Shazu Soft Technologies (MSME Recognized Entity | Salem, TN)', margin, footerY);
-  doc.text(`Generated on: ${format(new Date(), 'dd MMM yyyy, HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
+  const footerLine1 = 'SHAZU SOFT TECHNOLOGIES • 2nd Agraharam, Chairman Rajarathinam Street, Near Kamala Hospital, Salem, Tamil Nadu – 636001';
+  const footerLine2 = 'MSME Recognized Business Entity (Govt. of India)  |  info@shazusofttechnologies.org  |  +91 93616 80077';
+  doc.text(footerLine1, pageWidth / 2, pageHeight - 9, { align: 'center' });
+  doc.text(footerLine2, pageWidth / 2, pageHeight - 5.5, { align: 'center' });
 
   // Save the PDF
-  const filename = `Payslip_${(employee_name || 'Staff').replace(/\s+/g, '_')}_${payroll_month}.pdf`;
+  const filename = `Payslip_${(employee_id || 'EMP').replace(/\s+/g, '_')}_${payroll_month}.pdf`;
   doc.save(filename);
 }
