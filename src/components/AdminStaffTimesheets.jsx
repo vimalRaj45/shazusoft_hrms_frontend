@@ -525,69 +525,85 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                 </Box>
               </Box>
 
-              {/* 6 KPI Metric Cards */}
-              <Grid container spacing={2}>
-                <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, display: 'block' }}>WORKING DAYS</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mt: 0.3 }}>
-                      {timesheetData.past_days_count}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: 10 }}>Past working days</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#166534', fontWeight: 800, display: 'block' }}>PRESENT DAYS</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#15803d', mt: 0.3 }}>
-                      {timesheetData.present_days}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#166534', fontSize: 10, fontWeight: 700 }}>
-                      {timesheetData.on_time_percent}% On-Time
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#92400e', fontWeight: 800, display: 'block' }}>LATE MARKS</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#b45309', mt: 0.3 }}>
-                      {timesheetData.late_days}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#92400e', fontSize: 10 }}>After 09:30 AM</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#075985', fontWeight: 800, display: 'block' }}>APPROVED LEAVES</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0369a1', mt: 0.3 }}>
-                      {timesheetData.leave_days}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#075985', fontSize: 10 }}>Official Quota</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#6b21a8', fontWeight: 800, display: 'block' }}>TOTAL HOURS</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#7e22ce', mt: 0.3 }}>
-                      {timesheetData.total_hours}h
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#6b21a8', fontSize: 10, fontWeight: 700 }}>
-                      ~{timesheetData.avg_hours_per_day}h / day
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={4} md={2}>
-                  <Box sx={{ p: 1.8, bgcolor: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '10px', textAlign: 'center' }}>
-                    <Typography variant="caption" sx={{ color: '#065f46', fontWeight: 800, display: 'block' }}>TASKS COMPLETED</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#047857', mt: 0.3 }}>
-                      {timesheetData.total_tasks_completed || 0}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: '#065f46', fontSize: 10, fontWeight: 700 }}>
-                      ~{timesheetData.total_task_logged_hours || 0}h work done
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
+              {/* Executive Monthly KPI Summary Table */}
+              <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden', bgcolor: '#ffffff', mb: 1 }}>
+                <Box sx={{ px: 2, py: 1, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="caption" sx={{ fontWeight: 800, color: '#334155', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Monthly Attendance & Performance Summary
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b' }}>
+                    Verified Company Records
+                  </Typography>
+                </Box>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#fbfcfd' }}>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>WORKING DAYS</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>PRESENT DAYS</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>ON-TIME RATE</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>LATE MARKS</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>APPROVED LEAVES</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>TOTAL HOURS</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>DAILY AVERAGE</TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>TASKS COMPLETED</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow sx={{ '&:hover': { bgcolor: '#f8fafc' } }}>
+                        <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                          {timesheetData.past_days_count}
+                          <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                            Past scheduled
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                          {timesheetData.present_days}
+                          <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                            Logged in
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                          {timesheetData.on_time_percent}%
+                          <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                            Punctuality
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                          {timesheetData.late_days}
+                          <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                            After 09:30 AM
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                          {timesheetData.leave_days}
+                          <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                            Official quota
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                          {timesheetData.total_hours}h
+                          <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                            Gross time
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                          ~{timesheetData.avg_hours_per_day}h
+                          <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                            Per present day
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                          {timesheetData.total_tasks_completed || 0}
+                          <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                            ~{timesheetData.total_task_logged_hours || 0}h work done
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
 

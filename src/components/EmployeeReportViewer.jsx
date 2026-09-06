@@ -125,63 +125,71 @@ export default function EmployeeReportViewer({ reportData }) {
 
           <Divider sx={{ my: 2.5 }} />
 
-          {/* High-Level Metric Tiles */}
-          <Grid container spacing={2} alignItems="stretch">
-            <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>DAYS LOGGED</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main', mt: 0.5 }}>
-                  {summaryMetrics?.totalDaysLogged}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {summaryMetrics?.presentDays} on-time, {summaryMetrics?.lateDays} late
-                </Typography>
-              </Box>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>NET WORKING TIME</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: '#059669', mt: 0.5 }}>
-                  {summaryMetrics?.totalNetHours} hrs
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  Avg {summaryMetrics?.avgDailyNetHours} hrs/day
-                </Typography>
-              </Box>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>TASKS COMPLETED</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: '#2563eb', mt: 0.5 }}>
-                  {summaryMetrics?.completedTasks} / {summaryMetrics?.totalTasks}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {summaryMetrics?.taskCompletionRate} completion
-                </Typography>
-              </Box>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
-              <Box sx={{ p: 1.5, bgcolor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>EFFORT VARIANCE</Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 800,
-                    mt: 0.5,
-                    color: parseFloat(summaryMetrics?.timeVarianceHours) > 0 ? '#dc2626' : '#059669'
-                  }}
-                >
-                  {summaryMetrics?.timeVarianceHours > 0 ? `+${summaryMetrics?.timeVarianceHours}` : summaryMetrics?.timeVarianceHours} hrs
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {summaryMetrics?.totalActualHours}h act / {summaryMetrics?.totalEstimatedHours}h est
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
+          {/* Executive Performance Summary Table */}
+          <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden', bgcolor: '#ffffff' }}>
+            <Box sx={{ px: 2, py: 1, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="caption" sx={{ fontWeight: 800, color: '#334155', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                Executive Performance & Utilization Summary
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b' }}>
+                Official Period Audit
+              </Typography>
+            </Box>
+            <Box sx={{ overflowX: 'auto' }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ bgcolor: '#fbfcfd' }}>
+                    <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>DAYS LOGGED</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>NET WORKING TIME</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>DAILY AVERAGE</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>TASKS COMPLETED</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>COMPLETION RATE</TableCell>
+                    <TableCell sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.75rem', py: 1, borderBottom: '1px solid #e2e8f0' }}>ESTIMATION VARIANCE</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow sx={{ '&:hover': { bgcolor: '#f8fafc' } }}>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                      {summaryMetrics?.totalDaysLogged}
+                      <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                        {summaryMetrics?.presentDays} on-time, {summaryMetrics?.lateDays} late
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                      {summaryMetrics?.totalNetHours} hrs
+                      <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                        Net productive
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                      ~{summaryMetrics?.avgDailyNetHours} hrs/day
+                      <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                        Per active day
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                      {summaryMetrics?.completedTasks} / {summaryMetrics?.totalTasks}
+                      <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                        Assigned items
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                      {summaryMetrics?.taskCompletionRate}
+                      <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                        Execution rate
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', py: 1.5 }}>
+                      {summaryMetrics?.timeVarianceHours > 0 ? `+${summaryMetrics?.timeVarianceHours}` : summaryMetrics?.timeVarianceHours} hrs
+                      <Typography component="span" variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11, fontWeight: 500 }}>
+                        {summaryMetrics?.totalActualHours}h act / {summaryMetrics?.totalEstimatedHours}h est
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
