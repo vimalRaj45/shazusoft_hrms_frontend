@@ -344,15 +344,15 @@ async function runComprehensiveTestSuite() {
     await injectAuthSession(page, targetUrl, TEST_USERS.admin);
 
     const adminSubtabs = [
-      { index: 0, label: 'Live Daily Presence & Geofencing', shot: '09_admin_dashboard' },
-      { index: 1, label: 'Task Assignment & Delegation', shot: null },
-      { index: 2, label: 'Attendance Regularization Approvals', shot: null },
-      { index: 4, label: 'Leave Requests & Approvals', shot: null },
-      { index: 7, label: 'Staff Monthly Timesheets (Corporate Table)', shot: '10_admin_timesheets' },
-      { index: 8, label: 'Employee Directory Management & Base Salary', shot: '15_admin_directory' },
-      { index: 9, label: 'Compliance Document Freeze & Audit', shot: '11_admin_compliance' },
-      { index: 10, label: 'Holiday Calendar & Office Shift Timings', shot: '12_admin_office_timings' },
-      { index: 11, label: 'Automated Payroll & Payslips Register', shot: '14_admin_payroll' }
+      { index: 0, tabKey: 'admin-live', label: 'Live Daily Presence & Geofencing', shot: '09_admin_dashboard' },
+      { index: 1, tabKey: 'admin-tasks', label: 'Task Assignment & Delegation', shot: null },
+      { index: 2, tabKey: 'admin-regularizations', label: 'Attendance Regularization Approvals', shot: null },
+      { index: 4, tabKey: 'admin-leaves', label: 'Leave Requests & Approvals', shot: null },
+      { index: 7, tabKey: 'admin-timesheets', label: 'Staff Monthly Timesheets (Corporate Table)', shot: '10_admin_timesheets' },
+      { index: 8, tabKey: 'admin-directory', label: 'Employee Directory Management & Base Salary', shot: '15_admin_directory' },
+      { index: 9, tabKey: 'admin-audit', label: 'Compliance Document Freeze & Audit', shot: '11_admin_compliance' },
+      { index: 10, tabKey: 'admin-holidays', label: 'Holiday Calendar & Office Shift Timings', shot: '12_admin_office_timings' },
+      { index: 11, tabKey: 'admin-payroll', label: 'Automated Payroll & Payslips Register', shot: '14_admin_payroll' }
     ];
 
     for (const subtab of adminSubtabs) {
@@ -360,17 +360,8 @@ async function runComprehensiveTestSuite() {
 
       for (const vp of VIEWPORTS) {
         await page.setViewport(vp);
-        await page.goto(`${targetUrl}/?tab=dashboard`, { waitUntil: 'networkidle0', timeout: 15000 });
-        await new Promise((r) => setTimeout(r, 400));
-
-        // Switch to the target subtab
-        await page.evaluate((tabIdx) => {
-          const tabElements = document.querySelectorAll('[role="tab"]');
-          if (tabElements && tabElements[tabIdx]) {
-            tabElements[tabIdx].click();
-          }
-        }, subtab.index);
-        await new Promise((r) => setTimeout(r, 400));
+        await page.goto(`${targetUrl}/?tab=${subtab.tabKey || 'dashboard'}`, { waitUntil: 'networkidle0', timeout: 15000 });
+        await new Promise((r) => setTimeout(r, 600));
 
         await runCheck(`[${vp.id}] Horizontal overflow check`, async () => {
           const res = await assertPageOverflow(page);

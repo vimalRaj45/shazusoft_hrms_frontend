@@ -280,12 +280,12 @@ export default function Sidebar({
           )}
 
           <List dense sx={{ p: 0, mb: isCollapsed ? 1 : 2 }}>
-            {renderNavItem('dashboard', 'Dashboard', DashboardIcon)}
+            {renderNavItem('dashboard', isAdmin ? 'Management Board' : 'Dashboard', DashboardIcon)}
             {renderNavItem('profile', 'My Profile', ProfileIcon)}
             {renderNavItem('system-guide', 'System Guide & Features', GuideIcon, '2026')}
           </List>
 
-          {/* Category 2: STAFF PORTAL (Clickable to Task Tracker) */}
+          {/* Category 2: STAFF PORTAL / TEAM WORKFLOW */}
           {!isCollapsed ? (
             <Box
               onClick={() => {
@@ -316,7 +316,7 @@ export default function Sidebar({
                   letterSpacing: '0.06em'
                 }}
               >
-                {isAdmin ? 'OPERATIONS & STAFF' : 'STAFF PORTAL'}
+                {isAdmin ? 'TEAM WORKFLOW' : 'STAFF PORTAL'}
               </Typography>
             </Box>
           ) : (
@@ -324,15 +324,15 @@ export default function Sidebar({
           )}
 
           <List dense sx={{ p: 0, mb: isCollapsed ? 1 : 2 }}>
-            {renderNavItem('chat-hub', 'Issue Resolution & Chat', ChatIcon, 'Live')}
             {renderNavItem('task-tracker', 'Task Assign & Track', TrackerIcon, 'Workflow')}
-            {renderNavItem('attendance', 'Office Attendance', GpsIcon)}
-            {renderNavItem('workdone', 'Daily Work Log', TaskIcon)}
-            {renderNavItem('leaves', 'Leaves & Permissions', LeaveIcon)}
-            {renderNavItem('my-payslips', 'My Salary Payslips', PayrollIcon, 'Salary')}
+            {renderNavItem('chat-hub', 'Issue Resolution & Chat', ChatIcon, 'Live')}
+            {!isAdmin && renderNavItem('attendance', 'Office Attendance', GpsIcon)}
+            {!isAdmin && renderNavItem('workdone', 'Daily Work Log', TaskIcon)}
+            {!isAdmin && renderNavItem('leaves', 'Leaves & Permissions', LeaveIcon)}
+            {!isAdmin && renderNavItem('my-payslips', 'My Salary Payslips', PayrollIcon, 'Salary')}
             {!isAdmin && renderNavItem('weekly-report', 'Weekly Check-in', WeekIcon, 'Weekly')}
             {!isAdmin && renderNavItem('self-eval', 'Monthly Appraisal', EvalIcon, 'Last 5 Days')}
-            {renderNavItem('my-report', 'Individual Full Report', ReportIcon)}
+            {!isAdmin && renderNavItem('my-report', 'Individual Full Report', ReportIcon)}
           </List>
 
           {/* Category 3: ADMIN MANAGEMENT (Only if Admin, Clickable to Live Board) */}

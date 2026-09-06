@@ -336,7 +336,14 @@ function AppContent() {
           >
           {/* TAB: DASHBOARD */}
           {activeTab === 'dashboard' && (
-            <>
+            isAdmin ? (
+              <AdminDashboard
+                initialTab={0}
+                onTabChange={(key) => setActiveTab(key)}
+                onStatsUpdate={setAdminStats}
+              />
+            ) : (
+              <>
               {/* Forest Green Welcome Hero Card with 4px corners */}
               <WelcomeHero
                 user={user}
@@ -664,6 +671,7 @@ function AppContent() {
                 </Grid>
               </Grid>
             </>
+            )
           )}
 
           {/* TAB: MY PROFILE & COMPANY DATA UPLOAD */}
@@ -688,44 +696,76 @@ function AppContent() {
 
           {/* TAB: GPS ATTENDANCE & FULL MONTH TIMESHEET */}
           {activeTab === 'attendance' && (
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
-                Office GPS Attendance & Full Monthly Timesheet
-              </Typography>
-              <Box sx={{ mb: 3 }}>
-                <GeofencePunch todayData={todayData} onRefresh={fetchDashboardMetrics} />
-              </Box>
+            isAdmin ? (
+              <AdminDashboard
+                initialTab={0}
+                onTabChange={(key) => setActiveTab(key)}
+                onStatsUpdate={setAdminStats}
+              />
+            ) : (
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
+                  Office GPS Attendance & Full Monthly Timesheet
+                </Typography>
+                <Box sx={{ mb: 3 }}>
+                  <GeofencePunch todayData={todayData} onRefresh={fetchDashboardMetrics} />
+                </Box>
 
-              {/* Monthly Attendance Timesheet (Past-Days Only) */}
-              <MonthlyAttendanceTimesheet onRefreshParent={fetchDashboardMetrics} />
-            </Box>
+                {/* Monthly Attendance Timesheet (Past-Days Only) */}
+                <MonthlyAttendanceTimesheet onRefreshParent={fetchDashboardMetrics} />
+              </Box>
+            )
           )}
 
           {/* TAB: DAILY WORKDONE */}
           {activeTab === 'workdone' && (
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
-                Daily Work & Activity Logger
-              </Typography>
-              <WorkDoneSection />
-            </Box>
+            isAdmin ? (
+              <AdminDashboard
+                initialTab={3}
+                onTabChange={(key) => setActiveTab(key)}
+                onStatsUpdate={setAdminStats}
+              />
+            ) : (
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
+                  Daily Work & Activity Logger
+                </Typography>
+                <WorkDoneSection />
+              </Box>
+            )
           )}
 
           {/* TAB: LEAVES & PERMISSIONS */}
           {activeTab === 'leaves' && (
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
-                Company Leaves Quota & Short Permissions
-              </Typography>
-              <LeavesSection />
-            </Box>
+            isAdmin ? (
+              <AdminDashboard
+                initialTab={4}
+                onTabChange={(key) => setActiveTab(key)}
+                onStatsUpdate={setAdminStats}
+              />
+            ) : (
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
+                  Company Leaves Quota & Short Permissions
+                </Typography>
+                <LeavesSection />
+              </Box>
+            )
           )}
 
           {/* TAB: MY SALARY PAYSLIPS */}
           {activeTab === 'my-payslips' && (
-            <Box>
-              <EmployeePayslipsViewer user={user} />
-            </Box>
+            isAdmin ? (
+              <AdminDashboard
+                initialTab={11}
+                onTabChange={(key) => setActiveTab(key)}
+                onStatsUpdate={setAdminStats}
+              />
+            ) : (
+              <Box>
+                <EmployeePayslipsViewer user={user} />
+              </Box>
+            )
           )}
 
           {/* TAB: WEEKLY REPORT (OPEN ALL TIME) */}

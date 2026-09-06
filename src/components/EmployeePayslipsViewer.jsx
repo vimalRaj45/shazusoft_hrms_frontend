@@ -64,23 +64,6 @@ export default function EmployeePayslipsViewer({ user }) {
               Access your monthly salary remuneration statements and download official signed PDF payslips.
             </Typography>
           </Box>
-
-          {selectedPayslip && (
-            <Button
-              variant="contained"
-              startIcon={<DownloadIcon />}
-              onClick={() => generatePayslipPDF(selectedPayslip)}
-              sx={{
-                fontWeight: 800,
-                borderRadius: '8px',
-                bgcolor: '#133829',
-                color: '#ffffff',
-                '&:hover': { bgcolor: '#0b2319' }
-              }}
-            >
-              Download Latest Payslip (PDF)
-            </Button>
-          )}
         </CardContent>
       </Card>
 
@@ -215,10 +198,11 @@ export default function EmployeePayslipsViewer({ user }) {
                         fontWeight: 800,
                         borderRadius: '8px',
                         bgcolor: '#133829',
+                        color: '#fff',
                         '&:hover': { bgcolor: '#0b2319' }
                       }}
                     >
-                      Download 1-Page PDF
+                      Download Payslip (PDF)
                     </Button>
                   </Box>
 
