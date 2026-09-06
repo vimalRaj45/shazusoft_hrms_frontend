@@ -58,7 +58,8 @@ import {
   Clear as ClearIcon,
   FilterList as FilterIcon,
   CalendarMonth as CalendarIcon,
-  AccessTime as TimeIcon
+  AccessTime as TimeIcon,
+  Payments as PayrollIcon
 } from '@mui/icons-material';
 import toast, { muiToast } from '../utils/muiToast';
 import { adminAPI, workDoneAPI, leavesAPI, reportsAPI, evaluationsAPI, attendanceAPI, communicationsAPI } from '../services/api';
@@ -67,6 +68,7 @@ import SelfEvaluationViewer from '../components/SelfEvaluationViewer';
 import WeeklyReportsViewer from '../components/WeeklyReportsViewer';
 import TaskTrackerBoard from '../components/TaskTrackerBoard';
 import AdminStaffTimesheets from '../components/AdminStaffTimesheets';
+import AdminPayrollManagement from '../components/AdminPayrollManagement';
 import { MetricCardsSkeleton, TableRowsSkeleton, DocumentViewerSkeleton } from '../components/SkeletonLoaders';
 import { format } from 'date-fns';
 import { formatTime12h } from '../utils/timeUtils';
@@ -90,7 +92,8 @@ const SECTION_META = [
   { id: 7, title: 'Staff Monthly Timesheets', subtitle: 'Detailed monthly attendance history, punctuality, and hours audit', category: 'Approvals & Timesheets' },
   { id: 8, title: 'Staff Directory & Status', subtitle: 'Manage employee profiles, work modes, and account deactivations', category: 'Directory & Settings' },
   { id: 9, title: 'Audit Trail & Security Logs', subtitle: 'System communication logs, resignation audits, and security trail', category: 'Directory & Settings' },
-  { id: 10, title: 'Office Timings, Calendar & Geofence', subtitle: 'Office shift hours, late grace cutoff, holidays, and GPS perimeter', category: 'Directory & Settings' }
+  { id: 10, title: 'Office Timings, Calendar & Geofence', subtitle: 'Office shift hours, late grace cutoff, holidays, and GPS perimeter', category: 'Directory & Settings' },
+  { id: 11, title: 'Automated Payroll & Payslips', subtitle: 'Startup salary calculation, Working Sundays inclusion, LOP metrics, and 1-click PDF payslips', category: 'Finance & Remuneration' }
 ];
 
 export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpdate }) {
@@ -124,7 +127,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         'admin-timesheets',
         'admin-directory',
         'admin-audit',
-        'admin-holidays'
+        'admin-holidays',
+        'admin-payroll'
       ];
       onTabChange(tabKeys[idx] || 'admin-live');
     }
@@ -921,6 +925,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                 {activeTab === 8 && <PeopleIcon sx={{ fontSize: 24 }} />}
                 {activeTab === 9 && <AuditIcon sx={{ fontSize: 24 }} />}
                 {activeTab === 10 && <HolidayIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 11 && <PayrollIcon sx={{ fontSize: 24 }} />}
               </Box>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -2221,6 +2226,12 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   </Table>
                 </Box>
               )}
+            </Box>
+          )}
+
+          {activeTab === 11 && (
+            <Box>
+              <AdminPayrollManagement />
             </Box>
           )}
         </CardContent>

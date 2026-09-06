@@ -290,6 +290,7 @@ async function runComprehensiveTestSuite() {
       { tab: 'task-tracker', label: 'My Assigned Tasks', shot: '03_employee_tasks' },
       { tab: 'attendance', label: 'Monthly Attendance History', shot: '04_employee_attendance' },
       { tab: 'leaves', label: 'Leave Quotas & Balances', shot: '05_employee_leaves' },
+      { tab: 'my-payslips', label: 'My Salary Payslips & Viewer', shot: '13_employee_payslips' },
       { tab: 'my-report', label: 'Verified Timesheet & Summary Table', shot: '06_employee_my_report' },
       { tab: 'profile', label: 'Employee Profile & Documents', shot: '07_employee_profile' },
       { tab: 'chat-hub', label: 'Support Ticket Hub', shot: '08_employee_chat_hub' }
@@ -350,7 +351,8 @@ async function runComprehensiveTestSuite() {
       { index: 7, label: 'Staff Monthly Timesheets (Corporate Table)', shot: '10_admin_timesheets' },
       { index: 8, label: 'Employee Directory Management', shot: null },
       { index: 9, label: 'Compliance Document Freeze & Audit', shot: '11_admin_compliance' },
-      { index: 10, label: 'Holiday Calendar & Office Shift Timings', shot: '12_admin_office_timings' }
+      { index: 10, label: 'Holiday Calendar & Office Shift Timings', shot: '12_admin_office_timings' },
+      { index: 11, label: 'Automated Payroll & Payslips Register', shot: '14_admin_payroll' }
     ];
 
     for (const subtab of adminSubtabs) {

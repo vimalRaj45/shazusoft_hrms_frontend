@@ -62,6 +62,7 @@ import PWAInstallBanner from './components/PWAInstallButton';
 import IssueResolutionChatHub from './components/IssueResolutionChatHub';
 import UserProfile from './components/UserProfile';
 import SystemGuide from './components/SystemGuide';
+import EmployeePayslipsViewer from './components/EmployeePayslipsViewer';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -720,6 +721,13 @@ function AppContent() {
             </Box>
           )}
 
+          {/* TAB: MY SALARY PAYSLIPS */}
+          {activeTab === 'my-payslips' && (
+            <Box>
+              <EmployeePayslipsViewer user={user} />
+            </Box>
+          )}
+
           {/* TAB: WEEKLY REPORT (OPEN ALL TIME) */}
           {activeTab === 'weekly-report' && (
             <Box>
@@ -905,7 +913,8 @@ function AppContent() {
             'admin-timesheets': 7,
             'admin-directory': 8,
             'admin-audit': 9,
-            'admin-holidays': 10
+            'admin-holidays': 10,
+            'admin-payroll': 11
           }) && (
             <AdminDashboard
               initialTab={{
@@ -919,7 +928,8 @@ function AppContent() {
                 'admin-timesheets': 7,
                 'admin-directory': 8,
                 'admin-audit': 9,
-                'admin-holidays': 10
+                'admin-holidays': 10,
+                'admin-payroll': 11
               }[activeTab]}
               onTabChange={(key) => setActiveTab(key)}
               onStatsUpdate={setAdminStats}

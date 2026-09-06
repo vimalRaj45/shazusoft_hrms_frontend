@@ -176,6 +176,17 @@ export const notificationsAPI = {
   getStatus: () => api.get('/notifications/status')
 };
 
+export const payrollAPI = {
+  getWorkingDaysPreview: (month) => api.get('/payroll/working-days-preview', { params: { month } }),
+  getSalaryStructures: () => api.get('/payroll/salary-structures'),
+  updateSalaryStructure: (employeeId, data) => api.put(`/payroll/salary-structures/${employeeId}`, data),
+  calculateMonth: (month) => api.post('/payroll/calculate-month', { month }),
+  generateMonth: (month) => api.post('/payroll/generate-month', { month }),
+  getMonthRecords: (month) => api.get('/payroll/month-records', { params: { month } }),
+  updateRecordStatus: (id, data) => api.patch(`/payroll/records/${id}/status`, data),
+  getMyPayslips: () => api.get('/payroll/my-payslips')
+};
+
 export default api;
 
 

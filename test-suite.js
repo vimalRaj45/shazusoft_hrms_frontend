@@ -16,8 +16,10 @@ import {
   searchAPI,
   ticketsAPI,
   uploadsAPI,
-  notificationsAPI
+  notificationsAPI,
+  payrollAPI
 } from './src/services/api.js';
+import { numberToWordsINR, formatINR } from './src/utils/payslipGenerator.js';
 
 // ANSI terminal colors
 const colors = {
@@ -236,6 +238,28 @@ async function runFrontendTests() {
     expect(typeof uploadsAPI.uploadBase64).toBe('function');
     expect(typeof uploadsAPI.deleteFile).toBe('function');
     expect(typeof searchAPI.globalSearch).toBe('function');
+  });
+
+  await assertTest('payrollAPI exports all automated payroll and payslip methods', () => {
+    expect(typeof payrollAPI.getWorkingDaysPreview).toBe('function');
+    expect(typeof payrollAPI.getSalaryStructures).toBe('function');
+    expect(typeof payrollAPI.updateSalaryStructure).toBe('function');
+    expect(typeof payrollAPI.calculateMonth).toBe('function');
+    expect(typeof payrollAPI.generateMonth).toBe('function');
+    expect(typeof payrollAPI.getMonthRecords).toBe('function');
+    expect(typeof payrollAPI.updateRecordStatus).toBe('function');
+    expect(typeof payrollAPI.getMyPayslips).toBe('function');
+  });
+
+  await assertTest('numberToWordsINR converts Indian Currency amounts to words correctly', () => {
+    expect(numberToWordsINR(35000)).toBe('Thirty Five Thousand Rupees Only');
+    expect(numberToWordsINR(0)).toBe('Zero Rupees Only');
+    expect(numberToWordsINR(250000)).toBe('Two Lakh Fifty Thousand Rupees Only');
+  });
+
+  await assertTest('formatINR formats currency with Indian Rupee symbol and commas', () => {
+    expect(formatINR(35000)).toBe('₹35,000');
+    expect(formatINR(0)).toBe('₹0');
   });
 
   // ─────────────────────────────────────────────────────────────

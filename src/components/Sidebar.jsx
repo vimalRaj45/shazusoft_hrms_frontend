@@ -31,7 +31,8 @@ import {
   MenuOpen as MenuOpenIcon,
   BadgeOutlined as DirectoryIcon,
   PublishedWithChanges as RegularizeIcon,
-  CalendarMonthOutlined as CalendarIcon
+  CalendarMonthOutlined as CalendarIcon,
+  PaymentsOutlined as PayrollIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
@@ -328,6 +329,7 @@ export default function Sidebar({
             {renderNavItem('attendance', 'Office Attendance', GpsIcon)}
             {renderNavItem('workdone', 'Daily Work Log', TaskIcon)}
             {renderNavItem('leaves', 'Leaves & Permissions', LeaveIcon)}
+            {renderNavItem('my-payslips', 'My Salary Payslips', PayrollIcon, 'Salary')}
             {!isAdmin && renderNavItem('weekly-report', 'Weekly Check-in', WeekIcon, 'Weekly')}
             {!isAdmin && renderNavItem('self-eval', 'Monthly Appraisal', EvalIcon, 'Last 5 Days')}
             {renderNavItem('my-report', 'Individual Full Report', ReportIcon)}
@@ -376,6 +378,7 @@ export default function Sidebar({
               <List dense sx={{ p: 0, mb: 1 }}>
                 {renderNavItem('admin-live', 'Live Presence Board', TeamIcon)}
                 {renderNavItem('admin-tasks', 'Team Task Assignment', TrackerIcon)}
+                {renderNavItem('admin-payroll', 'Payroll & Payslips', PayrollIcon, 'Salary')}
                 {renderNavItem('admin-regularizations', 'Regularizations', RegularizeIcon, adminStats.pendingRegs > 0 ? `${adminStats.pendingRegs} New` : null)}
                 {renderNavItem('admin-workdone', 'Team Work Done', TaskIcon)}
                 {renderNavItem('admin-leaves', 'Leave Requests', LeaveIcon, adminStats.pendingLeaves > 0 ? `${adminStats.pendingLeaves} New` : null)}
