@@ -417,12 +417,12 @@ async function runComprehensiveTestSuite() {
         // If subtab 7 (Staff Timesheet with new corporate table), perform employee switch action
         if (subtab.index === 7) {
           await runCheck(`[${vp.id}] Staff timesheet dropdown selector action`, async () => {
-            const selectEl = await page.$('.MuiSelect-select, select');
-            if (selectEl) {
-              await selectEl.click();
-              await new Promise((r) => setTimeout(r, 200));
-              await page.keyboard.press('Escape');
-            }
+            await page.evaluate(() => {
+              const el = document.querySelector('.MuiSelect-select, select');
+              if (el) el.click();
+            });
+            await new Promise((r) => setTimeout(r, 200));
+            await page.keyboard.press('Escape');
           });
         }
 
