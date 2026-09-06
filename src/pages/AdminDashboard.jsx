@@ -315,10 +315,11 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
 
   const handleToggleFreezeFromAdmin = async (emp) => {
     if (!emp) return;
-    const willFreeze = !emp.documents_frozen;
+    const isCurrentlyFrozen = Boolean(emp.documents_frozen === true || emp.documents_frozen === 'true' || emp.documents_frozen === 't');
+    const willFreeze = !isCurrentlyFrozen;
     setFreezeActionLoading(true);
     try {
-      const res = await adminAPI.freezeDocuments(emp.id, { freeze: willFreeze });
+      const res = await adminAPI.freezeDocuments(emp.id, { frozen: willFreeze, freeze: willFreeze });
       toast.success(res.data.message || (willFreeze ? 'Documents frozen and verified.' : 'Documents unfrozen.'));
       
       const updatedEmp = {
@@ -1820,7 +1821,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                           <Button
                             size="small"
                             variant="outlined"
-                            startIcon={e.documents_frozen ? <LockIcon sx={{ color: '#dc2626' }} /> : <DocumentIcon />}
+                            startIcon={Boolean(e.documents_frozen === true || e.documents_frozen === 'true' || e.documents_frozen === 't') ? <LockIcon sx={{ color: '#dc2626' }} /> : <DocumentIcon />}
                             onClick={() => {
                               setSelectedComplianceEmp(e);
                               setOpenComplianceModal(true);
@@ -1829,12 +1830,12 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                               fontWeight: 700,
                               borderRadius: '8px',
                               fontSize: 11,
-                              color: e.documents_frozen ? '#dc2626' : '#133829',
-                              borderColor: e.documents_frozen ? '#fca5a5' : '#cbd5e1',
-                              bgcolor: e.documents_frozen ? '#fef2f2' : 'transparent',
+                              color: Boolean(e.documents_frozen === true || e.documents_frozen === 'true' || e.documents_frozen === 't') ? '#dc2626' : '#133829',
+                              borderColor: Boolean(e.documents_frozen === true || e.documents_frozen === 'true' || e.documents_frozen === 't') ? '#fca5a5' : '#cbd5e1',
+                              bgcolor: Boolean(e.documents_frozen === true || e.documents_frozen === 'true' || e.documents_frozen === 't') ? '#fef2f2' : 'transparent',
                               '&:hover': {
-                                bgcolor: e.documents_frozen ? '#fee2e2' : '#f1f5f9',
-                                borderColor: e.documents_frozen ? '#ef4444' : '#133829'
+                                bgcolor: Boolean(e.documents_frozen === true || e.documents_frozen === 'true' || e.documents_frozen === 't') ? '#fee2e2' : '#f1f5f9',
+                                borderColor: Boolean(e.documents_frozen === true || e.documents_frozen === 'true' || e.documents_frozen === 't') ? '#ef4444' : '#133829'
                               }
                             }}
                           >
@@ -2719,8 +2720,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                 <Button
                   variant="contained"
                   size="small"
-                  color={selectedComplianceEmp.documents_frozen ? 'warning' : 'error'}
-                  startIcon={freezeActionLoading ? <CircularProgress size={14} color="inherit" /> : selectedComplianceEmp.documents_frozen ? <LockOpenIcon /> : <LockIcon />}
+                  color={Boolean(selectedComplianceEmp.documents_frozen === true || selectedComplianceEmp.documents_frozen === 'true' || selectedComplianceEmp.documents_frozen === 't') ? 'warning' : 'error'}
+                  startIcon={freezeActionLoading ? <CircularProgress size={14} color="inherit" /> : Boolean(selectedComplianceEmp.documents_frozen === true || selectedComplianceEmp.documents_frozen === 'true' || selectedComplianceEmp.documents_frozen === 't') ? <LockOpenIcon /> : <LockIcon />}
                   onClick={() => handleToggleFreezeFromAdmin(selectedComplianceEmp)}
                   disabled={freezeActionLoading}
                   sx={{
@@ -2731,7 +2732,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                     flexShrink: 0
                   }}
                 >
-                  {freezeActionLoading ? 'Updating...' : selectedComplianceEmp.documents_frozen ? 'Unfreeze Documents' : 'Freeze & Verify Documents'}
+                  {freezeActionLoading ? 'Updating...' : Boolean(selectedComplianceEmp.documents_frozen === true || selectedComplianceEmp.documents_frozen === 'true' || selectedComplianceEmp.documents_frozen === 't') ? 'Unfreeze Documents' : 'Freeze & Verify Documents'}
                 </Button>
               </Box>
 

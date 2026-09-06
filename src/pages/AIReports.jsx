@@ -35,7 +35,10 @@ import {
   History as HistoryIcon,
   Lightbulb as LightbulbIcon,
   Person as PersonIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  WarningAmber as WarningAmberIcon,
+  TipsAndUpdates as TipsAndUpdatesIcon,
+  RocketLaunch as RocketLaunchIcon
 } from '@mui/icons-material';
 import { reportsAPI, adminAPI } from '../services/api';
 import EmployeeReportViewer from '../components/EmployeeReportViewer';
@@ -457,6 +460,191 @@ export default function AIReports() {
                 </Card>
               </Grid>
             </Grid>
+
+            {/* Performance Gaps Analysis Section */}
+            {(currentAIReport.performance_gaps || currentAIReport.performanceGaps)?.length > 0 && (
+              <Card sx={{ mb: 4, border: '1px solid #fee2e2', borderRadius: '12px', bgcolor: '#fff', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.05)' }}>
+                <CardContent sx={{ p: 3.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                      <WarningAmberIcon sx={{ color: '#e11d48', fontSize: 28 }} />
+                      <Box>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                          Identified Operational & Performance Gaps
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
+                          Root-cause deficit analysis across punctuality, task velocity, estimation variance, and active blockers
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Chip
+                      label={`${(currentAIReport.performance_gaps || currentAIReport.performanceGaps || []).length} Area(s) Diagnosed`}
+                      size="small"
+                      sx={{ bgcolor: '#ffe4e6', color: '#be123c', fontWeight: 800 }}
+                    />
+                  </Box>
+                  <Divider sx={{ mb: 2.5 }} />
+
+                  <Grid container spacing={2.5}>
+                    {(currentAIReport.performance_gaps || currentAIReport.performanceGaps || []).map((gap, gIdx) => {
+                      const isHigh = gap.severity === 'High';
+                      const isMed = gap.severity === 'Medium';
+                      const borderColor = isHigh ? '#fca5a5' : isMed ? '#fde68a' : '#bfdbfe';
+                      const bgColor = isHigh ? 'rgba(254, 242, 242, 0.7)' : isMed ? 'rgba(254, 252, 232, 0.7)' : 'rgba(239, 246, 255, 0.7)';
+                      const chipColor = isHigh ? 'error' : isMed ? 'warning' : 'info';
+
+                      return (
+                        <Grid item xs={12} md={6} key={gIdx}>
+                          <Box
+                            sx={{
+                              p: 2.5,
+                              height: '100%',
+                              borderRadius: '10px',
+                              border: `1px solid ${borderColor}`,
+                              bgcolor: bgColor,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between'
+                            }}
+                          >
+                            <Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                                  {gap.area}
+                                </Typography>
+                                <Chip
+                                  label={`${gap.severity || 'Medium'} Priority`}
+                                  size="small"
+                                  color={chipColor}
+                                  sx={{ fontWeight: 700, fontSize: '0.72rem', height: 22 }}
+                                />
+                              </Box>
+                              <Typography variant="body2" sx={{ color: '#334155', fontWeight: 500, lineHeight: 1.6, mb: 1.5 }}>
+                                {gap.gapDescription}
+                              </Typography>
+                            </Box>
+                            {gap.impact && (
+                              <Box sx={{ pt: 1, borderTop: '1px dashed rgba(0,0,0,0.1)' }}>
+                                <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600, display: 'block' }}>
+                                  <span style={{ fontWeight: 800, color: '#0f172a' }}>Business Impact:</span> {gap.impact}
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Strategic Suggestions & Next Month Roadmap Grid */}
+            {((currentAIReport.strategic_suggestions || currentAIReport.strategicSuggestions)?.length > 0 ||
+              (currentAIReport.next_month_roadmap || currentAIReport.nextMonthRoadmap)?.length > 0) && (
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                {/* Strategic Suggestions */}
+                <Grid item xs={12} md={6}>
+                  <Card sx={{ height: '100%', border: '1px solid #bae6fd', borderRadius: '12px', bgcolor: '#fff', boxShadow: '0 4px 12px rgba(2, 132, 199, 0.05)' }}>
+                    <CardContent sx={{ p: 3.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1 }}>
+                        <TipsAndUpdatesIcon sx={{ color: '#0284c7', fontSize: 26 }} />
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                            Tailored Strategic Suggestions
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
+                            Actionable operational steps to address diagnosed bottlenecks
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Divider sx={{ my: 2 }} />
+
+                      <List disablePadding>
+                        {(currentAIReport.strategic_suggestions || currentAIReport.strategicSuggestions || []).map((sugg, sIdx) => (
+                          <ListItem key={sIdx} disableGutters sx={{ mb: 2, alignItems: 'flex-start' }}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                width: '100%',
+                                borderRadius: '10px',
+                                bgcolor: '#f0f9ff',
+                                border: '1px solid #e0f2fe'
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.8 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0369a1' }}>
+                                  {sugg.targetArea}
+                                </Typography>
+                                <Chip label={`Step ${sIdx + 1}`} size="small" sx={{ bgcolor: '#bae6fd', color: '#0369a1', fontWeight: 800, height: 20, fontSize: 11 }} />
+                              </Box>
+                              <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 500, lineHeight: 1.6, mb: 1 }}>
+                                {sugg.recommendation}
+                              </Typography>
+                              {sugg.expectedBenefit && (
+                                <Typography variant="caption" sx={{ color: '#0284c7', fontWeight: 700, display: 'block' }}>
+                                  Targeted Benefit: {sugg.expectedBenefit}
+                                </Typography>
+                              )}
+                            </Box>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+
+                {/* Next Month Roadmap & KPIs */}
+                <Grid item xs={12} md={6}>
+                  <Card sx={{ height: '100%', border: '1px solid #bbf7d0', borderRadius: '12px', bgcolor: '#fff', boxShadow: '0 4px 12px rgba(22, 163, 74, 0.05)' }}>
+                    <CardContent sx={{ p: 3.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1 }}>
+                        <RocketLaunchIcon sx={{ color: '#16a34a', fontSize: 26 }} />
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                            Next-Month Improvement Roadmap & KPIs
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
+                            Measurable commitments, SLA targets, and milestone objectives
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Divider sx={{ my: 2 }} />
+
+                      <List disablePadding>
+                        {(currentAIReport.next_month_roadmap || currentAIReport.nextMonthRoadmap || []).map((road, rIdx) => (
+                          <ListItem key={rIdx} disableGutters sx={{ mb: 2, alignItems: 'flex-start' }}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                width: '100%',
+                                borderRadius: '10px',
+                                bgcolor: '#f0fdf4',
+                                border: '1px solid #dcfce7'
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.8, flexWrap: 'wrap', gap: 0.5 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#15803d' }}>
+                                  {road.goal}
+                                </Typography>
+                                <Chip
+                                  label={road.targetMetric}
+                                  size="small"
+                                  sx={{ bgcolor: '#bbf7d0', color: '#14532d', fontWeight: 800, height: 22 }}
+                                />
+                              </Box>
+                              <Typography variant="body2" sx={{ color: '#1e293b', fontWeight: 500, lineHeight: 1.6 }}>
+                                <span style={{ fontWeight: 700, color: '#166534' }}>Action Plan:</span> {road.actionItem}
+                              </Typography>
+                            </Box>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
 
             {/* Historical Reports Archive */}
             {historyReports.length > 0 && (

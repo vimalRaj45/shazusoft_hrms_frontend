@@ -190,7 +190,7 @@ export default function UserProfile() {
           work_mode: p.work_mode || authUser?.work_mode || 'office',
           phone: p.phone || '',
           avatar_url: p.avatar_url || '',
-          documents_frozen: Boolean(p.documents_frozen),
+          documents_frozen: Boolean(p.documents_frozen === true || p.documents_frozen === 'true' || p.documents_frozen === 't'),
           frozen_at: p.frozen_at || null,
           frozen_by: p.frozen_by || null,
           frozen_by_name: p.frozen_by_name || null,
@@ -315,7 +315,8 @@ export default function UserProfile() {
 
   // Admin Toggle Freeze / Lock Handler
   const handleToggleFreeze = async () => {
-    const isFreezing = !profileData.documents_frozen;
+    const isCurrentlyFrozen = Boolean(profileData.documents_frozen === true || profileData.documents_frozen === 'true' || profileData.documents_frozen === 't');
+    const isFreezing = !isCurrentlyFrozen;
     const confirmed = await muiToast.confirm({
       title: isFreezing ? 'Freeze & Lock Compliance Records?' : 'Unfreeze Compliance Records?',
       message: isFreezing
@@ -330,7 +331,7 @@ export default function UserProfile() {
 
     setFreezing(true);
     try {
-      const res = await adminAPI.freezeDocuments(profileData.id, { frozen: isFreezing });
+      const res = await adminAPI.freezeDocuments(profileData.id, { frozen: isFreezing, freeze: isFreezing });
       setProfileData(prev => ({
         ...prev,
         documents_frozen: isFreezing,
@@ -787,8 +788,8 @@ export default function UserProfile() {
             <Button
               variant="outlined"
               fullWidth
-              color={profileData.documents_frozen ? 'warning' : 'error'}
-              startIcon={freezing ? <CircularProgress size={16} color="inherit" /> : profileData.documents_frozen ? <LockOpenIcon /> : <LockIcon />}
+              color={Boolean(profileData.documents_frozen === true || profileData.documents_frozen === 'true' || profileData.documents_frozen === 't') ? 'warning' : 'error'}
+              startIcon={freezing ? <CircularProgress size={16} color="inherit" /> : Boolean(profileData.documents_frozen === true || profileData.documents_frozen === 'true' || profileData.documents_frozen === 't') ? <LockOpenIcon /> : <LockIcon />}
               onClick={handleToggleFreeze}
               disabled={freezing}
               sx={{
@@ -799,14 +800,14 @@ export default function UserProfile() {
                 fontSize: 12
               }}
             >
-              {freezing ? 'Updating Lock...' : profileData.documents_frozen ? 'Unfreeze Documents' : 'Freeze Compliance Documents'}
+              {freezing ? 'Updating Lock...' : Boolean(profileData.documents_frozen === true || profileData.documents_frozen === 'true' || profileData.documents_frozen === 't') ? 'Unfreeze Documents' : 'Freeze Compliance Documents'}
             </Button>
           )}
         </Box>
       </Paper>
 
       {/* Frozen Alert Banner */}
-      {profileData.documents_frozen && (
+      {Boolean(profileData.documents_frozen === true || profileData.documents_frozen === 'true' || profileData.documents_frozen === 't') && (
         <Paper elevation={0} sx={{ p: 2, mb: 2.5, bgcolor: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <LockIcon sx={{ color: '#d97706', fontSize: 24 }} />
           <Box>
