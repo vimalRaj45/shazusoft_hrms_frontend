@@ -65,6 +65,7 @@ export default function WorkDoneSection() {
     project_name: '',
     task_title: '',
     description: '',
+    plan: '',
     estimated_hours: '2',
     actual_hours: '2',
     status: 'Completed',
@@ -90,10 +91,22 @@ export default function WorkDoneSection() {
   const handleOpenModal = (task = null) => {
     if (task) {
       setEditingTask(task);
+      let desc = task.description || '';
+      let planText = '';
+      if (desc.includes('[Plan / Next Action]:')) {
+        const parts = desc.split('[Plan / Next Action]:');
+        desc = parts[0].trim();
+        planText = parts[1].trim();
+      } else if (task.remarks && task.remarks.toLowerCase().includes('plan:')) {
+        const idx = task.remarks.toLowerCase().indexOf('plan:');
+        planText = task.remarks.substring(idx + 5).trim();
+      }
+
       setFormData({
         project_name: task.project_name || '',
         task_title: task.task_title || '',
-        description: task.description || '',
+        description: desc,
+        plan: planText,
         estimated_hours: task.estimated_hours || '1',
         actual_hours: task.actual_hours || '1',
         status: task.status || 'Completed',
@@ -105,6 +118,7 @@ export default function WorkDoneSection() {
         project_name: '',
         task_title: '',
         description: '',
+        plan: '',
         estimated_hours: '2',
         actual_hours: '2',
         status: 'Completed',
@@ -122,12 +136,28 @@ export default function WorkDoneSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const fullDesc = formData.plan?.trim()
+        ? (formData.description?.trim()
+            ? `${formData.description.trim()}\n[Plan / Next Action]: ${formData.plan.trim()}`
+            : `[Plan / Next Action]: ${formData.plan.trim()}`)
+        : (formData.description?.trim() || '');
+
+      const fullRemarks = formData.plan?.trim()
+        ? (formData.remarks?.trim() ? `${formData.remarks.trim()} | Plan: ${formData.plan.trim()}` : `Plan: ${formData.plan.trim()}`)
+        : (formData.remarks?.trim() || '');
+
+      const payload = {
+        ...formData,
+        description: fullDesc,
+        remarks: fullRemarks
+      };
+
       if (editingTask) {
-        await workDoneAPI.update(editingTask.id, formData);
-        toast.success('Task updated successfully!');
+        await workDoneAPI.update(editingTask.id, payload);
+        toast.success('Task and work plan updated successfully!');
       } else {
-        await workDoneAPI.create(formData);
-        toast.success('Task logged successfully!');
+        await workDoneAPI.create(payload);
+        toast.success('Task and deliverable plan logged successfully!');
         confetti({ particleCount: 50, spread: 50 });
       }
       handleCloseModal();
@@ -330,45 +360,68 @@ export default function WorkDoneSection() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredTasks.map((task) => (
-                  <TableRow key={task.id} hover>
-                    <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>{task.date}</TableCell>
-                    <TableCell>
-                      <Chip label={task.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: 12 }} />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
-                        {task.task_title}
-                      </Typography>
-                      {task.description && (
-                        <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>
-                          {task.description}
+                {filteredTasks.map((task) => {
+                  let displayDesc = task.description || '';
+                  let planText = '';
+                  if (displayDesc.includes('[Plan / Next Action]:')) {
+                    const parts = displayDesc.split('[Plan / Next Action]:');
+                    displayDesc = parts[0].trim();
+                    planText = parts[1].trim();
+                  } else if (task.remarks && task.remarks.toLowerCase().includes('plan:')) {
+                    const idx = task.remarks.toLowerCase().indexOf('plan:');
+                    planText = task.remarks.substring(idx + 5).trim();
+                  }
+
+                  return (
+                    <TableRow key={task.id} hover>
+                      <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>{task.date}</TableCell>
+                      <TableCell>
+                        <Chip label={task.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: 12 }} />
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 320 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                          {task.task_title}
                         </Typography>
-                      )}
-                      {task.remarks && (
-                        <Typography variant="caption" sx={{ color: '#d97706', display: 'block' }}>
-                          Note: {task.remarks}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>
-                      <strong>{task.estimated_hours}h</strong> est / <strong>{task.actual_hours}h</strong> act
-                    </TableCell>
-                    <TableCell onClick={() => handleQuickStatusToggle(task)} sx={{ cursor: 'pointer' }}>
-                      <Tooltip title="Click to toggle status">
-                        <span>{getStatusChip(task.status)}</span>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton size="small" color="primary" onClick={() => handleOpenModal(task)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small" color="error" onClick={() => handleDelete(task.id)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        {displayDesc && (
+                          <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.3 }}>
+                            {displayDesc}
+                          </Typography>
+                        )}
+                        {planText && (
+                          <Box sx={{ mt: 0.8, p: 0.8, bgcolor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px' }}>
+                            <Typography variant="caption" sx={{ color: '#1d4ed8', fontWeight: 700, display: 'block' }}>
+                              Plan / Next Action:
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#1e3a8a', display: 'block' }}>
+                              {planText}
+                            </Typography>
+                          </Box>
+                        )}
+                        {task.remarks && !task.remarks.toLowerCase().includes('plan:') && (
+                          <Typography variant="caption" sx={{ color: '#d97706', display: 'block', mt: 0.3 }}>
+                            Note: {task.remarks}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>
+                        <strong>{task.estimated_hours}h</strong> est / <strong>{task.actual_hours}h</strong> act
+                      </TableCell>
+                      <TableCell onClick={() => handleQuickStatusToggle(task)} sx={{ cursor: 'pointer' }}>
+                        <Tooltip title="Click to toggle status">
+                          <span>{getStatusChip(task.status)}</span>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton size="small" color="primary" onClick={() => handleOpenModal(task)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" color="error" onClick={() => handleDelete(task.id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Box>
@@ -379,7 +432,7 @@ export default function WorkDoneSection() {
       <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
         <form onSubmit={handleSubmit}>
           <DialogTitle sx={{ fontWeight: 700 }}>
-            {editingTask ? 'Edit WorkDone Entry' : 'Log Daily Task / Activity'}
+            {editingTask ? 'Edit WorkDone Entry' : 'Log Daily Task & Activity Plan'}
           </DialogTitle>
           <DialogContent dividers>
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
@@ -409,7 +462,7 @@ export default function WorkDoneSection() {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Task Title"
+                  label="Task Title / What Was Done"
                   required
                   placeholder="e.g. Implemented real-time database sync and auth flow"
                   value={formData.task_title}
@@ -425,6 +478,23 @@ export default function WorkDoneSection() {
                   placeholder="Detailed breakdown of activities performed..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={2}
+                  label="Upcoming Plan / Next Deliverables (What You Plan To Do Next)"
+                  placeholder="e.g. Complete module testing, deploy build, sync with client..."
+                  value={formData.plan}
+                  onChange={(e) => setFormData({ ...formData, plan: e.target.value })}
+                  sx={{
+                    bgcolor: '#eff6ff',
+                    borderRadius: '6px',
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#93c5fd' }
+                  }}
+                  helperText="Forward-looking sprint plan and deliverables"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>

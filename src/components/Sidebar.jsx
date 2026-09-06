@@ -325,9 +325,9 @@ export default function Sidebar({
 
           <List dense sx={{ p: 0, mb: isCollapsed ? 1 : 2 }}>
             {renderNavItem('task-tracker', 'Task Assign & Track', TrackerIcon, 'Workflow')}
+            {renderNavItem('workdone', 'Work Log & Daily Plan', TaskIcon)}
             {renderNavItem('chat-hub', 'Issue Resolution & Chat', ChatIcon, 'Live')}
             {!isAdmin && renderNavItem('attendance', 'Office Attendance', GpsIcon)}
-            {!isAdmin && renderNavItem('workdone', 'Daily Work Log', TaskIcon)}
             {!isAdmin && renderNavItem('leaves', 'Leaves & Permissions', LeaveIcon)}
             {!isAdmin && renderNavItem('my-payslips', 'My Salary Payslips', PayrollIcon, 'Salary')}
             {!isAdmin && renderNavItem('weekly-report', 'Weekly Check-in', WeekIcon, 'Weekly')}

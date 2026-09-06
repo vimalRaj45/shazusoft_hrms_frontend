@@ -180,6 +180,22 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   });
   const [salarySaving, setSalarySaving] = useState(false);
 
+  // Manager Log Work & Activity Plan State
+  const [openLogWorkModal, setOpenLogWorkModal] = useState(false);
+  const [logWorkLoading, setLogWorkLoading] = useState(false);
+  const [logWorkForm, setLogWorkForm] = useState({
+    employee_id: '',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    project_name: 'General Operations',
+    task_title: '',
+    description: '',
+    plan: '',
+    estimated_hours: '2',
+    actual_hours: '2',
+    status: 'Completed',
+    remarks: ''
+  });
+
   // Professional Rejection Modal State
   const [openRejectionModal, setOpenRejectionModal] = useState(false);
   const [rejectionTarget, setRejectionTarget] = useState(null); // { type: 'leave' | 'permission' | 'regularization', item: object }
@@ -353,6 +369,63 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
       toast.error(err.response?.data?.error || 'Failed to update document freeze status.');
     } finally {
       setFreezeActionLoading(false);
+    }
+  };
+
+  const handleOpenLogWorkModal = (empId = '') => {
+    setLogWorkForm({
+      employee_id: empId || (employees.length > 0 ? employees[0].id : ''),
+      date: format(new Date(), 'yyyy-MM-dd'),
+      project_name: 'Core System',
+      task_title: '',
+      description: '',
+      plan: '',
+      estimated_hours: '2',
+      actual_hours: '2',
+      status: 'Completed',
+      remarks: ''
+    });
+    setOpenLogWorkModal(true);
+  };
+
+  const handleSaveWorkLog = async (e) => {
+    e.preventDefault();
+    if (!logWorkForm.task_title.trim()) {
+      toast.error('Task title or milestone summary is required.');
+      return;
+    }
+    setLogWorkLoading(true);
+    try {
+      const fullDesc = logWorkForm.plan?.trim()
+        ? (logWorkForm.description?.trim()
+            ? `${logWorkForm.description.trim()}\n[Plan / Next Action]: ${logWorkForm.plan.trim()}`
+            : `[Plan / Next Action]: ${logWorkForm.plan.trim()}`)
+        : (logWorkForm.description?.trim() || '');
+
+      const fullRemarks = logWorkForm.plan?.trim()
+        ? (logWorkForm.remarks?.trim() ? `${logWorkForm.remarks.trim()} | Plan: ${logWorkForm.plan.trim()}` : `Plan: ${logWorkForm.plan.trim()}`)
+        : (logWorkForm.remarks?.trim() || '');
+
+      const payload = {
+        employee_id: logWorkForm.employee_id || undefined,
+        date: logWorkForm.date,
+        project_name: logWorkForm.project_name || 'General Operations',
+        task_title: logWorkForm.task_title.trim(),
+        description: fullDesc,
+        estimated_hours: String(logWorkForm.estimated_hours || '2'),
+        actual_hours: String(logWorkForm.actual_hours || '2'),
+        status: logWorkForm.status || 'Completed',
+        remarks: fullRemarks
+      };
+
+      await workDoneAPI.create(payload);
+      toast.success('Work log and activity plan recorded successfully!');
+      setOpenLogWorkModal(false);
+      fetchDashboardData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to record work and plan item.');
+    } finally {
+      setLogWorkLoading(false);
     }
   };
 
@@ -1337,57 +1410,126 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             </Box>
           )}
 
-          {/* TAB 3: Team Work Done */}
+          {/* TAB 3: Team Work Done & Deliverable Plans */}
           {activeTab === 3 && (
-            <Box sx={{ overflowX: 'auto' }}>
-              {filteredTasks.length === 0 ? (
-                <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                  No tasks or work logs found matching current filters.
-                </Typography>
-              ) : (
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Employee</TableCell>
-                      <TableCell>Project</TableCell>
-                      <TableCell>Task Title & Description</TableCell>
-                      <TableCell>Est / Act Hours</TableCell>
-                      <TableCell>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredTasks.map((t) => (
-                      <TableRow key={t.id} hover>
-                        <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>{t.date}</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>{t.employee_name || t.employee_id}</TableCell>
-                        <TableCell>
-                          <Chip label={t.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '6px' }} />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }}>{t.task_title}</Typography>
-                          {t.description && (
-                            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                              {t.description}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                          <strong>{t.estimated_hours}h</strong> est / <strong>{t.actual_hours}h</strong> act
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={t.status}
-                            color={t.status === 'Completed' ? 'success' : t.status === 'In-Progress' ? 'primary' : 'warning'}
-                            size="small"
-                            sx={{ fontWeight: 700, borderRadius: '6px' }}
-                          />
-                        </TableCell>
+            <Box>
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 2.5,
+                p: 2,
+                bgcolor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                flexWrap: 'wrap',
+                gap: 2
+              }}>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                    Team Work Done & Future Deliverable Plans
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#64748b' }}>
+                    Managers and Admins can log completed work milestones and upcoming sprint plans directly for themselves or any team member.
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleOpenLogWorkModal()}
+                  sx={{
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    px: 2.5,
+                    py: 1,
+                    boxShadow: '0 4px 12px rgba(37,99,235,0.2)'
+                  }}
+                >
+                  Log Work & Plan Item
+                </Button>
+              </Box>
+
+              <Box sx={{ overflowX: 'auto' }}>
+                {filteredTasks.length === 0 ? (
+                  <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                    No tasks or work logs found matching current filters.
+                  </Typography>
+                ) : (
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                        <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Employee</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>What Was Done (Task & Details)</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Future Plan / Next Deliverables</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Est / Act Hours</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+                    </TableHead>
+                    <TableBody>
+                      {filteredTasks.map((t) => {
+                        let displayDesc = t.description || '';
+                        let planText = '';
+                        if (displayDesc.includes('[Plan / Next Action]:')) {
+                          const parts = displayDesc.split('[Plan / Next Action]:');
+                          displayDesc = parts[0].trim();
+                          planText = parts[1].trim();
+                        } else if (t.remarks && t.remarks.toLowerCase().includes('plan:')) {
+                          const idx = t.remarks.toLowerCase().indexOf('plan:');
+                          planText = t.remarks.substring(idx + 5).trim();
+                        }
+
+                        return (
+                          <TableRow key={t.id} hover>
+                            <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>{t.date}</TableCell>
+                            <TableCell sx={{ fontWeight: 700 }}>{t.employee_name || t.employee_id}</TableCell>
+                            <TableCell>
+                              <Chip label={t.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '6px' }} />
+                            </TableCell>
+                            <TableCell sx={{ maxWidth: 280 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 700 }}>{t.task_title}</Typography>
+                              {displayDesc && (
+                                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
+                                  {displayDesc}
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell sx={{ maxWidth: 260 }}>
+                              {planText ? (
+                                <Box sx={{ p: 1, bgcolor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px' }}>
+                                  <Typography variant="caption" sx={{ color: '#1d4ed8', fontWeight: 700, display: 'block' }}>
+                                    Planned Next:
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ color: '#1e3a8a', display: 'block', whiteSpace: 'pre-wrap' }}>
+                                    {planText}
+                                  </Typography>
+                                </Box>
+                              ) : (
+                                <Typography variant="caption" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>
+                                  --
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                              <strong>{t.estimated_hours}h</strong> est / <strong>{t.actual_hours}h</strong> act
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={t.status}
+                                color={t.status === 'Completed' ? 'success' : t.status === 'In-Progress' ? 'primary' : t.status === 'Planned' ? 'info' : 'warning'}
+                                size="small"
+                                sx={{ fontWeight: 700, borderRadius: '6px' }}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+              </Box>
             </Box>
           )}
 
@@ -1865,6 +2007,22 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<TaskIcon />}
+                            onClick={() => handleOpenLogWorkModal(e.id)}
+                            sx={{
+                              fontWeight: 700,
+                              borderRadius: '8px',
+                              fontSize: 11,
+                              borderColor: '#3b82f6',
+                              color: '#1d4ed8',
+                              '&:hover': { bgcolor: '#eff6ff', borderColor: '#2563eb' }
+                            }}
+                          >
+                            Log Work / Plan
+                          </Button>
                           <Button
                             size="small"
                             variant="contained"
@@ -3245,6 +3403,192 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             >
               {salarySaving ? <CircularProgress size={18} sx={{ color: '#fff', mr: 1 }} /> : null}
               {salarySaving ? 'Saving Package...' : 'Save Salary Package'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Manager Log Work & Deliverable Plan Modal */}
+      <Dialog
+        open={openLogWorkModal}
+        onClose={() => !logWorkLoading && setOpenLogWorkModal(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <form onSubmit={handleSaveWorkLog}>
+          <DialogTitle sx={{ fontWeight: 800, pb: 1, borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <TaskIcon sx={{ color: '#2563eb' }} />
+            Log Work & Activity Plan
+          </DialogTitle>
+          <DialogContent sx={{ pt: 2.5 }}>
+            <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>
+              Record completed work items and define upcoming plans/deliverables for yourself or any team member.
+            </Typography>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={7}>
+                <TextField
+                  fullWidth
+                  select
+                  size="small"
+                  label="Assign To / Staff Member"
+                  value={logWorkForm.employee_id}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, employee_id: e.target.value })}
+                  helperText="Select staff member, or leave as Manager/Self"
+                >
+                  <MenuItem value="">
+                    <em>Myself (Logged as Manager / Admin)</em>
+                  </MenuItem>
+                  {employees.map((emp) => (
+                    <MenuItem key={emp.id} value={emp.id}>
+                      {emp.name} ({emp.id}) — {emp.designation || emp.department}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12} sm={5}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  size="small"
+                  label="Log Date"
+                  value={logWorkForm.date}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, date: e.target.value })}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={7}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Project / Module"
+                  required
+                  placeholder="e.g. Core System, Mobile App, Payroll"
+                  value={logWorkForm.project_name}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, project_name: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={5}>
+                <TextField
+                  fullWidth
+                  select
+                  size="small"
+                  label="Current Status"
+                  value={logWorkForm.status}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, status: e.target.value })}
+                >
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="In-Progress">In-Progress</MenuItem>
+                  <MenuItem value="Planned">Planned</MenuItem>
+                  <MenuItem value="Pending/Blocked">Pending / Blocked</MenuItem>
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Task Title / What Was Done"
+                  required
+                  placeholder="e.g. Completed module architecture & integration testing"
+                  value={logWorkForm.task_title}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, task_title: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={2}
+                  size="small"
+                  label="Detailed Work Description (What Was Done)"
+                  placeholder="Provide technical specifics, commits, or milestone progress..."
+                  value={logWorkForm.description}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, description: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={2}
+                  size="small"
+                  label="Upcoming Plan / Next Deliverables (What They Plan To Do)"
+                  placeholder="e.g. Deploy to staging, write documentation, review PR by tomorrow 2 PM..."
+                  value={logWorkForm.plan}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, plan: e.target.value })}
+                  sx={{
+                    bgcolor: '#eff6ff',
+                    borderRadius: '6px',
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#93c5fd' }
+                  }}
+                  helperText="Forward-looking deliverable plan for this staff or yourself"
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="number"
+                  inputProps={{ step: '0.5', min: '0' }}
+                  label="Est. Hours"
+                  value={logWorkForm.estimated_hours}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, estimated_hours: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="number"
+                  inputProps={{ step: '0.5', min: '0' }}
+                  label="Actual Hours"
+                  value={logWorkForm.actual_hours}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, actual_hours: e.target.value })}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Internal Remarks / Notes (Optional)"
+                  placeholder="Any blockers, dependencies, or manager observations..."
+                  value={logWorkForm.remarks}
+                  onChange={(e) => setLogWorkForm({ ...logWorkForm, remarks: e.target.value })}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ p: 2, borderTop: '1px solid #e2e8f0' }}>
+            <Button
+              onClick={() => setOpenLogWorkModal(false)}
+              disabled={logWorkLoading}
+              sx={{ fontWeight: 700 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={logWorkLoading}
+              sx={{
+                fontWeight: 800,
+                borderRadius: '8px',
+                px: 3,
+                bgcolor: '#2563eb',
+                '&:hover': { bgcolor: '#1d4ed8' }
+              }}
+            >
+              {logWorkLoading ? <CircularProgress size={18} sx={{ color: '#fff', mr: 1 }} /> : null}
+              {logWorkLoading ? 'Saving Record...' : 'Save Work & Plan'}
             </Button>
           </DialogActions>
         </form>
