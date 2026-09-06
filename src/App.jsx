@@ -41,6 +41,7 @@ import {
 import toast from './utils/muiToast';
 import { AlertConfirmProvider } from './context/AlertConfirmContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { getTheme } from './theme/theme';
 import TopNavbar from './components/TopNavbar';
 import Sidebar from './components/Sidebar';
@@ -1077,7 +1078,9 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <NotificationProvider>
+        <AppContent />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

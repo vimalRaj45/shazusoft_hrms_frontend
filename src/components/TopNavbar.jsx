@@ -31,12 +31,9 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
+import NotificationCenterPopover from './NotificationCenterPopover';
 import toast, { muiToast } from '../utils/muiToast';
-import {
-  subscribeToPushNotifications,
-  unsubscribeFromPushNotifications,
-  isSubscribed
-} from '../utils/pushManager';
 
 
 export default function TopNavbar({
@@ -48,26 +45,16 @@ export default function TopNavbar({
   onToggleSidebar
 }) {
   const { user, isAdmin, logout } = useAuth();
+  const { unreadCount, isPushSubscribed } = useNotifications();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [notifAnchorEl, setNotifAnchorEl] = React.useState(null);
   const [currentTime, setCurrentTime] = React.useState(new Date());
-  const [pushSubscribed, setPushSubscribed] = React.useState(false);
-  const [pushLoading, setPushLoading] = React.useState(false);
 
   React.useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  // Check current push subscription status on mount and sync after auto-enable
-  React.useEffect(() => {
-    isSubscribed().then(setPushSubscribed).catch(() => setPushSubscribed(false));
-    const timer = setTimeout(() => {
-      isSubscribed().then(setPushSubscribed).catch(() => {});
-    }, 1500);
-    return () => clearTimeout(timer);
   }, []);
 
   const handleOpenMenu = (event) => {
@@ -84,34 +71,6 @@ export default function TopNavbar({
 
   const handleCloseNotifMenu = () => {
     setNotifAnchorEl(null);
-  };
-
-  const handleTogglePushNotifications = async () => {
-    handleCloseNotifMenu();
-    setPushLoading(true);
-    try {
-      if (pushSubscribed) {
-        const result = await unsubscribeFromPushNotifications();
-        if (result.success) {
-          setPushSubscribed(false);
-          toast.success('Push notifications disabled.');
-        } else {
-          toast.error(result.error || 'Failed to disable push notifications.');
-        }
-      } else {
-        const result = await subscribeToPushNotifications();
-        if (result.success) {
-          setPushSubscribed(true);
-          toast.success('Push notifications enabled! You will now receive alerts.');
-        } else {
-          toast.error(result.error || 'Failed to enable push notifications.');
-        }
-      }
-    } catch (err) {
-      toast.error('An unexpected error occurred with push notifications.');
-    } finally {
-      setPushLoading(false);
-    }
   };
 
 
@@ -357,35 +316,38 @@ export default function TopNavbar({
             </IconButton>
           </Tooltip>
 
-          {/* Push Notification Bell Button */}
-          <Tooltip title={pushSubscribed ? 'Notification Settings' : 'Enable Push Notifications'} placement="bottom" arrow>
+          {/* Notification Center Bell Button */}
+          <Tooltip title={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`} placement="bottom" arrow>
             <IconButton
-              id="push-notif-btn"
+              id="notifications-bell-btn"
               onClick={handleOpenNotifMenu}
-              disabled={pushLoading}
               sx={{
-                color: pushSubscribed ? '#133829' : '#94a3b8',
+                color: unreadCount > 0 ? '#4F46E5' : '#64748b',
                 borderRadius: '8px',
                 p: { xs: 0.6, sm: 0.9 },
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
+                '&:hover': { bgcolor: '#f1f5f9', color: '#4F46E5' }
               }}
             >
               <Badge
-                variant="dot"
-                invisible={!pushSubscribed}
+                badgeContent={unreadCount}
+                max={99}
                 sx={{
-                  '& .MuiBadge-dot': {
-                    backgroundColor: '#10b981',
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    border: '1.5px solid #fff'
+                  '& .MuiBadge-badge': {
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: '9px',
+                    px: 0.5,
+                    backgroundColor: '#EF4444',
+                    color: '#FFFFFF',
+                    boxShadow: '0 0 0 2px #FFFFFF'
                   }
                 }}
               >
-                {pushSubscribed ? (
-                  <NotificationsActiveIcon sx={{ fontSize: 22 }} />
+                {unreadCount > 0 ? (
+                  <NotificationsActiveIcon sx={{ fontSize: 22, color: '#4F46E5' }} />
                 ) : (
                   <NotificationsIcon sx={{ fontSize: 22 }} />
                 )}
@@ -393,42 +355,15 @@ export default function TopNavbar({
             </IconButton>
           </Tooltip>
 
-          {/* Push Notification Menu */}
-          <Menu
+          {/* Real-time In-App Notification Center Popover */}
+          <NotificationCenterPopover
             anchorEl={notifAnchorEl}
             open={Boolean(notifAnchorEl)}
             onClose={handleCloseNotifMenu}
-            PaperProps={{
-              sx: { mt: 1.5, minWidth: 260, borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }
+            onNavigateTab={(tab) => {
+              if (onSelectView) onSelectView(tab);
             }}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            <Box sx={{ px: 2, py: 1.5 }}>
-              <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: 13 }}>
-                Push Notifications
-              </Typography>
-              <Typography variant="caption" sx={{ color: pushSubscribed ? '#059669' : '#64748b', fontWeight: 600, fontSize: 11 }}>
-                {pushSubscribed ? 'Active on this device' : 'Disabled on this device'}
-              </Typography>
-            </Box>
-            <Divider />
-            <MenuItem
-              id="toggle-push-notifications"
-              onClick={handleTogglePushNotifications}
-              disabled={pushLoading}
-              sx={{ py: 1.2, fontSize: 13, fontWeight: 700 }}
-            >
-              <ListItemIcon>
-                {pushSubscribed ? (
-                  <NotificationsOffIcon fontSize="small" sx={{ color: '#ef4444' }} />
-                ) : (
-                  <NotificationsActiveIcon fontSize="small" sx={{ color: '#133829' }} />
-                )}
-              </ListItemIcon>
-              {pushLoading ? 'Processing...' : pushSubscribed ? 'Disable Notifications' : 'Enable Notifications'}
-            </MenuItem>
-          </Menu>
+          />
 
           {/* User Profile Avatar & Menu Toggle */}
           <Box

@@ -173,7 +173,12 @@ export const notificationsAPI = {
   unsubscribe: (data) => api.post('/notifications/unsubscribe', data),
   sendTest: () => api.post('/notifications/send-test'),
   broadcast: (data) => api.post('/notifications/broadcast', data),
-  getStatus: () => api.get('/notifications/status')
+  getStatus: () => api.get('/notifications/status'),
+  getInApp: (params) => api.get('/notifications/in-app', { params }),
+  markRead: (id) => api.put(`/notifications/in-app/${id}/read`),
+  markAllRead: () => api.put('/notifications/in-app/read-all'),
+  deleteInApp: (id) => api.delete(`/notifications/in-app/${id}`),
+  sendInAppTest: () => api.post('/notifications/in-app/test')
 };
 
 export const payrollAPI = {

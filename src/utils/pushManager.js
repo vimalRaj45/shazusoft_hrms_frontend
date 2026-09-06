@@ -173,18 +173,22 @@ export async function isSubscribed() {
 }
 
 /**
- * Automatically prompts and subscribes to push notifications upon user login.
+ * Automatically syncs push notifications upon user login ONLY if permission was already granted.
+ * Does NOT pop up unsolicited permission prompts, ensuring compliance with browser user-gesture policies.
  */
 export async function autoEnablePushNotificationsOnLogin() {
   if (typeof window === 'undefined') return { success: false };
   if (!('Notification' in window) || !('serviceWorker' in navigator)) {
     return { success: false, error: 'Push notifications not supported in this browser environment.' };
   }
+  if (Notification.permission !== 'granted') {
+    return { success: false, reason: 'Permission requires user gesture' };
+  }
   try {
     const result = await subscribeToPushNotifications();
     return result;
   } catch (err) {
-    console.warn('[PushManager] Auto-enable notification error:', err);
+    console.warn('[PushManager] Auto-sync notification error:', err);
     return { success: false, error: err.message };
   }
 }
