@@ -42,16 +42,23 @@ import { payrollAPI } from '../services/api';
 import { generatePayslipPDF, formatINR } from '../utils/payslipGenerator';
 import toast from '../utils/muiToast';
 
-export default function AdminPayrollManagement() {
+export default function AdminPayrollManagement({ salaryStructures: propSalaryStructures, onSalaryUpdate }) {
   const [activeTab, setActiveTab] = useState('register'); // 'register' | 'structures'
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [workingDaysMeta, setWorkingDaysMeta] = useState(null);
   const [records, setRecords] = useState([]);
-  const [salaryStructures, setSalaryStructures] = useState([]);
+  const [salaryStructures, setSalaryStructures] = useState(propSalaryStructures || []);
   const [loading, setLoading] = useState(false);
   const [calculating, setCalculating] = useState(false);
   const [committing, setCommitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Sync when prop changes
+  useEffect(() => {
+    if (propSalaryStructures && propSalaryStructures.length > 0) {
+      setSalaryStructures(propSalaryStructures);
+    }
+  }, [propSalaryStructures]);
 
   // Editing Structure State
   const [editingEmployee, setEditingEmployee] = useState(null);
@@ -93,7 +100,12 @@ export default function AdminPayrollManagement() {
   const fetchSalaryStructures = async () => {
     try {
       const res = await payrollAPI.getSalaryStructures();
-      setSalaryStructures(res.data.salary_structures || []);
+      if (res.data.salary_structures) {
+        setSalaryStructures(res.data.salary_structures);
+        if (onSalaryUpdate) {
+          res.data.salary_structures.forEach(s => onSalaryUpdate(s));
+        }
+      }
     } catch (err) {
       console.error('Error fetching salary structures:', err);
     }
@@ -102,6 +114,32 @@ export default function AdminPayrollManagement() {
   useEffect(() => {
     fetchMonthData(selectedMonth);
     fetchSalaryStructures();
+  }, [selectedMonth]);
+
+  // Real-Time Dynamic Synchronization listener
+  useEffect(() => {
+    const handleDataUpdate = (e) => {
+      const detail = e?.detail;
+      if (!detail) return;
+
+      if (detail.type === 'salary_structure_updated') {
+        setSalaryStructures(prev => {
+          const idx = prev.findIndex(s => s.employee_id === detail.employee_id);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = { ...next[idx], ...detail.salary_structure };
+            return next;
+          }
+          return [...prev, detail.salary_structure];
+        });
+        fetchMonthData(selectedMonth);
+      } else if (detail.type === 'attendance_updated' || detail.type === 'leave_updated') {
+        fetchMonthData(selectedMonth);
+      }
+    };
+
+    window.addEventListener('hrms:data_update', handleDataUpdate);
+    return () => window.removeEventListener('hrms:data_update', handleDataUpdate);
   }, [selectedMonth]);
 
   // 3. Preview Month Calculation (On-the-fly preview)
@@ -142,14 +180,39 @@ export default function AdminPayrollManagement() {
     e.preventDefault();
     if (!editingEmployee) return;
     setSavingStructure(true);
+
+    const parsedSalary = parseFloat(structureForm.monthly_salary) || 0;
+    const targetEmpId = editingEmployee.employee_id;
+    const optimisticData = {
+      ...editingEmployee,
+      ...structureForm,
+      monthly_salary: parsedSalary
+    };
+
+    // Instant optimistic update in local state (0ms latency)
+    setSalaryStructures(prev => {
+      const idx = prev.findIndex(s => s.employee_id === targetEmpId);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], ...optimisticData };
+        return next;
+      }
+      return [...prev, optimisticData];
+    });
+    if (onSalaryUpdate) onSalaryUpdate(optimisticData);
+
     try {
-      await payrollAPI.updateSalaryStructure(editingEmployee.employee_id, structureForm);
+      const res = await payrollAPI.updateSalaryStructure(targetEmpId, structureForm);
       toast.success(`Salary package saved for ${editingEmployee.employee_name}!`);
       setEditingEmployee(null);
+      if (res?.data?.salary_structure && onSalaryUpdate) {
+        onSalaryUpdate(res.data.salary_structure);
+      }
       await fetchSalaryStructures();
       fetchMonthData(selectedMonth);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to save salary structure');
+      await fetchSalaryStructures();
     } finally {
       setSavingStructure(false);
     }

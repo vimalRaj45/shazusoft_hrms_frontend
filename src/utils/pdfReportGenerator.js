@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { formatTime12h } from './timeUtils.js';
+import { applyShazuWatermark } from './documentWatermark.js';
 
 /**
  * Loads an image URL into an HTMLImageElement and converts to base64 DataURL
@@ -406,6 +407,9 @@ export async function generateCorporatePDFReport(reportData) {
     doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 5.5, { align: 'right' });
   }
 
+  // Apply official corporate watermark
+  applyShazuWatermark(doc);
+
   // Save / Download PDF file
   const filename = `SHAZU_HRMS_Report_${(employee.id || 'EMP').replace(/\s+/g, '_')}_${monthYear}.pdf`;
   doc.save(filename);
@@ -612,6 +616,9 @@ export async function generateAppraisalPDFReport(evaluation) {
     doc.text(`Official Appraisal Document • Shazu Soft Technologies • Confidential`, margin, pageHeight - 4.5);
     doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 4.5, { align: 'right' });
   }
+
+  // Apply official corporate watermark
+  applyShazuWatermark(doc);
 
   const filename = `SHAZU_Appraisal_${(evaluation.employee_id || 'EMP').replace(/\s+/g, '_')}_${evaluation.review_month || 'August_2026'}.pdf`;
   doc.save(filename);

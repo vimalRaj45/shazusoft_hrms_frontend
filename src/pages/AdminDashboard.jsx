@@ -479,6 +479,49 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     fetchDashboardData();
   }, []);
 
+  // Real-Time Dynamic Synchronization listener for all admin actions
+  useEffect(() => {
+    const handleDataUpdate = (e) => {
+      const detail = e?.detail;
+      if (!detail) return;
+
+      if (detail.type === 'salary_structure_updated') {
+        setSalaryStructures(prev => {
+          const idx = prev.findIndex(s => s.employee_id === detail.employee_id);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = { ...next[idx], ...detail.salary_structure };
+            return next;
+          }
+          return [...prev, detail.salary_structure];
+        });
+      } else if (detail.type === 'attendance_updated') {
+        adminAPI.getLiveStatus().then(res => {
+          if (res?.data) setLiveData(res.data);
+        }).catch(() => {});
+      } else if (detail.type === 'leave_updated') {
+        if (detail.leave) {
+          setAllLeaves(prev => prev.map(l => l.id === detail.leave_id ? { ...l, status: detail.status, ...detail.leave } : l));
+        } else {
+          leavesAPI.getAllLeaves().then(res => {
+            if (res?.data?.leaves) setAllLeaves(res.data.leaves);
+          }).catch(() => {});
+        }
+      } else if (detail.type === 'permission_updated') {
+        if (detail.permission) {
+          setAllPermissions(prev => prev.map(p => p.id === detail.permission_id ? { ...p, status: detail.status, ...detail.permission } : p));
+        } else {
+          leavesAPI.getAllPermissions().then(res => {
+            if (res?.data?.permissions) setAllPermissions(res.data.permissions);
+          }).catch(() => {});
+        }
+      }
+    };
+
+    window.addEventListener('hrms:data_update', handleDataUpdate);
+    return () => window.removeEventListener('hrms:data_update', handleDataUpdate);
+  }, []);
+
   const handleManualAttendanceSubmit = async (e) => {
     e.preventDefault();
     if (!manualForm.employee_id || !manualForm.date || !manualForm.login_time || !manualForm.reason.trim()) {
@@ -662,22 +705,26 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   };
 
   const handleLeaveAction = async (id, status) => {
+    // Instant optimistic UI update
+    setAllLeaves(prev => prev.map(l => l.id === id ? { ...l, status } : l));
     try {
       await leavesAPI.updateStatus(id, status);
-      toast.success(`Leave application approved successfully.`);
-      fetchDashboardData();
+      toast.success(`Leave application ${status.toLowerCase()} successfully.`);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update leave.');
+      fetchDashboardData();
     }
   };
 
   const handlePermissionAction = async (id, status) => {
+    // Instant optimistic UI update
+    setAllPermissions(prev => prev.map(p => p.id === id ? { ...p, status } : p));
     try {
       await leavesAPI.updatePermissionStatus(id, status);
-      toast.success(`Permission pass approved successfully.`);
-      fetchDashboardData();
+      toast.success(`Permission pass ${status.toLowerCase()} successfully.`);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update permission.');
+      fetchDashboardData();
     }
   };
 
@@ -699,16 +746,48 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     e.preventDefault();
     if (!selectedSalaryEmp) return;
     setSalarySaving(true);
+
+    const parsedSalary = parseFloat(salaryForm.monthly_salary) || 0;
+    const targetEmpId = selectedSalaryEmp.id;
+    const optimisticPayload = {
+      ...salaryForm,
+      employee_id: targetEmpId,
+      employee_name: selectedSalaryEmp.name,
+      department: selectedSalaryEmp.department || '',
+      designation: selectedSalaryEmp.designation || '',
+      monthly_salary: parsedSalary
+    };
+
+    // Instant optimistic UI update in Staff Directory (0ms latency)
+    setSalaryStructures(prev => {
+      const idx = prev.findIndex(s => s.employee_id === targetEmpId);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], ...optimisticPayload };
+        return next;
+      }
+      return [...prev, { id: `SAL-${targetEmpId}`, ...optimisticPayload }];
+    });
+
     try {
-      await payrollAPI.updateSalaryStructure(selectedSalaryEmp.id, salaryForm);
+      const res = await payrollAPI.updateSalaryStructure(targetEmpId, salaryForm);
       toast.success(`Salary package saved for ${selectedSalaryEmp.name}!`);
       setOpenSalaryModal(false);
-      const res = await payrollAPI.getSalaryStructures().catch(() => ({ data: { salary_structures: [] } }));
-      if (res?.data?.salary_structures) {
-        setSalaryStructures(res.data.salary_structures);
+      if (res?.data?.salary_structure) {
+        setSalaryStructures(prev => {
+          const idx = prev.findIndex(s => s.employee_id === targetEmpId);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = { ...next[idx], ...res.data.salary_structure };
+            return next;
+          }
+          return [...prev, res.data.salary_structure];
+        });
       }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update salary package');
+      const revertRes = await payrollAPI.getSalaryStructures().catch(() => ({ data: { salary_structures: [] } }));
+      if (revertRes?.data?.salary_structures) setSalaryStructures(revertRes.data.salary_structures);
     } finally {
       setSalarySaving(false);
     }
@@ -2484,7 +2563,20 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
 
           {activeTab === 11 && (
             <Box>
-              <AdminPayrollManagement />
+              <AdminPayrollManagement
+                salaryStructures={salaryStructures}
+                onSalaryUpdate={(updated) => {
+                  setSalaryStructures(prev => {
+                    const idx = prev.findIndex(s => s.employee_id === updated.employee_id);
+                    if (idx >= 0) {
+                      const next = [...prev];
+                      next[idx] = { ...next[idx], ...updated };
+                      return next;
+                    }
+                    return [...prev, updated];
+                  });
+                }}
+              />
             </Box>
           )}
         </CardContent>

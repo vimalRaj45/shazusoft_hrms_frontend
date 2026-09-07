@@ -228,6 +228,17 @@ export const NotificationProvider = ({ children }) => {
           }
         });
 
+        es.addEventListener('data_update', (event) => {
+          if (!isMounted) return;
+          try {
+            const data = JSON.parse(event.data);
+            // Broadcast live data mutation to all listening React components
+            window.dispatchEvent(new CustomEvent('hrms:data_update', { detail: data }));
+          } catch (e) {
+            console.error('[NotificationContext] Failed to parse SSE data_update event:', e);
+          }
+        });
+
         es.onerror = () => {
           if (!isMounted) return;
           setIsConnected(false);

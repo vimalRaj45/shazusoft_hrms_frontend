@@ -1,6 +1,16 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import { applyShazuWatermark } from './documentWatermark.js';
+
+/**
+ * Formats a number cleanly for PDF generation using standard ASCII characters.
+ * Eliminates the Unicode Rupee symbol (₹) encoding corruption (¹) in jsPDF standard fonts.
+ */
+export function formatPDFAmount(val) {
+  const num = Number(val) || 0;
+  return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 /**
  * Loads an image URL into an HTMLImageElement and converts to base64 DataURL.
@@ -308,7 +318,7 @@ export async function generatePayslipPDF(payslipData) {
   currentY += 2;
 
   const lopTitle = lop_days > 0
-    ? `Loss of Pay (LOP: ${lop_days} days @ ${formatINR(daily_rate)}/day)`
+    ? `Loss of Pay (LOP: ${lop_days} days @ Rs. ${formatPDFAmount(daily_rate)}/day)`
     : 'Loss of Pay (LOP: 0 days)';
 
   autoTable(doc, {
@@ -317,13 +327,18 @@ export async function generatePayslipPDF(payslipData) {
     theme: 'grid',
     styles: {
       fontSize: 7.5,
-      cellPadding: 2,
+      cellPadding: { top: 2.2, right: 3, bottom: 2.2, left: 3 },
       textColor: [30, 41, 59],
       lineColor: [226, 232, 240],
       lineWidth: 0.2
     },
     head: [
-      ['Earnings Component', 'Amount (INR)', 'Deductions Component', 'Amount (INR)']
+      [
+        { content: 'Earnings Component', styles: { halign: 'left' } },
+        { content: 'Amount (INR)', styles: { halign: 'right' } },
+        { content: 'Deductions Component', styles: { halign: 'left' } },
+        { content: 'Amount (INR)', styles: { halign: 'right' } }
+      ]
     ],
     headStyles: {
       fillColor: [15, 23, 42],
@@ -331,35 +346,35 @@ export async function generatePayslipPDF(payslipData) {
       fontStyle: 'bold'
     },
     columnStyles: {
-      0: { cellWidth: contentWidth * 0.32 },
-      1: { cellWidth: contentWidth * 0.18, halign: 'right' },
-      2: { cellWidth: contentWidth * 0.32 },
-      3: { cellWidth: contentWidth * 0.18, halign: 'right' }
+      0: { cellWidth: contentWidth * 0.30, halign: 'left' },
+      1: { cellWidth: contentWidth * 0.20, halign: 'right' },
+      2: { cellWidth: contentWidth * 0.30, halign: 'left' },
+      3: { cellWidth: contentWidth * 0.20, halign: 'right' }
     },
     body: [
       [
         'Monthly Base Salary',
-        formatINR(monthly_salary),
+        formatPDFAmount(monthly_salary),
         lopTitle,
-        formatINR(lop_deduction)
+        formatPDFAmount(lop_deduction)
       ],
       [
         'Special Startup Allowances',
-        formatINR(0),
+        formatPDFAmount(0),
         'Provident Fund (PF - Startup Exempt)',
-        formatINR(0)
+        formatPDFAmount(0)
       ],
       [
         'Overtime / Performance Incentive',
-        formatINR(0),
+        formatPDFAmount(0),
         'Professional Tax / TDS',
-        formatINR(0)
+        formatPDFAmount(0)
       ],
       [
         { content: 'Total Gross Earnings', styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } },
-        { content: formatINR(monthly_salary), styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } },
+        { content: formatPDFAmount(monthly_salary), styles: { fontStyle: 'bold', halign: 'right', fillColor: [241, 245, 249] } },
         { content: 'Total Deductions', styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } },
-        { content: formatINR(lop_deduction), styles: { fontStyle: 'bold', fillColor: [241, 245, 249] } }
+        { content: formatPDFAmount(lop_deduction), styles: { fontStyle: 'bold', halign: 'right', fillColor: [241, 245, 249] } }
       ]
     ]
   });
@@ -390,7 +405,7 @@ export async function generatePayslipPDF(payslipData) {
     body: [
       [
         {
-          content: `NET PAYABLE: ${formatINR(net_payable)}`,
+          content: `NET PAYABLE: Rs. ${formatPDFAmount(net_payable)}`,
           styles: { fontStyle: 'bold', fontSize: 10, textColor: [15, 23, 42] }
         },
         {
@@ -506,6 +521,9 @@ export async function generatePayslipPDF(payslipData) {
   const footerLine2 = 'MSME Recognized Business Entity (Govt. of India)  |  info@shazusofttechnologies.org  |  +91 93616 80077';
   doc.text(footerLine1, pageWidth / 2, pageHeight - 9, { align: 'center' });
   doc.text(footerLine2, pageWidth / 2, pageHeight - 5.5, { align: 'center' });
+
+  // 8. APPLY OFFICIAL CORPORATE WATERMARK
+  applyShazuWatermark(doc);
 
   // Save the PDF
   const filename = `Payslip_${(employee_id || 'EMP').replace(/\s+/g, '_')}_${payroll_month}.pdf`;
