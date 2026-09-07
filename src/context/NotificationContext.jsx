@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { notificationsAPI } from '../services/api';
+import { notificationsAPI, API_BASE_URL } from '../services/api';
 import { useAuth } from './AuthContext';
 import pushManager from '../utils/pushManager';
 import { muiToast } from '../utils/muiToast';
@@ -48,7 +48,7 @@ export const NotificationProvider = ({ children }) => {
 
   // 1. Fetch In-App notifications from API
   const fetchNotifications = useCallback(async (silent = false) => {
-    if (!token || !user) return;
+    if (!token || !user?.id) return;
     if (!silent) setLoading(true);
     try {
       const { data } = await notificationsAPI.getInApp({ limit: 50 });
@@ -59,7 +59,7 @@ export const NotificationProvider = ({ children }) => {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [token, user]);
+  }, [token, user?.id]);
 
   // 2. Check browser Web Push subscription status
   const checkPushSubscription = useCallback(async () => {
@@ -173,6 +173,7 @@ export const NotificationProvider = ({ children }) => {
     checkPushSubscription();
 
     let retryDelay = 3000;
+    let consecutiveErrors = 0;
     let isMounted = true;
 
     const connectSSE = () => {
@@ -183,8 +184,16 @@ export const NotificationProvider = ({ children }) => {
         eventSourceRef.current.close();
       }
 
-      // Fastify backend base URL from window location or api baseURL
-      const streamUrl = `/api/notifications/stream?token=${encodeURIComponent(token)}`;
+      // Fastify backend base URL from API_BASE_URL or production fallback
+      let baseUrl = (API_BASE_URL || '/api').trim().replace(/\/+$/, '');
+      if (baseUrl === '/api' && typeof window !== 'undefined' && window.location.hostname === 'hrms.shazusofttechnologies.org') {
+        baseUrl = 'https://shazusoft-hrms-backend.onrender.com/api';
+      }
+      const endpoint = baseUrl.endsWith('/api')
+        ? `${baseUrl}/notifications/stream`
+        : `${baseUrl}/api/notifications/stream`;
+
+      const streamUrl = `${endpoint}?token=${encodeURIComponent(token)}`;
 
       try {
         const es = new EventSource(streamUrl);
@@ -194,6 +203,7 @@ export const NotificationProvider = ({ children }) => {
           if (!isMounted) return;
           setIsConnected(true);
           retryDelay = 3000; // Reset backoff on successful handshake
+          consecutiveErrors = 0;
         });
 
         es.addEventListener('notification', (event) => {
@@ -222,13 +232,17 @@ export const NotificationProvider = ({ children }) => {
           if (!isMounted) return;
           setIsConnected(false);
           es.close();
+          consecutiveErrors++;
 
-          // Exponential backoff reconnect
+          // Exponential backoff reconnect: if failing repeatedly, back off to 60s
+          // The background 45s fallback polling interval continues to keep notifications synced
           clearTimeout(reconnectTimeoutRef.current);
+          const nextDelay = consecutiveErrors >= 5 ? 60000 : Math.min(retryDelay * 1.5, 30000);
+          retryDelay = Math.min(retryDelay * 1.5, 30000);
+
           reconnectTimeoutRef.current = setTimeout(() => {
-            retryDelay = Math.min(retryDelay * 1.5, 30000);
             connectSSE();
-          }, retryDelay);
+          }, nextDelay);
         };
       } catch (err) {
         console.warn('[NotificationContext] EventSource initialization error:', err);

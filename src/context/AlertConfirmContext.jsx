@@ -299,40 +299,38 @@ export function AlertConfirmProvider({ children }) {
             })
           }}
         >
-          {/* User Profile Avatar with Severity Indicator Pill */}
-          <Box sx={{ position: 'relative', flexShrink: 0, display: 'inline-flex', alignItems: 'center' }}>
-            <Avatar
-              src={resolveAvatarUrl(snackbar.avatar || user?.avatar_url)}
-              alt={user?.name || 'User'}
-              sx={{
-                width: 28,
-                height: 28,
-                borderRadius: '8px',
-                fontSize: 12,
-                fontWeight: 800,
-                bgcolor: 'rgba(255, 255, 255, 0.18)',
-                color: '#ffffff',
-                border: '1.5px solid rgba(255, 255, 255, 0.35)'
-              }}
-            >
-              {user?.name?.charAt(0) || 'U'}
-            </Avatar>
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: -2,
-                right: -2,
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
-                bgcolor:
-                  snackbar.severity === 'success' ? '#10b981' :
-                  snackbar.severity === 'error' ? '#ef4444' :
-                  snackbar.severity === 'warning' ? '#f59e0b' : '#3b82f6',
-                border: '1.5px solid #0f172a',
-                boxShadow: '0 0 4px rgba(0,0,0,0.3)'
-              }}
-            />
+          {/* Severity Icon Indicator */}
+          <Box
+            sx={{
+              width: 30,
+              height: 30,
+              borderRadius: '8px',
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor:
+                snackbar.severity === 'success' ? 'rgba(52, 211, 153, 0.2)' :
+                snackbar.severity === 'error' ? 'rgba(248, 113, 113, 0.2)' :
+                snackbar.severity === 'warning' ? 'rgba(251, 191, 36, 0.2)' :
+                'rgba(56, 189, 248, 0.2)',
+              color:
+                snackbar.severity === 'success' ? '#34d399' :
+                snackbar.severity === 'error' ? '#f87171' :
+                snackbar.severity === 'warning' ? '#fbbf24' :
+                '#38bdf8',
+              border: '1px solid',
+              borderColor:
+                snackbar.severity === 'success' ? 'rgba(52, 211, 153, 0.35)' :
+                snackbar.severity === 'error' ? 'rgba(248, 113, 113, 0.35)' :
+                snackbar.severity === 'warning' ? 'rgba(251, 191, 36, 0.35)' :
+                'rgba(56, 189, 248, 0.35)'
+            }}
+          >
+            {snackbar.severity === 'success' && <SuccessIcon sx={{ fontSize: 19 }} />}
+            {snackbar.severity === 'error' && <ErrorIcon sx={{ fontSize: 19 }} />}
+            {snackbar.severity === 'warning' && <WarningIcon sx={{ fontSize: 19 }} />}
+            {snackbar.severity === 'info' && <InfoIcon sx={{ fontSize: 19 }} />}
           </Box>
 
           {/* Compact Message Typography */}

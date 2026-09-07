@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || (typeof process !== 'undefined' && process.env?.VITE_API_URL) || '/api';
+export const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL)
+  || (typeof process !== 'undefined' && process.env?.VITE_API_URL)
+  || (typeof window !== 'undefined' && window.location.hostname === 'hrms.shazusofttechnologies.org'
+    ? 'https://shazusoft-hrms-backend.onrender.com/api'
+    : '/api');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
