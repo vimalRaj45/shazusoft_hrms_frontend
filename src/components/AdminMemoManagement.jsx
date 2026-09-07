@@ -339,12 +339,19 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
     try {
       const res = await memosAPI.deleteMemo(id);
       if (res.data?.success) {
-        toast.success(`Memo ${memoNumber} deleted`);
+        toast.success(`Memo ${memoNumber} deleted successfully`);
+        setMemos(prev => prev.filter(m => m.id !== id));
+        if (activeMemo?.id === id) {
+          setActiveMemo(null);
+          setOpenViewModal(false);
+          setOpenRecipientsModal(false);
+        }
         fetchMemos();
       }
     } catch (err) {
       console.error('Failed to delete memo:', err);
-      toast.error('Failed to delete memo');
+      toast.error(err.response?.data?.error || 'Failed to delete memo');
+      fetchMemos();
     }
   };
 
