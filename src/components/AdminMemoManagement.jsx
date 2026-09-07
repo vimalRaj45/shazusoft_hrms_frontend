@@ -137,9 +137,9 @@ Your manager will review progress against these benchmarks during the upcoming a
   }
 ];
 
-export default function AdminMemoManagement() {
+export default function AdminMemoManagement({ employees: propEmployees = [] }) {
   const [memos, setMemos] = useState([]);
-  const [employees, setEmployees] = useState([]);
+  const [employees, setEmployees] = useState(propEmployees || []);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -170,6 +170,27 @@ export default function AdminMemoManagement() {
     attachment_url: ''
   });
 
+  // Sync propEmployees if passed from parent
+  useEffect(() => {
+    if (propEmployees && propEmployees.length > 0) {
+      setEmployees(propEmployees);
+    }
+  }, [propEmployees]);
+
+  // Automatically select first employee if not set
+  useEffect(() => {
+    if (employees.length > 0 && !formData.target_employee_id) {
+      const first = employees.find(e => e.role !== 'admin') || employees[0];
+      if (first) {
+        setFormData(prev => ({
+          ...prev,
+          target_employee_id: first.id,
+          target_employee_name: first.name
+        }));
+      }
+    }
+  }, [employees]);
+
   const fetchMemos = async () => {
     setLoading(true);
     try {
@@ -188,9 +209,9 @@ export default function AdminMemoManagement() {
   const fetchEmployees = async () => {
     try {
       const res = await adminAPI.getEmployees();
-      if (res.data?.success) {
-        const staffOnly = (res.data.employees || []).filter(e => e.role !== 'admin');
-        setEmployees(staffOnly);
+      const rawList = res.data?.employees || (Array.isArray(res.data) ? res.data : []);
+      if (rawList && rawList.length > 0) {
+        setEmployees(rawList);
       }
     } catch (err) {
       console.error('Failed to load employees for memo target:', err);
@@ -822,7 +843,7 @@ export default function AdminMemoManagement() {
                     fullWidth
                     required
                     label="Select Target Employee"
-                    value={formData.target_employee_id}
+                    value={formData.target_employee_id || ''}
                     onChange={(e) => {
                       const empId = e.target.value;
                       const emp = employees.find(x => x.id === empId);
@@ -832,23 +853,29 @@ export default function AdminMemoManagement() {
                         target_employee_name: emp ? emp.name : ''
                       });
                     }}
-                    helperText="This memo will be issued directly and exclusively to this staff member"
+                    helperText={employees.length === 0 ? "Loading employee list from server..." : "This memo will be issued directly and exclusively to this staff member"}
                   >
-                    {employees.map(emp => (
-                      <MenuItem key={emp.id} value={emp.id}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ width: 24, height: 24, fontSize: 11, bgcolor: '#133829' }}>
-                            {emp.name ? emp.name.charAt(0) : 'E'}
-                          </Avatar>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                            {emp.name}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: '#64748b' }}>
-                            ({emp.department || 'General'} • {emp.designation || 'Staff'})
-                          </Typography>
-                        </Box>
+                    {employees.length === 0 ? (
+                      <MenuItem disabled value="">
+                        <em>Loading employees...</em>
                       </MenuItem>
-                    ))}
+                    ) : (
+                      employees.map(emp => (
+                        <MenuItem key={emp.id} value={emp.id}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Avatar sx={{ width: 24, height: 24, fontSize: 11, bgcolor: '#133829' }}>
+                              {emp.name ? emp.name.charAt(0) : 'E'}
+                            </Avatar>
+                            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                              {emp.name}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b' }}>
+                              ({emp.department || 'General'} • {emp.designation || 'Staff'})
+                            </Typography>
+                          </Box>
+                        </MenuItem>
+                      ))
+                    )}
                   </TextField>
                 </Grid>
               )}

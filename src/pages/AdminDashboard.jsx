@@ -2612,7 +2612,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
 
           {activeTab === 12 && (
             <Box>
-              <AdminMemoManagement />
+              <AdminMemoManagement employees={employees} />
             </Box>
           )}
         </CardContent>
