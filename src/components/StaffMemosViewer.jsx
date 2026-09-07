@@ -20,7 +20,9 @@ import {
   Tab,
   Badge,
   Divider,
-  InputAdornment
+  InputAdornment,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   Campaign as MemoIcon,
@@ -38,6 +40,9 @@ import { memosAPI } from '../services/api';
 import toast from '../utils/muiToast';
 
 export default function StaffMemosViewer({ user }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [memos, setMemos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'PENDING' | 'SIGNED'
@@ -401,11 +406,17 @@ export default function StaffMemosViewer({ user }) {
         onClose={() => setOpenDialog(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '12px' } }}
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: isMobile ? 0 : '12px',
+            m: isMobile ? 0 : 2
+          }
+        }}
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f8fafc', py: 1.5 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
-            Official Executive Memorandum Document
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f8fafc', p: { xs: 1.5, sm: 2 }, borderBottom: '1px solid #e2e8f0' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '0.95rem', sm: '1.1rem' } }}>
+            Official Executive Memorandum
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
@@ -413,9 +424,9 @@ export default function StaffMemosViewer({ user }) {
               variant="outlined"
               startIcon={<PrintIcon />}
               onClick={() => window.print()}
-              sx={{ fontWeight: 700, borderColor: '#cbd5e1', color: '#0f172a' }}
+              sx={{ fontWeight: 700, borderColor: '#cbd5e1', color: '#0f172a', px: { xs: 1, sm: 2 }, fontSize: { xs: 12, sm: 13 } }}
             >
-              Print / Save
+              {isMobile ? 'Print' : 'Print / Save'}
             </Button>
             <IconButton onClick={() => setOpenDialog(false)} size="small">
               <CloseIcon fontSize="small" />
@@ -423,12 +434,12 @@ export default function StaffMemosViewer({ user }) {
           </Box>
         </DialogTitle>
 
-        <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
+        <DialogContent sx={{ p: { xs: 1.2, sm: 2.5, md: 4 } }}>
           {selectedMemo && (
             <Paper
               elevation={0}
               sx={{
-                p: { xs: 2, md: 4 },
+                p: { xs: 1.5, sm: 2.5, md: 4 },
                 border: '1px solid #cbd5e1',
                 borderRadius: '8px',
                 bgcolor: '#ffffff',
@@ -436,19 +447,19 @@ export default function StaffMemosViewer({ user }) {
               }}
             >
               {/* Header Letterhead */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #133829', pb: 2, mb: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'flex-start' }, gap: 1.5, borderBottom: '2px solid #133829', pb: 2, mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Box
                     component="img"
                     src="/logo.png"
                     alt="Shazu Soft"
-                    sx={{ width: 44, height: 44, objectFit: 'contain' }}
+                    sx={{ width: { xs: 36, sm: 44 }, height: { xs: 36, sm: 44 }, objectFit: 'contain' }}
                   />
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#133829', letterSpacing: '0.05em', fontFamily: 'sans-serif' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#133829', letterSpacing: '0.05em', fontFamily: 'sans-serif', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                       SHAZUSOFT TECHNOLOGIES
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, fontFamily: 'sans-serif', display: 'block' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, fontFamily: 'sans-serif', display: 'block', fontSize: { xs: 10, sm: 12 } }}>
                       EXECUTIVE HUMAN RESOURCES & COMPLIANCE DIRECTIVE
                     </Typography>
                   </Box>
@@ -582,6 +593,7 @@ export default function StaffMemosViewer({ user }) {
                         startIcon={signing ? <CircularProgress size={16} color="inherit" /> : <SignIcon />}
                         onClick={handleAcknowledge}
                         sx={{
+                          width: { xs: '100%', sm: 'auto' },
                           bgcolor: '#133829',
                           color: '#ffffff',
                           fontWeight: 800,

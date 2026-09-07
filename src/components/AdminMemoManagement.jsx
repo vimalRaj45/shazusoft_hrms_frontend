@@ -32,7 +32,9 @@ import {
   FormLabel,
   Divider,
   Paper,
-  Avatar
+  Avatar,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   Campaign as MemoIcon,
@@ -138,6 +140,9 @@ Your manager will review progress against these benchmarks during the upcoming a
 ];
 
 export default function AdminMemoManagement({ employees: propEmployees = [] }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [memos, setMemos] = useState([]);
   const [employees, setEmployees] = useState(propEmployees || []);
   const [loading, setLoading] = useState(false);
@@ -398,23 +403,24 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
   };
 
   return (
-    <Box sx={{ p: { xs: 1.5, md: 3 } }}>
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
       {/* Header Banner */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: { xs: 2, md: 3 }, flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-            <MemoIcon sx={{ fontSize: 32, color: '#133829' }} />
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
-              Official Memorandums & Executive Directives
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <MemoIcon sx={{ fontSize: { xs: 24, sm: 30 }, color: '#133829' }} />
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '1.15rem', sm: '1.45rem' } }}>
+              Official Memorandums & Directives
             </Typography>
           </Box>
-          <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5 }}>
-            Issue binding corporate directives to specific staff, departments, or entire workforce with legal digital acknowledgment
+          <Typography variant="body2" sx={{ color: '#64748b', mt: 0.4, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+            Issue binding corporate directives to specific staff, departments, or entire workforce
           </Typography>
         </Box>
 
         <Button
           variant="contained"
+          fullWidth={isMobile}
           startIcon={<AddIcon />}
           onClick={() => {
             if (employees.length > 0 && !formData.target_employee_id) {
@@ -434,6 +440,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
             py: 1,
             borderRadius: '8px',
             textTransform: 'none',
+            whiteSpace: 'nowrap',
             boxShadow: '0 4px 12px rgba(19, 56, 41, 0.2)',
             '&:hover': { bgcolor: '#0b2319' }
           }}
@@ -442,67 +449,67 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
         </Button>
       </Box>
 
-      {/* Metric Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
-                Total Memos Issued
+      {/* Metric Cards: 2x2 on mobile, 4 columns on desktop */}
+      <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} sx={{ mb: { xs: 2, md: 3 } }}>
+        <Grid item xs={6} md={3}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.2, sm: 2 } }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: { xs: 10, sm: 11 } }}>
+                Total Memos
               </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', mt: 0.5 }}>
+              <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', mt: 0.3, fontSize: { xs: '1.4rem', sm: '1.9rem' } }}>
                 {metrics.totalMemos}
               </Typography>
-              <Typography variant="caption" sx={{ color: '#059669', fontWeight: 600, display: 'block', mt: 0.5 }}>
-                Official corporate record
+              <Typography variant="caption" sx={{ color: '#059669', fontWeight: 600, display: 'block', mt: 0.3, fontSize: { xs: 10, sm: 11 } }}>
+                Corporate record
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="caption" sx={{ color: '#1d4ed8', fontWeight: 700, textTransform: 'uppercase' }}>
+        <Grid item xs={6} md={3}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.2, sm: 2 } }}>
+              <Typography variant="caption" sx={{ color: '#1d4ed8', fontWeight: 700, textTransform: 'uppercase', fontSize: { xs: 10, sm: 11 } }}>
                 Targeted to Staff
               </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 900, color: '#1d4ed8', mt: 0.5 }}>
+              <Typography variant="h4" sx={{ fontWeight: 900, color: '#1d4ed8', mt: 0.3, fontSize: { xs: '1.4rem', sm: '1.9rem' } }}>
                 {metrics.individualMemos}
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mt: 0.5 }}>
-                Direct 1-on-1 official memos
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mt: 0.3, fontSize: { xs: 10, sm: 11 } }}>
+                Direct 1-on-1 memos
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="caption" sx={{ color: '#15803d', fontWeight: 700, textTransform: 'uppercase' }}>
+        <Grid item xs={6} md={3}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.2, sm: 2 } }}>
+              <Typography variant="caption" sx={{ color: '#15803d', fontWeight: 700, textTransform: 'uppercase', fontSize: { xs: 10, sm: 11 } }}>
                 Signature Rate
               </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 900, color: '#15803d', mt: 0.5 }}>
+              <Typography variant="h4" sx={{ fontWeight: 900, color: '#15803d', mt: 0.3, fontSize: { xs: '1.4rem', sm: '1.9rem' } }}>
                 {metrics.complianceRate}%
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mt: 0.5 }}>
-                {metrics.totalAcks} of {metrics.totalRecipients} signatures confirmed
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mt: 0.3, fontSize: { xs: 10, sm: 11 } }}>
+                {metrics.totalAcks} of {metrics.totalRecipients} signed
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <CardContent sx={{ p: 2 }}>
-              <Typography variant="caption" sx={{ color: '#0f172a', fontWeight: 700, textTransform: 'uppercase' }}>
+        <Grid item xs={6} md={3}>
+          <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', height: '100%' }}>
+            <CardContent sx={{ p: { xs: 1.2, sm: 2 } }}>
+              <Typography variant="caption" sx={{ color: '#0f172a', fontWeight: 700, textTransform: 'uppercase', fontSize: { xs: 10, sm: 11 } }}>
                 Active Directives
               </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 900, color: '#133829', mt: 0.5 }}>
+              <Typography variant="h4" sx={{ fontWeight: 900, color: '#133829', mt: 0.3, fontSize: { xs: '1.4rem', sm: '1.9rem' } }}>
                 {metrics.activeDirectives}
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mt: 0.5 }}>
-                In force across departments
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block', mt: 0.3, fontSize: { xs: 10, sm: 11 } }}>
+                In force now
               </Typography>
             </CardContent>
           </Card>
@@ -510,9 +517,9 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
       </Grid>
 
       {/* Filter Toolbar */}
-      <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', mb: 3, p: 2 }}>
-        <Grid container spacing={1.5} alignItems="center">
-          <Grid item xs={12} sm={4}>
+      <Card sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', mb: { xs: 2, md: 3 }, p: { xs: 1.2, sm: 1.8 } }}>
+        <Grid container spacing={1.2} alignItems="center">
+          <Grid item xs={12} sm={6} md={4}>
             <TextField
               fullWidth
               size="small"
@@ -522,14 +529,14 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#94a3b8' }} />
+                    <SearchIcon sx={{ color: '#94a3b8', fontSize: 19 }} />
                   </InputAdornment>
                 )
               }}
             />
           </Grid>
 
-          <Grid item xs={6} sm={2.6}>
+          <Grid item xs={6} sm={3} md={2.5}>
             <TextField
               select
               fullWidth
@@ -538,14 +545,13 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
               value={selectedTargetType}
               onChange={(e) => setSelectedTargetType(e.target.value)}
             >
-              <MenuItem value="ALL">All Target Types</MenuItem>
-              <MenuItem value="INDIVIDUAL">Specific Staff Only</MenuItem>
-              <MenuItem value="DEPARTMENT">Department Only</MenuItem>
-              <MenuItem value="ALL">All Staff</MenuItem>
+              <MenuItem value="ALL">All Targets</MenuItem>
+              <MenuItem value="INDIVIDUAL">Staff Only</MenuItem>
+              <MenuItem value="DEPARTMENT">Department</MenuItem>
             </TextField>
           </Grid>
 
-          <Grid item xs={6} sm={2.6}>
+          <Grid item xs={6} sm={3} md={2.5}>
             <TextField
               select
               fullWidth
@@ -561,7 +567,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
             </TextField>
           </Grid>
 
-          <Grid item xs={6} sm={2}>
+          <Grid item xs={8} sm={3} md={2}>
             <TextField
               select
               fullWidth
@@ -578,14 +584,15 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
             </TextField>
           </Grid>
 
-          <Grid item xs={6} sm={0.8} sx={{ textAlign: 'right' }}>
+          <Grid item xs={4} sm={3} md={1} sx={{ textAlign: 'right' }}>
             <Button
+              fullWidth
               size="small"
+              variant="outlined"
               onClick={fetchMemos}
-              sx={{ minWidth: 40, p: 1, color: '#133829' }}
-              title="Refresh Memos"
+              sx={{ minHeight: 40, color: '#133829', borderColor: '#cbd5e1', fontWeight: 700, textTransform: 'none' }}
             >
-              ↻
+              Refresh
             </Button>
           </Grid>
         </Grid>
@@ -610,7 +617,134 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
               No memorandums matched your search filters. Click "Issue Official Memo" above to distribute a new directive.
             </Typography>
           </Box>
+        ) : isMobile ? (
+          /* Mobile Memos Card View */
+          <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {filteredMemos.map((memo) => {
+              const ackCount = memo.acknowledgedCount || 0;
+              const totalCount = memo.totalTargetCount || (memo.target_type === 'INDIVIDUAL' ? 1 : employees.length);
+              const pct = totalCount > 0 ? Math.round((ackCount / totalCount) * 100) : 0;
+              const isFullyAcked = ackCount >= totalCount && totalCount > 0;
+
+              return (
+                <Card key={memo.id} sx={{ p: 1.8, border: '1px solid #e2e8f0', borderRadius: '10px', bgcolor: '#ffffff' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                    <Box>
+                      <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 800, color: '#133829', bgcolor: '#f0fdf4', px: 0.8, py: 0.2, borderRadius: '4px', border: '1px solid #bbf7d0', display: 'inline-block' }}>
+                        {memo.memo_number}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.4 }}>
+                        Issued: {memo.issued_date}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      {getPriorityChip(memo.priority)}
+                    </Box>
+                  </Box>
+
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.5, lineHeight: 1.3 }}>
+                    {memo.title}
+                  </Typography>
+
+                  <Box sx={{ mb: 1.2 }}>
+                    {getTargetBadge(memo)}
+                  </Box>
+
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: '#475569',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      mb: 1.5,
+                      lineHeight: 1.5
+                    }}
+                  >
+                    {memo.content}
+                  </Typography>
+
+                  {memo.requires_acknowledgment && (
+                    <Box sx={{ mb: 1.5, p: 1, bgcolor: '#f8fafc', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: isFullyAcked ? '#15803d' : '#b45309' }}>
+                          {ackCount} / {totalCount} Signed
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b' }}>
+                          {pct}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={pct}
+                        sx={{
+                          height: 5,
+                          borderRadius: 3,
+                          bgcolor: '#e2e8f0',
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: isFullyAcked ? '#15803d' : pct > 0 ? '#3b82f6' : '#cbd5e1'
+                          }
+                        }}
+                      />
+                    </Box>
+                  )}
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1, borderTop: '1px solid #f1f5f9', flexWrap: 'wrap', gap: 0.5 }}>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<ViewIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => {
+                          setActiveMemo(memo);
+                          setOpenViewModal(true);
+                        }}
+                        sx={{ fontSize: 11, fontWeight: 700, borderColor: '#cbd5e1', color: '#133829', py: 0.3, px: 1, textTransform: 'none' }}
+                      >
+                        Letterhead
+                      </Button>
+
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => {
+                          setActiveMemo(memo);
+                          setOpenRecipientsModal(true);
+                        }}
+                        sx={{ fontSize: 11, fontWeight: 700, borderColor: '#bfdbfe', color: '#1d4ed8', py: 0.3, px: 1, textTransform: 'none' }}
+                      >
+                        Status ({ackCount}/{totalCount})
+                      </Button>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      {memo.requires_acknowledgment && !isFullyAcked && (
+                        <IconButton
+                          size="small"
+                          onClick={() => handleSendReminder(memo.id, memo.memo_number)}
+                          sx={{ color: '#d97706', p: 0.5 }}
+                          title="Remind pending"
+                        >
+                          <RemindIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteMemo(memo.id, memo.memo_number)}
+                        sx={{ color: '#ef4444', p: 0.5 }}
+                        title="Delete memo"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </Card>
+              );
+            })}
+          </Box>
         ) : (
+          /* Desktop Table View */
           <Box sx={{ overflowX: 'auto' }}>
             <Table>
               <TableHead sx={{ bgcolor: '#f8fafc' }}>
@@ -766,12 +900,22 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
         onClose={() => setOpenCreateModal(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '14px', p: 1 } }}
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: isMobile ? 0 : '14px',
+            m: isMobile ? 0 : 2,
+            height: isMobile ? '100%' : 'auto',
+            maxHeight: isMobile ? '100%' : '90vh',
+            display: 'flex',
+            flexDirection: 'column'
+          }
+        }}
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: { xs: 1.5, sm: 2 }, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <MemoIcon sx={{ color: '#133829' }} />
-            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+            <MemoIcon sx={{ color: '#133829', fontSize: { xs: 22, sm: 26 } }} />
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '1.05rem', sm: '1.25rem' } }}>
               Issue Executive Memorandum
             </Typography>
           </Box>
@@ -780,56 +924,79 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
           </IconButton>
         </DialogTitle>
 
-        <form onSubmit={handleCreateMemo}>
-          <DialogContent dividers sx={{ pt: 2 }}>
-            {/* Quick Template Picker */}
-            <Box sx={{ mb: 2.5, p: 1.5, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <TemplateIcon fontSize="small" sx={{ color: '#133829' }} />
-                <Typography variant="caption" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase' }}>
-                  Load Executive Template:
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {QUICK_TEMPLATES.map(tmpl => (
-                  <Chip
-                    key={tmpl.name}
-                    label={tmpl.name}
-                    clickable
-                    size="small"
-                    onClick={() => handleApplyTemplate(tmpl)}
-                    sx={{ bgcolor: '#ffffff', border: '1px solid #cbd5e1', fontWeight: 600, '&:hover': { bgcolor: '#e2e8f0' } }}
-                  />
-                ))}
-              </Box>
+        <form onSubmit={handleCreateMemo} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <DialogContent dividers sx={{ p: { xs: 1.5, sm: 2.5 }, flex: 1, overflowY: 'auto' }}>
+            {/* Quick Template Picker: Dropdown on Mobile, Chips on Desktop */}
+            <Box sx={{ mb: 2, p: 1.2, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
+              {isMobile ? (
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  label="Load Quick Executive Template..."
+                  value=""
+                  onChange={(e) => {
+                    const tmpl = QUICK_TEMPLATES.find(t => t.name === e.target.value);
+                    if (tmpl) handleApplyTemplate(tmpl);
+                  }}
+                  sx={{ bgcolor: '#ffffff' }}
+                >
+                  <MenuItem value="" disabled>-- Select a pre-written template --</MenuItem>
+                  {QUICK_TEMPLATES.map(tmpl => (
+                    <MenuItem key={tmpl.name} value={tmpl.name}>{tmpl.name}</MenuItem>
+                  ))}
+                </TextField>
+              ) : (
+                <>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <TemplateIcon fontSize="small" sx={{ color: '#133829' }} />
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase' }}>
+                      Load Executive Template:
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+                    {QUICK_TEMPLATES.map(tmpl => (
+                      <Chip
+                        key={tmpl.name}
+                        label={tmpl.name}
+                        clickable
+                        size="small"
+                        onClick={() => handleApplyTemplate(tmpl)}
+                        sx={{ bgcolor: '#ffffff', border: '1px solid #cbd5e1', fontWeight: 600, '&:hover': { bgcolor: '#e2e8f0' } }}
+                      />
+                    ))}
+                  </Box>
+                </>
+              )}
             </Box>
 
-            <Grid container spacing={2}>
+            <Grid container spacing={{ xs: 1.5, sm: 2 }}>
               {/* Target Audience Scope */}
               <Grid item xs={12}>
-                <FormControl component="fieldset" fullWidth sx={{ p: 2, bgcolor: '#f0fdf4', borderRadius: '10px', border: '1.5px solid #bbf7d0' }}>
-                  <FormLabel component="legend" sx={{ fontWeight: 800, color: '#166534', fontSize: 13, mb: 1 }}>
+                <FormControl component="fieldset" fullWidth sx={{ p: { xs: 1.2, sm: 1.8 }, bgcolor: '#f0fdf4', borderRadius: '10px', border: '1.5px solid #bbf7d0' }}>
+                  <FormLabel component="legend" sx={{ fontWeight: 800, color: '#166534', fontSize: { xs: 11, sm: 12 }, mb: 0.5 }}>
                     🎯 TARGET AUDIENCE SCOPE ("ADMIN SET TO STAFF")
                   </FormLabel>
                   <RadioGroup
-                    row
+                    row={!isMobile}
                     value={formData.target_type}
                     onChange={(e) => setFormData({ ...formData, target_type: e.target.value })}
+                    sx={{ gap: { xs: 0.5, sm: 1 } }}
                   >
                     <FormControlLabel
                       value="INDIVIDUAL"
-                      control={<Radio sx={{ color: '#166534', '&.Mui-checked': { color: '#133829' } }} />}
-                      label={<Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>Specific Staff Member(s)</Typography>}
+                      control={<Radio size="small" sx={{ color: '#166534', '&.Mui-checked': { color: '#133829' } }} />}
+                      label={<Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: 13, sm: 14 } }}>Specific Staff Member(s)</Typography>}
                     />
                     <FormControlLabel
                       value="DEPARTMENT"
-                      control={<Radio sx={{ color: '#166534', '&.Mui-checked': { color: '#133829' } }} />}
-                      label={<Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>Specific Department</Typography>}
+                      control={<Radio size="small" sx={{ color: '#166534', '&.Mui-checked': { color: '#133829' } }} />}
+                      label={<Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: 13, sm: 14 } }}>Specific Department</Typography>}
                     />
                     <FormControlLabel
                       value="ALL"
-                      control={<Radio sx={{ color: '#166534', '&.Mui-checked': { color: '#133829' } }} />}
-                      label={<Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>Entire Workforce (All Staff)</Typography>}
+                      control={<Radio size="small" sx={{ color: '#166534', '&.Mui-checked': { color: '#133829' } }} />}
+                      label={<Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: 13, sm: 14 } }}>Entire Workforce (All Staff)</Typography>}
                     />
                   </RadioGroup>
                 </FormControl>
@@ -903,6 +1070,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                 <TextField
                   select
                   fullWidth
+                  size="small"
                   label="Category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -913,10 +1081,11 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={6} sm={4}>
                 <TextField
                   select
                   fullWidth
+                  size="small"
                   label="Priority Level"
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
@@ -928,10 +1097,11 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={6} sm={4}>
                 <TextField
                   type="date"
                   fullWidth
+                  size="small"
                   label="Effective Date"
                   value={formData.effective_date}
                   onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
@@ -944,6 +1114,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                 <TextField
                   fullWidth
                   required
+                  size="small"
                   label="Memorandum Subject / Title"
                   placeholder="e.g. Official Directive on Daily Sprint Checkpoints & Code Quality"
                   value={formData.title}
@@ -957,7 +1128,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                   fullWidth
                   required
                   multiline
-                  rows={8}
+                  rows={isMobile ? 5 : 7}
                   label="Memorandum Directive & Detailed Text"
                   placeholder="Draft the official contents, clauses, guidelines, and binding instructions..."
                   value={formData.content}
@@ -969,6 +1140,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
+                  size="small"
                   label="Reference URL or Document Link (Optional)"
                   placeholder="https://drive.google.com/... or company document link"
                   value={formData.attachment_url}
@@ -988,11 +1160,11 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                   }
                   label={
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: 13, sm: 14 } }}>
                         Mandate Digital Signature & Acknowledgment
                       </Typography>
                       <Typography variant="caption" sx={{ color: '#64748b' }}>
-                        Target staff must click to sign and confirm understanding of this memorandum
+                        Target staff must confirm understanding of this memorandum
                       </Typography>
                     </Box>
                   }
@@ -1001,25 +1173,28 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
             </Grid>
           </DialogContent>
 
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenCreateModal(false)} sx={{ color: '#64748b', fontWeight: 600 }}>
+          <DialogActions sx={{ p: { xs: 1.5, sm: 2 }, borderTop: '1px solid #e2e8f0', bgcolor: '#f8fafc', display: 'flex', justifyContent: 'space-between' }}>
+            <Button
+              onClick={() => setOpenCreateModal(false)}
+              sx={{ color: '#64748b', fontWeight: 600, px: { xs: 1.5, sm: 2.5 } }}
+            >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={submitting}
-              startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+              startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
               sx={{
                 bgcolor: '#133829',
                 color: '#fff',
                 fontWeight: 700,
                 borderRadius: '8px',
-                px: 3,
+                px: { xs: 2, sm: 3 },
                 '&:hover': { bgcolor: '#0b2319' }
               }}
             >
-              {submitting ? 'Issuing Memo...' : 'Issue & Notify Staff'}
+              {submitting ? 'Issuing...' : 'Issue & Notify Staff'}
             </Button>
           </DialogActions>
         </form>
@@ -1031,11 +1206,17 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
         onClose={() => setOpenViewModal(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '12px' } }}
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: isMobile ? 0 : '12px',
+            m: isMobile ? 0 : 2
+          }
+        }}
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f8fafc', py: 1.5 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
-            Official Executive Letterhead View
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f8fafc', p: { xs: 1.5, sm: 2 }, borderBottom: '1px solid #e2e8f0' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '0.95rem', sm: '1.1rem' } }}>
+            Official Letterhead View
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
@@ -1043,9 +1224,9 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
               variant="outlined"
               startIcon={<PrintIcon />}
               onClick={() => window.print()}
-              sx={{ fontWeight: 700, borderColor: '#cbd5e1', color: '#0f172a' }}
+              sx={{ fontWeight: 700, borderColor: '#cbd5e1', color: '#0f172a', px: { xs: 1, sm: 2 }, fontSize: { xs: 12, sm: 13 } }}
             >
-              Print / Save PDF
+              {isMobile ? 'Print' : 'Print / PDF'}
             </Button>
             <IconButton onClick={() => setOpenViewModal(false)} size="small">
               <CloseIcon fontSize="small" />
@@ -1053,12 +1234,12 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
           </Box>
         </DialogTitle>
 
-        <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
+        <DialogContent sx={{ p: { xs: 1.2, sm: 2.5, md: 4 } }}>
           {activeMemo && (
             <Paper
               elevation={0}
               sx={{
-                p: { xs: 2, md: 4 },
+                p: { xs: 1.5, sm: 2.5, md: 4 },
                 border: '1px solid #cbd5e1',
                 borderRadius: '8px',
                 bgcolor: '#ffffff',
@@ -1066,24 +1247,24 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
               }}
             >
               {/* Letterhead Header */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #133829', pb: 2, mb: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'flex-start' }, gap: 1.5, borderBottom: '2px solid #133829', pb: 2, mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Box
                     component="img"
                     src="/logo.png"
                     alt="Shazu Soft"
-                    sx={{ width: 44, height: 44, objectFit: 'contain' }}
+                    sx={{ width: { xs: 36, sm: 44 }, height: { xs: 36, sm: 44 }, objectFit: 'contain' }}
                   />
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#133829', letterSpacing: '0.05em', fontFamily: 'sans-serif' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 900, color: '#133829', letterSpacing: '0.05em', fontFamily: 'sans-serif', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                       SHAZUSOFT TECHNOLOGIES
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, fontFamily: 'sans-serif', display: 'block' }}>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, fontFamily: 'sans-serif', display: 'block', fontSize: { xs: 10, sm: 12 } }}>
                       HUMAN RESOURCES & EXECUTIVE OPERATIONS • ISO-27001 COMPLIANT
                     </Typography>
                   </Box>
                 </Box>
-                <Box sx={{ textAlign: 'right', fontFamily: 'sans-serif' }}>
+                <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, fontFamily: 'sans-serif' }}>
                   <Typography variant="caption" sx={{ fontWeight: 800, color: '#133829', display: 'block' }}>
                     MEMO REF: {activeMemo.memo_number}
                   </Typography>
@@ -1095,7 +1276,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
 
               {/* Title Banner */}
               <Box sx={{ textAlign: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '0.1em', color: '#0f172a', fontFamily: 'sans-serif', textTransform: 'uppercase' }}>
+                <Typography variant="h6" sx={{ fontWeight: 900, letterSpacing: '0.08em', color: '#0f172a', fontFamily: 'sans-serif', textTransform: 'uppercase', fontSize: { xs: '0.95rem', sm: '1.2rem' } }}>
                   OFFICIAL EXECUTIVE MEMORANDUM
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'sans-serif' }}>
@@ -1104,7 +1285,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
               </Box>
 
               {/* Metadata Grid */}
-              <Box sx={{ bgcolor: '#f8fafc', p: 2, borderRadius: '6px', border: '1px solid #e2e8f0', mb: 3, fontFamily: 'sans-serif' }}>
+              <Box sx={{ bgcolor: '#f8fafc', p: { xs: 1.5, sm: 2 }, borderRadius: '6px', border: '1px solid #e2e8f0', mb: 3, fontFamily: 'sans-serif' }}>
                 <Grid container spacing={1}>
                   <Grid item xs={12} sm={6}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block' }}>
@@ -1149,7 +1330,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
               </Box>
 
               {/* Body Content */}
-              <Box sx={{ mb: 4, lineHeight: 1.8, fontSize: '0.98rem', color: '#1e293b', whiteSpace: 'pre-line' }}>
+              <Box sx={{ mb: 4, lineHeight: 1.8, fontSize: { xs: '0.9rem', sm: '0.98rem' }, color: '#1e293b', whiteSpace: 'pre-line' }}>
                 {activeMemo.content}
               </Box>
 
@@ -1158,14 +1339,14 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                   <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569' }}>
                     Reference Attachment:
                   </Typography>{' '}
-                  <a href={activeMemo.attachment_url} target="_blank" rel="noreferrer" style={{ color: '#133829', fontWeight: 700 }}>
+                  <a href={activeMemo.attachment_url} target="_blank" rel="noreferrer" style={{ color: '#133829', fontWeight: 700, wordBreak: 'break-all' }}>
                     {activeMemo.attachment_url}
                   </a>
                 </Box>
               )}
 
               {/* Signature Block & Stamp */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', pt: 3, borderTop: '1px solid #e2e8f0', fontFamily: 'sans-serif' }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'flex-end' }, gap: 2, pt: 3, borderTop: '1px solid #e2e8f0', fontFamily: 'sans-serif' }}>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>
                     Issued by Authority:
@@ -1178,7 +1359,7 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                   </Typography>
                 </Box>
 
-                <Box sx={{ textAlign: 'center', p: 1.5, border: '2px dashed #133829', borderRadius: '8px', color: '#133829' }}>
+                <Box sx={{ textAlign: 'center', p: 1.5, border: '2px dashed #133829', borderRadius: '8px', color: '#133829', alignSelf: { xs: 'flex-start', sm: 'flex-end' } }}>
                   <Typography variant="caption" sx={{ fontWeight: 900, display: 'block', letterSpacing: '0.08em' }}>
                     ★ OFFICIAL SEAL ★
                   </Typography>
@@ -1198,15 +1379,21 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
         onClose={() => setOpenRecipientsModal(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '12px' } }}
+        fullScreen={isMobile}
+        PaperProps={{
+          sx: {
+            borderRadius: isMobile ? 0 : '12px',
+            m: isMobile ? 0 : 2
+          }
+        }}
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: { xs: 1.5, sm: 2 }, borderBottom: '1px solid #e2e8f0' }}>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '1.05rem', sm: '1.25rem' } }}>
               Recipient Signature Tracking
             </Typography>
             {activeMemo && (
-              <Typography variant="caption" sx={{ color: '#64748b' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>
                 {activeMemo.memo_number} — {activeMemo.title}
               </Typography>
             )}
@@ -1220,9 +1407,9 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
           {activeMemo && (
             <Box>
               {/* Summary Bar */}
-              <Box sx={{ p: 2, bgcolor: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: 13, sm: 14 } }}>
                     Compliance: {activeMemo.acknowledgedCount || 0} of {activeMemo.recipientStatus?.length || activeMemo.totalTargetCount || 0} Staff Signed
                   </Typography>
                 </Box>
@@ -1231,40 +1418,26 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                   variant="outlined"
                   startIcon={<RemindIcon />}
                   onClick={() => handleSendReminder(activeMemo.id, activeMemo.memo_number)}
-                  sx={{ color: '#d97706', borderColor: '#fcd34d', fontWeight: 700 }}
+                  sx={{ color: '#d97706', borderColor: '#fcd34d', fontWeight: 700, fontSize: { xs: 11, sm: 13 } }}
                 >
-                  Send Reminder Notification
+                  Send Reminder
                 </Button>
               </Box>
 
-              {/* Recipients Table */}
-              <Table size="small">
-                <TableHead sx={{ bgcolor: '#f1f5f9' }}>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>EMPLOYEE</TableCell>
-                    <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>DEPARTMENT</TableCell>
-                    <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>STATUS</TableCell>
-                    <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>ACKNOWLEDGED AT</TableCell>
-                    <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>STAFF REMARKS</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
+              {/* Recipients Display: Clean Cards on Mobile, Table on Desktop */}
+              {isMobile ? (
+                <Box sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1.2 }}>
                   {(activeMemo.recipientStatus || []).map((rec) => (
-                    <TableRow key={rec.employee_id} hover>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
-                          {rec.employee_name}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b' }}>
-                          ID: {rec.employee_id}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                          {rec.department || 'General'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
+                    <Card key={rec.employee_id} sx={{ p: 1.5, border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.8 }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                            {rec.employee_name}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#64748b' }}>
+                            {rec.department || 'General'} • ID: {rec.employee_id}
+                          </Typography>
+                        </Box>
                         {rec.acknowledged ? (
                           <Chip
                             icon={<SignedIcon fontSize="small" sx={{ color: '#15803d !important' }} />}
@@ -1280,21 +1453,83 @@ export default function AdminMemoManagement({ employees: propEmployees = [] }) {
                             sx={{ bgcolor: '#fffbeb', color: '#b45309', fontWeight: 700, border: '1px solid #fde68a' }}
                           />
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace' }}>
-                          {rec.acknowledged_at ? new Date(rec.acknowledged_at).toLocaleString() : '—'}
+                      </Box>
+                      {rec.acknowledged_at && (
+                        <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
+                          Acknowledged: {new Date(rec.acknowledged_at).toLocaleString()}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="caption" sx={{ color: '#475569', fontStyle: rec.remarks ? 'normal' : 'italic' }}>
-                          {rec.remarks || 'None'}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
+                      )}
+                      {rec.remarks && (
+                        <Box sx={{ mt: 0.8, p: 0.8, bgcolor: '#f8fafc', borderRadius: '4px', borderLeft: '3px solid #133829' }}>
+                          <Typography variant="caption" sx={{ color: '#334155', fontStyle: 'italic', display: 'block' }}>
+                            "{rec.remarks}"
+                          </Typography>
+                        </Box>
+                      )}
+                    </Card>
                   ))}
-                </TableBody>
-              </Table>
+                </Box>
+              ) : (
+                <Box sx={{ overflowX: 'auto' }}>
+                  <Table size="small">
+                    <TableHead sx={{ bgcolor: '#f1f5f9' }}>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>EMPLOYEE</TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>DEPARTMENT</TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>STATUS</TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>ACKNOWLEDGED AT</TableCell>
+                        <TableCell sx={{ fontWeight: 800, fontSize: 11 }}>STAFF REMARKS</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {(activeMemo.recipientStatus || []).map((rec) => (
+                        <TableRow key={rec.employee_id} hover>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                              {rec.employee_name}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b' }}>
+                              ID: {rec.employee_id}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                              {rec.department || 'General'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {rec.acknowledged ? (
+                              <Chip
+                                icon={<SignedIcon fontSize="small" sx={{ color: '#15803d !important' }} />}
+                                label="Signed"
+                                size="small"
+                                sx={{ bgcolor: '#f0fdf4', color: '#166534', fontWeight: 800, border: '1px solid #bbf7d0' }}
+                              />
+                            ) : (
+                              <Chip
+                                icon={<PendingIcon fontSize="small" sx={{ color: '#b45309 !important' }} />}
+                                label="Pending"
+                                size="small"
+                                sx={{ bgcolor: '#fffbeb', color: '#b45309', fontWeight: 700, border: '1px solid #fde68a' }}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace' }}>
+                              {rec.acknowledged_at ? new Date(rec.acknowledged_at).toLocaleString() : '—'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption" sx={{ color: '#475569', fontStyle: rec.remarks ? 'normal' : 'italic' }}>
+                              {rec.remarks || 'None'}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              )}
             </Box>
           )}
         </DialogContent>
