@@ -64,6 +64,8 @@ import IssueResolutionChatHub from './components/IssueResolutionChatHub';
 import UserProfile from './components/UserProfile';
 import SystemGuide from './components/SystemGuide';
 import EmployeePayslipsViewer from './components/EmployeePayslipsViewer';
+import StaffMemosViewer from './components/StaffMemosViewer';
+import AdminMemoManagement from './components/AdminMemoManagement';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -769,6 +771,21 @@ function AppContent() {
             )
           )}
 
+          {/* TAB: OFFICIAL MEMOS & EXECUTIVE DIRECTIVES */}
+          {activeTab === 'memos' && (
+            isAdmin ? (
+              <AdminDashboard
+                initialTab={12}
+                onTabChange={(key) => setActiveTab(key)}
+                onStatsUpdate={setAdminStats}
+              />
+            ) : (
+              <Box>
+                <StaffMemosViewer user={user} />
+              </Box>
+            )
+          )}
+
           {/* TAB: WEEKLY REPORT (OPEN ALL TIME) */}
           {activeTab === 'weekly-report' && (
             <Box>
@@ -955,7 +972,8 @@ function AppContent() {
             'admin-directory': 8,
             'admin-audit': 9,
             'admin-holidays': 10,
-            'admin-payroll': 11
+            'admin-payroll': 11,
+            'admin-memos': 12
           }) && (
             <AdminDashboard
               initialTab={{
@@ -970,7 +988,8 @@ function AppContent() {
                 'admin-directory': 8,
                 'admin-audit': 9,
                 'admin-holidays': 10,
-                'admin-payroll': 11
+                'admin-payroll': 11,
+                'admin-memos': 12
               }[activeTab]}
               onTabChange={(key) => setActiveTab(key)}
               onStatsUpdate={setAdminStats}

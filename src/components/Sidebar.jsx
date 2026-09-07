@@ -32,7 +32,8 @@ import {
   BadgeOutlined as DirectoryIcon,
   PublishedWithChanges as RegularizeIcon,
   CalendarMonthOutlined as CalendarIcon,
-  PaymentsOutlined as PayrollIcon
+  PaymentsOutlined as PayrollIcon,
+  CampaignOutlined as MemoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
@@ -328,6 +329,7 @@ export default function Sidebar({
             {renderNavItem('workdone', 'Work Log & Daily Plan', TaskIcon)}
             {renderNavItem('chat-hub', 'Issue Resolution & Chat', ChatIcon, 'Live')}
             {!isAdmin && renderNavItem('attendance', 'Office Attendance', GpsIcon)}
+            {!isAdmin && renderNavItem('memos', 'Official Memos', MemoIcon, 'Notices')}
             {!isAdmin && renderNavItem('leaves', 'Leaves & Permissions', LeaveIcon)}
             {!isAdmin && renderNavItem('my-payslips', 'My Salary Payslips', PayrollIcon, 'Salary')}
             {!isAdmin && renderNavItem('weekly-report', 'Weekly Check-in', WeekIcon, 'Weekly')}
@@ -383,6 +385,7 @@ export default function Sidebar({
                 {renderNavItem('admin-workdone', 'Team Work Done', TaskIcon)}
                 {renderNavItem('admin-leaves', 'Leave Requests', LeaveIcon, adminStats.pendingLeaves > 0 ? `${adminStats.pendingLeaves} New` : null)}
                 {renderNavItem('admin-timesheets', 'Staff Timesheets', ReportIcon)}
+                {renderNavItem('admin-memos', 'Official Memos & Notices', MemoIcon, 'Directives')}
                 {renderNavItem('admin-weekly', 'Weekly Staff Reports', WeekIcon)}
                 {renderNavItem('admin-evals', 'Monthly Appraisals', EvalIcon)}
                 {renderNavItem('admin-directory', 'Staff Directory', DirectoryIcon)}

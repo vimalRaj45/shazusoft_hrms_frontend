@@ -196,6 +196,16 @@ export const payrollAPI = {
   getMyPayslips: () => api.get('/payroll/my-payslips')
 };
 
+export const memosAPI = {
+  getMemos: () => api.get('/memos'),
+  getMemo: (id) => api.get(`/memos/${id}`),
+  createMemo: (data) => api.post('/memos', data),
+  updateMemo: (id, data) => api.put(`/memos/${id}`, data),
+  deleteMemo: (id) => api.delete(`/memos/${id}`),
+  acknowledgeMemo: (id, data) => api.post(`/memos/${id}/acknowledge`, data),
+  remindMemo: (id) => api.post(`/memos/${id}/remind`)
+};
+
 export default api;
 
 

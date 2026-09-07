@@ -59,7 +59,8 @@ import {
   FilterList as FilterIcon,
   CalendarMonth as CalendarIcon,
   AccessTime as TimeIcon,
-  Payments as PayrollIcon
+  Payments as PayrollIcon,
+  Campaign as MemoIcon
 } from '@mui/icons-material';
 import toast, { muiToast } from '../utils/muiToast';
 import { adminAPI, workDoneAPI, leavesAPI, reportsAPI, evaluationsAPI, attendanceAPI, communicationsAPI, payrollAPI } from '../services/api';
@@ -70,6 +71,7 @@ import WeeklyReportsViewer from '../components/WeeklyReportsViewer';
 import TaskTrackerBoard from '../components/TaskTrackerBoard';
 import AdminStaffTimesheets from '../components/AdminStaffTimesheets';
 import AdminPayrollManagement from '../components/AdminPayrollManagement';
+import AdminMemoManagement from '../components/AdminMemoManagement';
 import GeofencePunch from '../components/GeofencePunch';
 import { MetricCardsSkeleton, TableRowsSkeleton, DocumentViewerSkeleton } from '../components/SkeletonLoaders';
 import { format } from 'date-fns';
@@ -95,7 +97,8 @@ const SECTION_META = [
   { id: 8, title: 'Staff Directory & Status', subtitle: 'Manage employee profiles, work modes, and account deactivations', category: 'Directory & Settings' },
   { id: 9, title: 'Audit Trail & Security Logs', subtitle: 'System communication logs, resignation audits, and security trail', category: 'Directory & Settings' },
   { id: 10, title: 'Office Timings, Calendar & Geofence', subtitle: 'Office shift hours, late grace cutoff, holidays, and GPS perimeter', category: 'Directory & Settings' },
-  { id: 11, title: 'Automated Payroll & Payslips', subtitle: 'Startup salary calculation, Working Sundays inclusion, LOP metrics, and 1-click PDF payslips', category: 'Finance & Remuneration' }
+  { id: 11, title: 'Automated Payroll & Payslips', subtitle: 'Startup salary calculation, Working Sundays inclusion, LOP metrics, and 1-click PDF payslips', category: 'Finance & Remuneration' },
+  { id: 12, title: 'Official Memos & Notices', subtitle: 'Issue executive memorandums to individual staff, departments, or entire organization with digital signature tracking', category: 'Corporate Directives & Memos' }
 ];
 
 export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpdate }) {
@@ -130,7 +133,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         'admin-directory',
         'admin-audit',
         'admin-holidays',
-        'admin-payroll'
+        'admin-payroll',
+        'admin-memos'
       ];
       onTabChange(tabKeys[idx] || 'admin-live');
     }
@@ -1153,6 +1157,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                 {activeTab === 9 && <AuditIcon sx={{ fontSize: 24 }} />}
                 {activeTab === 10 && <HolidayIcon sx={{ fontSize: 24 }} />}
                 {activeTab === 11 && <PayrollIcon sx={{ fontSize: 24 }} />}
+                {activeTab === 12 && <MemoIcon sx={{ fontSize: 24 }} />}
               </Box>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -2602,6 +2607,12 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   });
                 }}
               />
+            </Box>
+          )}
+
+          {activeTab === 12 && (
+            <Box>
+              <AdminMemoManagement />
             </Box>
           )}
         </CardContent>
