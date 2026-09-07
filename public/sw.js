@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shazusoft-hrms-cache-v1';
+const CACHE_NAME = 'shazusoft-hrms-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -55,7 +55,37 @@ self.addEventListener('push', (event) => {
     silent: false
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  // Only show OS desktop/mobile push notification when the user is NOT actively using the software.
+  // If an HRMS window/tab is open and currently visible or focused, suppress the OS push notification
+  // since the user already receives in-app toasts, chimes, and real-time SSE updates.
+  const handlePush = clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true
+  }).then((clientList) => {
+    const isInsideSoftware = clientList.some((client) => {
+      const isAppWindow = client.url.includes(self.location.origin);
+      return isAppWindow && (client.visibilityState === 'visible' || client.focused);
+    });
+
+    if (isInsideSoftware) {
+      // User is actively inside the software: suppress OS push popup!
+      // Forward the event to the open window client(s) for in-app handling if desired
+      clientList.forEach((client) => {
+        if (client.url.includes(self.location.origin) && 'postMessage' in client) {
+          client.postMessage({
+            type: 'PUSH_RECEIVED_IN_APP',
+            data: { title, ...options }
+          });
+        }
+      });
+      return null;
+    }
+
+    // User is NOT inside the software (tab hidden, minimized, or closed) -> Show OS Push Notification
+    return self.registration.showNotification(title, options);
+  });
+
+  event.waitUntil(handlePush);
 });
 
 // NotificationClick Event: Handle user clicking on a notification (Deep link to specific section/tab)

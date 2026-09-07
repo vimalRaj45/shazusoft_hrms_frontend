@@ -70,6 +70,7 @@ import WeeklyReportsViewer from '../components/WeeklyReportsViewer';
 import TaskTrackerBoard from '../components/TaskTrackerBoard';
 import AdminStaffTimesheets from '../components/AdminStaffTimesheets';
 import AdminPayrollManagement from '../components/AdminPayrollManagement';
+import GeofencePunch from '../components/GeofencePunch';
 import { MetricCardsSkeleton, TableRowsSkeleton, DocumentViewerSkeleton } from '../components/SkeletonLoaders';
 import { format } from 'date-fns';
 import { formatTime12h } from '../utils/timeUtils';
@@ -429,8 +430,20 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     }
   };
 
+  const [adminTodayData, setAdminTodayData] = useState(null);
+
+  const fetchAdminTodayData = async () => {
+    try {
+      const res = await attendanceAPI.getToday();
+      setAdminTodayData(res.data);
+    } catch (err) {
+      console.error('Error fetching admin today attendance:', err);
+    }
+  };
+
   const fetchDashboardData = async () => {
     setLoading(true);
+    fetchAdminTodayData();
     try {
       const [liveRes, tasksRes, leavesRes, permsRes, empRes, evalRes, settingsRes, regRes, logsRes, weeklyRes, holidaysRes, policyRes, timingsRes, salaryRes] = await Promise.all([
         adminAPI.getLiveStatus().catch(() => ({ data: null })),
@@ -496,6 +509,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           return [...prev, detail.salary_structure];
         });
       } else if (detail.type === 'attendance_updated') {
+        fetchAdminTodayData();
         adminAPI.getLiveStatus().then(res => {
           if (res?.data) setLiveData(res.data);
         }).catch(() => {});
@@ -1097,6 +1111,17 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </Card>
         </Grid>
       </Grid>
+
+      {/* Admin Executive Attendance & GPS Punch Hub */}
+      <Box sx={{ mb: 2.5 }}>
+        <GeofencePunch
+          todayData={adminTodayData}
+          onRefresh={() => {
+            fetchAdminTodayData();
+            fetchDashboardData();
+          }}
+        />
+      </Box>
 
       {/* Sleek Workspace Context Header */}
       <Card sx={{ mb: 2.5, borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>

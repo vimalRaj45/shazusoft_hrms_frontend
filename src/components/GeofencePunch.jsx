@@ -35,6 +35,8 @@ import { format } from 'date-fns';
 export default function GeofencePunch({ todayData, onRefresh }) {
   const { user } = useAuth();
   const isWfh = user?.work_mode === 'wfh';
+  const isAdmin = user?.role === 'admin';
+  const isExempt = isWfh || isAdmin;
 
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -47,7 +49,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
 
   const [coords, setCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState(null);
-  const [loadingLocation, setLoadingLocation] = useState(!isWfh);
+  const [loadingLocation, setLoadingLocation] = useState(!isExempt);
   const [actionLoading, setActionLoading] = useState(false);
   const [openRegularizeModal, setOpenRegularizeModal] = useState(false);
   const [todayHoliday, setTodayHoliday] = useState(null); // null = not a holiday, object = holiday info
@@ -67,8 +69,8 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   }, [todayStr, todayData]);
 
   const captureLocation = () => {
-    if (isWfh) {
-      // In WFH mode, we try to capture coords if easily available, but do not block user
+    if (isExempt) {
+      // In WFH or Admin mode, we try to capture coords if available, but do not block user
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
@@ -130,7 +132,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   }, [isWfh]);
 
   const handlePunchIn = async () => {
-    if (!isWfh && !coords) {
+    if (!isExempt && !coords) {
       toast.error('Please wait for GPS location to be detected.');
       return;
     }
@@ -152,7 +154,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   };
 
   const handlePunchOut = async () => {
-    if (!isWfh && !coords) {
+    if (!isExempt && !coords) {
       toast.error('Please wait for GPS location to be detected.');
       return;
     }
@@ -178,24 +180,28 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   const isPunchedOut = todayData?.isPunchedOut;
 
   // Determine if today is a configured Working Sunday override
-  const isWorkingSunday = isTodaySunday && todayHoliday && (
+  const isSunday = new Date().getDay() === 0;
+  const isWorkingSunday = isSunday && todayHoliday && (
     todayHoliday.type === 'Working Sunday' ||
     todayHoliday.type?.toLowerCase().includes('working') ||
     todayHoliday.name?.toLowerCase().includes('working')
   );
 
-  const isHolidayNonWorking = todayHoliday && !isWorkingSunday && (
+  // ─── NON-WORKING DAY OVERRIDE ──────────────────────────────
+  const isBlockedNonWorkingDay = (isSunday && !isWorkingSunday) || (
+    todayHoliday &&
+    !isWorkingSunday &&
     todayHoliday.type !== 'Working Sunday' &&
     !todayHoliday.type?.toLowerCase().includes('working') &&
     !todayHoliday.name?.toLowerCase().includes('working')
   );
 
-  // ── Non-working day banner (Shown only if it is a non-working Sunday or non-working holiday) ──
-  if ((isTodaySunday && !isWorkingSunday) || isHolidayNonWorking) {
-    const label = isTodaySunday ? 'Sunday' : todayHoliday?.name || 'Holiday';
-    const subtitle = isTodaySunday
-      ? 'Today is Sunday — official non-working day.'
-      : `Today is a scheduled company holiday: "${todayHoliday?.name}" (${todayHoliday?.type || 'Holiday'}). No check-in required.`;
+  if (isBlockedNonWorkingDay && !attendance) {
+    const label = isSunday && !isWorkingSunday ? 'Sunday Weekend' : todayHoliday?.name || 'Company Holiday';
+    const subtitle = isSunday && !isWorkingSunday
+      ? 'Today is Sunday. Attendance check-in is closed unless scheduled as a Working Sunday.'
+      : `Official holiday: "${todayHoliday?.name}" (${todayHoliday?.type || 'Gazetted Holiday'}). Enjoy your day!`;
+
     return (
       <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', borderRadius: '10px' }}>
         <Box sx={{ height: 4, bgcolor: '#8b5cf6' }} />
@@ -224,9 +230,9 @@ export default function GeofencePunch({ todayData, onRefresh }) {
       <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {isWfh ? <HomeIcon color="secondary" /> : <LocationIcon color="primary" />}
+            {isAdmin ? <LocationIcon sx={{ color: '#133829' }} /> : isWfh ? <HomeIcon color="secondary" /> : <LocationIcon color="primary" />}
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {isWfh ? 'Work From Home (WFH) Attendance' : 'Office Location Attendance'}
+              {isAdmin ? 'Executive Management Attendance & GPS Punch' : isWfh ? 'Work From Home (WFH) Attendance' : 'Office Location Attendance'}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
@@ -265,7 +271,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 sx={{ fontWeight: 700, bgcolor: '#dcfce7', color: '#15803d', borderRadius: '6px' }}
               />
             )}
-            {!isWfh && (
+            {!isExempt && (
               <Tooltip title="Refresh Location">
                 <span>
                   <Button
@@ -283,8 +289,40 @@ export default function GeofencePunch({ todayData, onRefresh }) {
           </Box>
         </Box>
 
-        {/* Status Box: WFH Mode vs Office GPS */}
-        {isWfh ? (
+        {/* Status Box: Admin Mode vs WFH Mode vs Office GPS */}
+        {isAdmin ? (
+          <Box
+            sx={{
+              p: 2,
+              mb: 2.5,
+              borderRadius: '10px',
+              backgroundColor: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 1.5
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <CheckCircleIcon sx={{ color: '#16a34a', fontSize: 26 }} />
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#15803d' }}>
+                  Executive Administrator Mode Active
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#166534' }}>
+                  Authorized to punch in and punch out directly with executive audit verification.
+                </Typography>
+              </Box>
+            </Box>
+            <Chip
+              size="small"
+              label="EXECUTIVE ACCESS"
+              sx={{ fontWeight: 800, borderRadius: '6px', fontSize: 10, bgcolor: '#dcfce7', color: '#15803d' }}
+            />
+          </Box>
+        ) : isWfh ? (
           <Box
             sx={{
               p: 2,
@@ -341,17 +379,19 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 <CancelIcon color="error" sx={{ fontSize: 26 }} />
               )}
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                   {loadingLocation
-                    ? 'Detecting work location...'
+                    ? 'Detecting GPS Office Location...'
                     : geoStatus?.inside
-                    ? 'Inside Office Premises'
-                    : 'Outside Office Location'}
+                    ? 'Within Verified Office Geofence'
+                    : 'Outside Office Geofence Radius'}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {coords
-                    ? `Distance: ${geoStatus?.distanceMeters ?? '--'}m (Allowed: ${geoStatus?.allowedRadiusMeters ?? 150}m)`
-                    : 'Waiting for location check...'}
+                  {loadingLocation
+                    ? 'Triangulating high-accuracy latitude & longitude...'
+                    : geoStatus?.inside
+                    ? `You are inside the permitted radius (${geoStatus?.distanceMeters ?? '0'}m from center).`
+                    : `You are ${geoStatus?.distanceMeters ?? 'N/A'}m away. Must be within ${geoStatus?.allowedRadiusMeters ?? 150}m to punch.`}
                 </Typography>
               </Box>
             </Box>
@@ -375,7 +415,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
               size="large"
               startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <PunchInIcon />}
               onClick={handlePunchIn}
-              disabled={actionLoading || (!isWfh && (loadingLocation || !geoStatus?.inside)) || !!attendance}
+              disabled={actionLoading || (!isExempt && (loadingLocation || !geoStatus?.inside)) || !!attendance}
               sx={{
                 py: { xs: 1.2, sm: 1.5 },
                 fontWeight: 700,
@@ -385,7 +425,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 opacity: attendance ? 0.6 : 1
               }}
             >
-              {attendance ? `Punched In at ${formatTime12h(attendance.login_time)}` : isWfh ? 'Punch In (WFH Home)' : 'Punch In (Office GPS)'}
+              {attendance ? `Punched In at ${formatTime12h(attendance.login_time)}` : isAdmin ? 'Punch In (Executive Punch)' : isWfh ? 'Punch In (WFH Home)' : 'Punch In (Office GPS)'}
             </Button>
           </Grid>
 
@@ -397,7 +437,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
               size="large"
               startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <PunchOutIcon />}
               onClick={handlePunchOut}
-              disabled={actionLoading || (!isWfh && (loadingLocation || !geoStatus?.inside)) || !isPunchedIn || isPunchedOut}
+              disabled={actionLoading || (!isExempt && (loadingLocation || !geoStatus?.inside)) || !isPunchedIn || isPunchedOut}
               sx={{
                 py: { xs: 1.2, sm: 1.5 },
                 fontWeight: 700,
@@ -406,7 +446,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 '&:hover': { borderWidth: 2 }
               }}
             >
-              {isPunchedOut ? `Punched Out at ${formatTime12h(attendance.logout_time)}` : isWfh ? 'Punch Out (WFH Home)' : 'Punch Out (Office GPS)'}
+              {isPunchedOut ? `Punched Out at ${formatTime12h(attendance.logout_time)}` : isAdmin ? 'Punch Out (Executive Punch)' : isWfh ? 'Punch Out (WFH Home)' : 'Punch Out (Office GPS)'}
             </Button>
           </Grid>
         </Grid>
