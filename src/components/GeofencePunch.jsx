@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   CircularProgress,
+  LinearProgress,
   Chip,
   Grid,
   Tooltip
@@ -56,6 +57,8 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const isTodaySunday = new Date().getDay() === 0;
 
+  const [timingInfo, setTimingInfo] = useState(null);
+
   // Fetch holidays to check if today is a holiday or a Working Sunday
   useEffect(() => {
     attendanceAPI.getHolidays().then(res => {
@@ -66,6 +69,13 @@ export default function GeofencePunch({ todayData, onRefresh }) {
       });
       setTodayHoliday(match || null);
     }).catch(() => {}); // silently ignore
+
+    // Load dynamic shift timings & target working hours
+    attendanceAPI.getOfficeTimings().then(res => {
+      if (res?.data?.timings) {
+        setTimingInfo(res.data);
+      }
+    }).catch(() => {});
   }, [todayStr, todayData]);
 
   const captureLocation = () => {
@@ -178,6 +188,68 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   const attendance = todayData?.attendance;
   const isPunchedIn = todayData?.isPunchedIn;
   const isPunchedOut = todayData?.isPunchedOut;
+
+  const formatHoursAndMinutes = (decimalHours) => {
+    const totalMinutes = Math.max(0, Math.round((decimalHours || 0) * 60));
+    
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
+
+  const calculateElapsedHours = () => {
+    if (!attendance || !attendance.login_time) return 0;
+    try {
+      const [lh, lm] = attendance.login_time.split(':').map(Number);
+      const loginDate = new Date();
+      loginDate.setHours(lh, lm, 0, 0);
+
+      let endDate = currentTime;
+      if (attendance.logout_time) {
+        const [eh, em] = attendance.logout_time.split(':').map(Number);
+        endDate = new Date();
+        endDate.setHours(eh, em, 0, 0);
+      }
+      const diffMs = Math.max(0, endDate - loginDate);
+      return diffMs / (1000 * 60 * 60);
+    } catch (e) {
+      return parseFloat(attendance.net_hours) || 0;
+    }
+  };
+
+  const cachedUser = user || (() => {
+    try {
+      return JSON.parse(localStorage.getItem('shazusoft_user') || '{}');
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  const isIntern = Boolean(
+    timingInfo?.employment_type === 'internship' ||
+    cachedUser?.employment_type === 'internship' ||
+    cachedUser?.designation?.toLowerCase()?.includes('intern') ||
+    cachedUser?.role === 'intern'
+  );
+
+  const displayOpeningTime = (isIntern && (!timingInfo || timingInfo?.employment_type !== 'internship'))
+    ? '10:00'
+    : (timingInfo?.timings?.opening_time || (isIntern ? '10:00' : '09:30'));
+  const displayClosingTime = (isIntern && (!timingInfo || timingInfo?.employment_type !== 'internship'))
+    ? '16:30'
+    : (timingInfo?.timings?.closing_time || (isIntern ? '16:30' : '18:30'));
+  const displayGraceTime = (isIntern && (!timingInfo || timingInfo?.employment_type !== 'internship'))
+    ? '10:15'
+    : (timingInfo?.timings?.late_grace_time || (isIntern ? '10:15' : '09:45'));
+  const targetNeededHours = isIntern
+    ? (timingInfo?.employment_type === 'internship' && timingInfo?.timings?.avg_daily_hours ? parseFloat(timingInfo.timings.avg_daily_hours) : 6.0)
+    : parseFloat(timingInfo?.timings?.avg_daily_hours || timingInfo?.timings?.full_day_hours || 8.5);
+
+  const elapsedHours = calculateElapsedHours();
+  const progressPercent = Math.min(100, Math.round((elapsedHours / targetNeededHours) * 100));
+  const isGoalReached = elapsedHours >= targetNeededHours;
+  const remainingHours = Math.max(0, targetNeededHours - elapsedHours);
 
   // Determine if today is a configured Working Sunday override
   const isSunday = new Date().getDay() === 0;
@@ -405,6 +477,83 @@ export default function GeofencePunch({ todayData, onRefresh }) {
           </Box>
         )}
 
+        {/* Applicable Shift & Required Hours Indicator */}
+        <Box sx={{ mb: 2, p: 1.5, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              size="small"
+              label={isIntern ? 'INTERNSHIP SHIFT' : 'FULL-TIME SHIFT'}
+              sx={{
+                fontWeight: 800,
+                fontSize: 10,
+                borderRadius: '6px',
+                bgcolor: isIntern ? '#f3e8ff' : '#dcfce7',
+                color: isIntern ? '#7e22ce' : '#15803d'
+              }}
+            />
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#334155' }}>
+              {formatTime12h(displayOpeningTime)} – {formatTime12h(displayClosingTime)} (Grace until {formatTime12h(displayGraceTime)})
+            </Typography>
+          </Box>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b' }}>
+            Target Needed: <strong>{targetNeededHours} hrs/day</strong>
+          </Typography>
+        </Box>
+
+        {/* Working Hours Target & Live Progress Meter (When punched in today) */}
+        {attendance && (
+          <Box sx={{ mb: 2.5, p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1.5px solid #e2e8f0' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Today's Working Hours Progress:
+                </Typography>
+                <Chip
+                  size="small"
+                  label={timingInfo?.employment_type === 'internship' ? 'INTERN TARGET' : 'STAFF TARGET'}
+                  sx={{
+                    height: 20,
+                    fontSize: 10,
+                    fontWeight: 800,
+                    bgcolor: timingInfo?.employment_type === 'internship' ? '#f3e8ff' : '#dcfce7',
+                    color: timingInfo?.employment_type === 'internship' ? '#7e22ce' : '#15803d'
+                  }}
+                />
+              </Box>
+
+              <Typography variant="body2" sx={{ fontWeight: 800, color: isGoalReached ? '#15803d' : '#0284c7' }}>
+                {formatHoursAndMinutes(elapsedHours)} / {targetNeededHours}h needed ({progressPercent}%)
+              </Typography>
+            </Box>
+
+            {/* Visual Progress Bar */}
+            <LinearProgress
+              variant="determinate"
+              value={progressPercent}
+              sx={{
+                height: 8,
+                borderRadius: 4,
+                bgcolor: '#e2e8f0',
+                '& .MuiLinearProgress-bar': {
+                  borderRadius: 4,
+                  bgcolor: isGoalReached ? '#10b981' : (timingInfo?.employment_type === 'internship' ? '#a855f7' : '#3b82f6')
+                }
+              }}
+            />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                {isPunchedOut ? 'Shift Completed' : 'Tracking in real-time...'}
+              </Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: isGoalReached ? '#15803d' : '#d97706' }}>
+                {isGoalReached
+                  ? `Target Completed! (+${formatHoursAndMinutes(elapsedHours - targetNeededHours)} extra)`
+                  : `${formatHoursAndMinutes(remainingHours)} remaining to reach target`}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
         {/* Punch In / Out Action Buttons */}
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
@@ -488,10 +637,18 @@ export default function GeofencePunch({ todayData, onRefresh }) {
             </Box>
             <Box>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>
-                NET HOURS
+                TIME WORKED
               </Typography>
               <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'secondary.main' }}>
-                {attendance.net_hours ? `${attendance.net_hours}h` : 'In Progress'}
+                {formatHoursAndMinutes(elapsedHours)}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>
+                DAILY TARGET
+              </Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: isGoalReached ? '#15803d' : '#334155' }}>
+                {targetNeededHours}h {isGoalReached ? '✓' : ''}
               </Typography>
             </Box>
           </Box>

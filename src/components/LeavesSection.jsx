@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import toast from '../utils/muiToast';
 import { leavesAPI, adminAPI } from '../services/api';
+import TimePicker12h from './TimePicker12h';
 import { useAuth } from '../context/AuthContext';
 import { TableRowsSkeleton } from './SkeletonLoaders';
 
@@ -199,6 +200,7 @@ export default function LeavesSection() {
 
   const balances = balanceData?.balances || {};
   const policy = balanceData?.policy || {};
+  const isIntern = balanceData?.employment_type === 'internship';
   const permPolicy = balanceData?.permissionPolicy || { monthlyLimit: 2, usedThisMonth: 0, remainingThisMonth: 2 };
 
   return (
@@ -280,11 +282,11 @@ export default function LeavesSection() {
           <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
             <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PAID ANNUAL LEAVE (PL)</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0284c7', mt: 0.5 }}>
-                {balances['Paid Leave']?.remainingDays ?? 1} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ {balances['Paid Leave']?.totalQuota ?? 1}d</span>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: isIntern ? '#94a3b8' : '#0284c7', mt: 0.5 }}>
+                {isIntern ? 'EXEMPT' : (balances['Paid Leave']?.remainingDays ?? 1)} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{isIntern ? '' : `/ ${balances['Paid Leave']?.totalQuota ?? 1}d`}</span>
               </Typography>
               <Typography variant="caption" sx={{ color: '#64748b' }}>
-                {balances['Paid Leave']?.approvedDays ?? 0} days used this month
+                {isIntern ? 'Not available for Interns' : `${balances['Paid Leave']?.approvedDays ?? 0} days used this month`}
               </Typography>
             </Box>
           </Grid>
@@ -498,7 +500,13 @@ export default function LeavesSection() {
                 >
                   <MenuItem value="Casual Leave">Casual Leave ({balances['Casual Leave']?.remainingDays ?? (policy?.casual_leave ?? 1)} days left this month)</MenuItem>
                   <MenuItem value="Sick Leave">Sick Leave ({balances['Sick Leave']?.remainingDays ?? (policy?.sick_leave ?? 1)} days left this month)</MenuItem>
-                  <MenuItem value="Paid Leave">Paid Annual Leave ({balances['Paid Leave']?.remainingDays ?? (policy?.paid_leave ?? 1)} days left this month)</MenuItem>
+                  {isIntern ? (
+                    <MenuItem value="Paid Leave" disabled>
+                      Paid Annual Leave (Not Available for Interns)
+                    </MenuItem>
+                  ) : (
+                    <MenuItem value="Paid Leave">Paid Annual Leave ({balances['Paid Leave']?.remainingDays ?? (policy?.paid_leave ?? 1)} days left this month)</MenuItem>
+                  )}
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -550,11 +558,11 @@ export default function LeavesSection() {
       <Dialog open={openPermModal} onClose={() => setOpenPermModal(false)} maxWidth="sm" fullWidth>
         <form onSubmit={handleApplyPermission}>
           <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <PermissionIcon color="secondary" /> Request Short Permission Pass (Max 2 hrs)
+            <PermissionIcon color="secondary" /> Request Short Permission Pass (Max {permPolicy.maxPermissionHours || (isIntern ? 1.5 : 2)} hrs)
           </DialogTitle>
           <DialogContent dividers>
             <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>
-              Monthly Limit: <strong>{permPolicy.monthlyLimit} passes allowed per month</strong>. You have <strong>{permPolicy.remainingThisMonth} remaining</strong>.
+              Monthly Limit: <strong>{permPolicy.monthlyLimit} {permPolicy.monthlyLimit === 1 ? 'pass' : 'passes'} allowed per month</strong> ({isIntern ? 'Internship Allowance' : 'Full-Time Allowance'}). You have <strong>{permPolicy.remainingThisMonth} remaining</strong>.
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -569,22 +577,16 @@ export default function LeavesSection() {
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  type="time"
+                <TimePicker12h
                   label="Start Time"
-                  InputLabelProps={{ shrink: true }}
                   required
                   value={permForm.start_time}
                   onChange={(e) => setPermForm({ ...permForm, start_time: e.target.value })}
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  type="time"
+                <TimePicker12h
                   label="End Time"
-                  InputLabelProps={{ shrink: true }}
                   required
                   value={permForm.end_time}
                   onChange={(e) => setPermForm({ ...permForm, end_time: e.target.value })}

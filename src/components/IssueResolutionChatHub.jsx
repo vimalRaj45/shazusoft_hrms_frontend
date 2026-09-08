@@ -1201,6 +1201,20 @@ export default function IssueResolutionChatHub({ user }) {
                                       color: staff.role === 'admin' ? '#991b1b' : '#475569'
                                     }}
                                   />
+                                  {staff.employment_type === 'internship' && (
+                                    <Chip
+                                      label="INTERN"
+                                      size="small"
+                                      sx={{
+                                        height: 18,
+                                        fontSize: '0.6rem',
+                                        fontWeight: 800,
+                                        bgcolor: '#f3e8ff',
+                                        color: '#7e22ce',
+                                        border: '1px solid #d8b4fe'
+                                      }}
+                                    />
+                                  )}
                                 </Box>
                               }
                               secondary={

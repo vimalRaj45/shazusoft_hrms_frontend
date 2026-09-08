@@ -20,6 +20,7 @@ import {
 import { format } from 'date-fns';
 import toast from '../utils/muiToast';
 import { communicationsAPI } from '../services/api';
+import TimePicker12h from './TimePicker12h';
 
 const COMMON_REASONS = [
   'GPS / Location Device Glitch',
@@ -119,29 +120,19 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                type="time"
+              <TimePicker12h
                 label="Requested Punch-In Time"
                 required
                 value={loginTime}
                 onChange={(e) => setLoginTime(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                type="time"
+              <TimePicker12h
                 label="Requested Punch-Out Time"
                 value={logoutTime}
                 onChange={(e) => setLogoutTime(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
               />
             </Grid>
 

@@ -72,7 +72,8 @@ export const attendanceAPI = {
   getStaffMonthlyHistory: (params) => api.get('/attendance/staff-monthly-history', { params }),
   getAll: () => api.get('/attendance/all'),
   adminOverride: (data) => api.post('/attendance/admin-override', data),
-  getHolidays: () => api.get('/attendance/holidays')  // Staff-accessible holiday list
+  getHolidays: () => api.get('/attendance/holidays'),  // Staff-accessible holiday list
+  getOfficeTimings: () => api.get('/attendance/office-timings')
 };
 
 export const communicationsAPI = {
@@ -136,11 +137,12 @@ export const adminAPI = {
   createEmployee: (data) => api.post('/admin/employees', data),
   updateEmployee: (id, data) => api.put(`/admin/employees/${id}`, data),
   updateWorkMode: (id, work_mode) => api.patch(`/admin/employees/${id}/work-mode`, { work_mode }),
+  updateEmploymentType: (id, data) => api.patch(`/admin/employees/${id}/employment-type`, data),
   freezeDocuments: (id, data) => api.post(`/admin/employees/${id}/freeze-documents`, data),
   deactivateEmployee: (id, data) => api.post(`/admin/employees/${id}/deactivate`, data),
   reactivateEmployee: (id) => api.post(`/admin/employees/${id}/reactivate`),
   getSettings: () => api.get('/admin/settings'),
-  getLeavePolicy: () => api.get('/admin/leave-policy'),
+  getLeavePolicy: (params) => api.get('/admin/leave-policy', { params }),
   updateLeavePolicy: (data) => api.put('/admin/leave-policy', data),
   // Geofence is read-only (ENV only) — no updateGeofence
   getHolidays: () => api.get('/admin/holidays'),

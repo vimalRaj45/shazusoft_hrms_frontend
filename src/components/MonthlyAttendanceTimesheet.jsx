@@ -36,6 +36,7 @@ import {
   Clear as ClearIcon
 } from '@mui/icons-material';
 import { attendanceAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { formatTime12h } from '../utils/timeUtils';
 import toast from '../utils/muiToast';
 import AttendanceRegularizationModal from './AttendanceRegularizationModal';
@@ -56,12 +57,33 @@ function formatDuration(decimalHours) {
 }
 
 export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
+  const { user } = useAuth();
+  const cachedUser = user || (() => {
+    try {
+      return JSON.parse(localStorage.getItem('shazusoft_user') || '{}');
+    } catch (e) {
+      return {};
+    }
+  })();
+
   const currentMonthKey = format(new Date(), 'yyyy-MM');
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
   const [timesheetData, setTimesheetData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'PRESENT' | 'LATE' | 'LEAVE_ABSENT'
   const [searchQuery, setSearchQuery] = useState('');
+
+  const isIntern = Boolean(
+    timesheetData?.employment_type === 'internship' ||
+    timesheetData?.employee?.employment_type === 'internship' ||
+    cachedUser?.employment_type === 'internship' ||
+    cachedUser?.designation?.toLowerCase()?.includes('intern') ||
+    cachedUser?.role === 'intern'
+  );
+
+  const targetAvgHours = isIntern
+    ? ((timesheetData?.employment_type === 'internship' && timesheetData?.target_avg_hours_per_day) ? timesheetData.target_avg_hours_per_day : 6.0)
+    : (timesheetData?.target_avg_hours_per_day || 8.5);
 
   // Regularization modal state
   const [openRegModal, setOpenRegModal] = useState(false);
@@ -138,9 +160,24 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
               <CalendarIcon />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                {timesheetData?.month_label || 'Monthly Attendance Timesheet'}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  {timesheetData?.month_label || 'Monthly Attendance Timesheet'}
+                </Typography>
+                {isIntern ? (
+                  <Chip
+                    size="small"
+                    label={`INTERN • ${targetAvgHours}h/day req`}
+                    sx={{ fontWeight: 800, bgcolor: '#f3e8ff', color: '#7e22ce', border: '1px solid #d8b4fe', height: 22, fontSize: 11 }}
+                  />
+                ) : (
+                  <Chip
+                    size="small"
+                    label={`FULL-TIME • ${targetAvgHours}h/day req`}
+                    sx={{ fontWeight: 800, bgcolor: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', height: 22, fontSize: 11 }}
+                  />
+                )}
+              </Box>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
                 Daily login and logout timestamps • Verified strictly for past calendar days
               </Typography>
@@ -212,6 +249,9 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, color: '#10b981', mt: 0.5 }}>
                 {formatDuration(timesheetData?.avg_hours_per_day)}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, mt: 0.5, display: 'block' }}>
+                Target: <strong>{targetAvgHours}h/day</strong> ({isIntern ? 'Intern Target' : 'Staff Target'})
               </Typography>
             </CardContent>
           </Card>

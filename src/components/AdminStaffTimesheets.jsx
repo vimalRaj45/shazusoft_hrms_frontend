@@ -52,6 +52,7 @@ import { attendanceAPI, adminAPI, reportsAPI } from '../services/api';
 import toast from '../utils/muiToast';
 import { generateExecutivePDFReport } from '../utils/pdfReportGenerator';
 import { formatTime12h, timeTo24h } from '../utils/timeUtils';
+import TimePicker12h from './TimePicker12h';
 
 export default function AdminStaffTimesheets({ initialEmployeeId, employees = [], onRefreshParent }) {
   const [selectedEmpId, setSelectedEmpId] = useState(initialEmployeeId || '');
@@ -858,26 +859,18 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
               />
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <TextField
+                  <TimePicker12h
                     label="Punch In Time"
-                    type="time"
-                    size="small"
-                    fullWidth
                     value={overrideForm.login_time}
                     onChange={(e) => setOverrideForm({ ...overrideForm, login_time: e.target.value })}
-                    InputLabelProps={{ shrink: true }}
                     required
                   />
                 </Grid>
                 <Grid item xs={6}>
-                  <TextField
+                  <TimePicker12h
                     label="Punch Out Time"
-                    type="time"
-                    size="small"
-                    fullWidth
                     value={overrideForm.logout_time}
                     onChange={(e) => setOverrideForm({ ...overrideForm, logout_time: e.target.value })}
-                    InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
               </Grid>

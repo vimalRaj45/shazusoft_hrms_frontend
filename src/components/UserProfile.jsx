@@ -695,6 +695,18 @@ export default function UserProfile() {
                 color={profileData.role === 'admin' ? 'primary' : 'default'}
                 sx={{ fontWeight: 700, borderRadius: '6px', fontSize: 10, height: 20 }}
               />
+              <Chip
+                label={profileData.employment_type === 'internship' ? 'INTERNSHIP' : 'FULL-TIME STAFF'}
+                size="small"
+                sx={{
+                  fontWeight: 800,
+                  borderRadius: '6px',
+                  fontSize: 10,
+                  height: 20,
+                  bgcolor: profileData.employment_type === 'internship' ? '#f3e8ff' : '#dcfce7',
+                  color: profileData.employment_type === 'internship' ? '#7e22ce' : '#15803d'
+                }}
+              />
             </Box>
             <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, mt: 0.3 }}>
               {profileData.designation} • <strong>{profileData.department}</strong> • {profileData.email}
@@ -1052,6 +1064,16 @@ export default function UserProfile() {
                   disabled
                 />
               </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Employment Classification"
+                  size="small"
+                  fullWidth
+                  value={profileData.employment_type === 'internship' ? 'Internship / Trainee (Learning & Stipend Track)' : 'Full-Time Staff (Permanent / Regular)'}
+                  disabled
+                />
+              </Grid>
             </Grid>
           )}
 
@@ -1063,6 +1085,14 @@ export default function UserProfile() {
                   Payroll Bank Account & Statutory Tax Credentials
                 </Typography>
               </Grid>
+
+              {profileData.employment_type === 'internship' && (
+                <Grid item xs={12}>
+                  <Alert severity="info" sx={{ borderRadius: '8px', fontSize: '0.85rem' }}>
+                    <strong>Internship Compensation Structure:</strong> Interns receive monthly educational stipend disbursements. Statutory PF and ESI contributions are generally exempt during internship training.
+                  </Alert>
+                </Grid>
+              )}
 
               <Grid item xs={12} sm={6}>
                 <TextField
