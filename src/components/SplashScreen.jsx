@@ -70,14 +70,17 @@ export default function SplashScreen({ message = 'Loading workspace environment.
       >
         <Box
           sx={{
-            p: 1.8,
+            width: 88,
+            height: 88,
             bgcolor: '#ffffff',
-            borderRadius: '12px',
+            borderRadius: '50%',
             boxShadow: '0 12px 36px rgba(0, 0, 0, 0.35)',
             animation: `${pulse} 2.5s infinite ease-in-out`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            overflow: 'hidden',
+            p: 1.2,
             mb: 2.5
           }}
         >
@@ -86,8 +89,9 @@ export default function SplashScreen({ message = 'Loading workspace environment.
             src="/logo.png"
             alt="Shazu Soft Official Logo"
             sx={{
-              width: 72,
-              height: 72,
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
               objectFit: 'contain'
             }}
           />

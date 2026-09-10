@@ -203,7 +203,7 @@ export default function Sidebar({
                 width: 34,
                 height: 34,
                 objectFit: 'contain',
-                borderRadius: '8px',
+                borderRadius: '50%',
                 flexShrink: 0
               }}
             />

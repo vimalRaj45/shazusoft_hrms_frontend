@@ -151,7 +151,7 @@ export default function TopNavbar({
                 width: 26,
                 height: 26,
                 objectFit: 'contain',
-                borderRadius: '8px',
+                borderRadius: '50%',
                 flexShrink: 0
               }}
             />

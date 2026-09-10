@@ -197,7 +197,7 @@ export default function Login() {
                     height: 44,
                     objectFit: 'contain',
                     bgcolor: '#ffffff',
-                    borderRadius: '8px',
+                    borderRadius: '50%',
                     p: 0.5,
                     boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                   }}
@@ -281,7 +281,9 @@ export default function Login() {
                   width: 42,
                   height: 42,
                   objectFit: 'contain',
-                  borderRadius: '8px',
+                  borderRadius: '50%',
+                  bgcolor: '#ffffff',
+                  p: 0.5,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
                 }}
               />
