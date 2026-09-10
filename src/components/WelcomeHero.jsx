@@ -86,18 +86,19 @@ export default function WelcomeHero({ user, onActionClick, actionLabel = 'Open W
               px: 1.5,
               py: 0.6,
               borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              bgcolor: '#ffffff',
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: (t) => t.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : '#ffffff',
               boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)'
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-              <CalendarIcon sx={{ fontSize: 15, color: '#133829' }} />
-              <Typography variant="body2" sx={{ fontWeight: 700, fontSize: { xs: 11.5, sm: 12.5 }, color: '#0f172a' }}>
+              <CalendarIcon sx={{ fontSize: 15, color: (t) => t.palette.mode === 'dark' ? '#34d399' : '#133829' }} />
+              <Typography variant="body2" sx={{ fontWeight: 700, fontSize: { xs: 11.5, sm: 12.5 }, color: (t) => t.palette.mode === 'dark' ? '#f8fafc' : '#0f172a' }}>
                 {format(currentTime, 'EEE, dd MMM yyyy')}
               </Typography>
             </Box>
-            <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800 }}>|</Typography>
+            <Typography variant="caption" sx={{ color: 'divider', fontWeight: 800 }}>|</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <TimeIcon sx={{ fontSize: 14, color: '#059669' }} />
               <Typography variant="body2" sx={{ fontWeight: 800, fontSize: { xs: 11.5, sm: 12.5 }, color: '#059669', fontFamily: 'monospace' }}>
@@ -113,8 +114,8 @@ export default function WelcomeHero({ user, onActionClick, actionLabel = 'Open W
           onClick={onActionClick}
           endIcon={<ArrowRightIcon />}
           sx={{
-            bgcolor: '#ffffff',
-            color: '#133829',
+            bgcolor: (t) => t.palette.mode === 'dark' ? '#34d399' : '#ffffff',
+            color: (t) => t.palette.mode === 'dark' ? '#0f291e' : '#133829',
             fontWeight: 800,
             fontSize: '0.875rem',
             px: 2.5,
@@ -123,8 +124,8 @@ export default function WelcomeHero({ user, onActionClick, actionLabel = 'Open W
             textTransform: 'none',
             alignSelf: { xs: 'flex-start', sm: 'center' },
             '&:hover': {
-              bgcolor: '#f1f5f9',
-              color: '#0b2319'
+              bgcolor: (t) => t.palette.mode === 'dark' ? '#10b981' : '#f1f5f9',
+              color: (t) => t.palette.mode === 'dark' ? '#0f291e' : '#0b2319'
             }
           }}
         >

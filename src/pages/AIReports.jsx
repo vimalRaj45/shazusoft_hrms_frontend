@@ -371,7 +371,7 @@ export default function AIReports() {
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mb: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <SparklesIcon color="primary" />
-                        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
                           Executive Operations Summary
                         </Typography>
                       </Box>
@@ -400,7 +400,7 @@ export default function AIReports() {
                         paragraph
                         sx={{
                           lineHeight: 1.8,
-                          color: '#334155',
+                          color: 'text.secondary',
                           fontSize: '0.95rem',
                           mb: 1.8,
                           '&:last-child': { mb: 0 }
@@ -418,7 +418,7 @@ export default function AIReports() {
                   <CardContent sx={{ p: 3.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <LightbulbIcon color="warning" />
-                      <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
                         Actionable Management Insights
                       </Typography>
                     </Box>
@@ -469,7 +469,7 @@ export default function AIReports() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
                       <WarningAmberIcon sx={{ color: '#e11d48', fontSize: 28 }} />
                       <Box>
-                        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
                           Identified Operational & Performance Gaps
                         </Typography>
                         <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
@@ -509,7 +509,7 @@ export default function AIReports() {
                           >
                             <Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>
                                   {gap.area}
                                 </Typography>
                                 <Chip
@@ -524,9 +524,9 @@ export default function AIReports() {
                               </Typography>
                             </Box>
                             {gap.impact && (
-                              <Box sx={{ pt: 1, borderTop: '1px dashed rgba(0,0,0,0.1)' }}>
-                                <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600, display: 'block' }}>
-                                  <span style={{ fontWeight: 800, color: '#0f172a' }}>Business Impact:</span> {gap.impact}
+                              <Box sx={{ pt: 1, borderTop: '1px dashed rgba(255,255,255,0.1)' }}>
+                                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>
+                                  <span style={{ fontWeight: 800, color: 'text.primary' }}>Business Impact:</span> {gap.impact}
                                 </Typography>
                               </Box>
                             )}
@@ -550,7 +550,7 @@ export default function AIReports() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1 }}>
                         <TipsAndUpdatesIcon sx={{ color: '#0284c7', fontSize: 26 }} />
                         <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
                             Tailored Strategic Suggestions
                           </Typography>
                           <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
@@ -601,7 +601,7 @@ export default function AIReports() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1 }}>
                         <RocketLaunchIcon sx={{ color: '#16a34a', fontSize: 26 }} />
                         <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
                             Next-Month Improvement Roadmap & KPIs
                           </Typography>
                           <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
@@ -652,7 +652,7 @@ export default function AIReports() {
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     <HistoryIcon color="primary" />
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
                       Historical Executive Reports Archive
                     </Typography>
                   </Box>
@@ -670,7 +670,7 @@ export default function AIReports() {
                     <TableBody>
                       {historyReports.map((rep) => (
                         <TableRow key={rep.id} hover>
-                          <TableCell sx={{ fontWeight: 800, color: '#0f172a' }}>{rep.month_year}</TableCell>
+                          <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>{rep.month_year}</TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>{rep.target || 'ALL'}</TableCell>
                           <TableCell sx={{ fontWeight: 800, color: 'primary.main' }}>
                             {rep.productivity_score || '--'}/100

@@ -405,7 +405,138 @@ const baseTheme = (mode = 'light') => {
           },
           'button, a, input, select, textarea, [role="button"]': {
             touchAction: 'manipulation'
-          }
+          },
+          ...(isDark ? {
+            // Global dark mode enforcement for papers, cards, forms, and tables across all pages
+            '.MuiPaper-root': {
+              backgroundColor: '#152238 !important',
+              color: '#f8fafc !important',
+              borderColor: 'rgba(255, 255, 255, 0.09) !important'
+            },
+            '.MuiCard-root': {
+              backgroundColor: '#152238 !important',
+              color: '#f8fafc !important',
+              borderColor: 'rgba(255, 255, 255, 0.09) !important'
+            },
+            // Form inputs & controls
+            '.MuiInputBase-root': {
+              color: '#f8fafc !important',
+              backgroundColor: 'rgba(0, 0, 0, 0.25) !important'
+            },
+            '.MuiInputBase-input': {
+              color: '#f8fafc !important'
+            },
+            '.MuiInputBase-input::placeholder': {
+              color: 'rgba(255, 255, 255, 0.45) !important',
+              opacity: 1
+            },
+            '.MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(255, 255, 255, 0.18) !important'
+            },
+            '.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#34d399 !important'
+            },
+            '.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#34d399 !important'
+            },
+            '.MuiInputLabel-root': {
+              color: '#94a3b8 !important'
+            },
+            '.MuiInputLabel-root.Mui-focused': {
+              color: '#34d399 !important'
+            },
+            '.MuiSelect-select': {
+              color: '#f8fafc !important'
+            },
+            '.MuiSelect-icon': {
+              color: '#94a3b8 !important'
+            },
+            // Webkit date & month native calendar icons
+            'input[type="date"]::-webkit-calendar-picker-indicator, input[type="month"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator': {
+              filter: 'invert(0.85)',
+              cursor: 'pointer'
+            },
+            // Tabs
+            '.MuiTabs-root': {
+              borderColor: 'rgba(255, 255, 255, 0.09) !important'
+            },
+            '.MuiTab-root': {
+              color: '#94a3b8 !important'
+            },
+            '.MuiTab-root.Mui-selected': {
+              color: '#34d399 !important',
+              backgroundColor: 'rgba(16, 185, 129, 0.12) !important'
+            },
+            '.MuiTabs-indicator': {
+              backgroundColor: '#34d399 !important'
+            },
+            // Tables
+            '.MuiTableHead-root': {
+              backgroundColor: '#0b1320 !important'
+            },
+            '.MuiTableCell-head': {
+              color: '#94a3b8 !important',
+              borderColor: 'rgba(255, 255, 255, 0.09) !important',
+              backgroundColor: '#0b1320 !important'
+            },
+            '.MuiTableCell-body': {
+              color: '#f1f5f9 !important',
+              borderColor: 'rgba(255, 255, 255, 0.08) !important'
+            },
+            '.MuiTableRow-root:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.03) !important'
+            },
+            // Dividers
+            '.MuiDivider-root': {
+              borderColor: 'rgba(255, 255, 255, 0.09) !important'
+            },
+            // Dialogs & Modals
+            '.MuiDialog-paper': {
+              backgroundColor: '#152238 !important',
+              color: '#f8fafc !important',
+              borderColor: 'rgba(255, 255, 255, 0.1) !important'
+            },
+            '.MuiDialogTitle-root': {
+              color: '#f8fafc !important'
+            },
+            '.MuiDialogContent-root': {
+              backgroundColor: '#152238 !important',
+              color: '#f1f5f9 !important',
+              borderColor: 'rgba(255, 255, 255, 0.09) !important'
+            },
+            '.MuiDialogActions-root': {
+              backgroundColor: '#152238 !important',
+              borderColor: 'rgba(255, 255, 255, 0.09) !important'
+            },
+            // Menus & Popovers
+            '.MuiMenu-paper, .MuiPopover-paper': {
+              backgroundColor: '#152238 !important',
+              color: '#f8fafc !important',
+              borderColor: 'rgba(255, 255, 255, 0.1) !important'
+            },
+            '.MuiMenuItem-root': {
+              color: '#f1f5f9 !important'
+            },
+            '.MuiMenuItem-root:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.06) !important'
+            },
+            // Accordions
+            '.MuiAccordion-root': {
+              backgroundColor: '#152238 !important',
+              color: '#f8fafc !important',
+              borderColor: 'rgba(255, 255, 255, 0.09) !important'
+            },
+            '.MuiAccordionSummary-root': {
+              color: '#f8fafc !important'
+            },
+            // Lists
+            '.MuiListItemText-primary': {
+              color: '#f8fafc !important'
+            },
+            '.MuiListItemText-secondary': {
+              color: '#94a3b8 !important'
+            }
+          } : {})
         }
       }
     }

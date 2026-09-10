@@ -625,8 +625,9 @@ export default function UserProfile() {
           p: { xs: 2.5, sm: 3 },
           mb: 3,
           borderRadius: '10px',
-          border: '1px solid #e2e8f0',
-          bgcolor: '#ffffff',
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
           justifyContent: 'space-between',
@@ -834,7 +835,7 @@ export default function UserProfile() {
       )}
 
       {/* Navigation Tabs for Profile Categories */}
-      <Paper elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: '10px', bgcolor: '#ffffff', overflow: 'hidden' }}>
+      <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '10px', bgcolor: 'background.paper', overflow: 'hidden' }}>
         <Tabs
           value={activeTab}
           onChange={(e, val) => setActiveTab(val)}
@@ -842,18 +843,19 @@ export default function UserProfile() {
           scrollButtons="auto"
           allowScrollButtonsMobile
           sx={{
-            borderBottom: '1px solid #e2e8f0',
-            bgcolor: '#f8fafc',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            bgcolor: (t) => t.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.2)' : '#f8fafc',
             '& .MuiTab-root': {
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.85rem',
               minHeight: 48,
-              color: '#64748b',
-              '&.Mui-selected': { color: '#133829', bgcolor: '#ffffff' }
+              color: 'text.secondary',
+              '&.Mui-selected': { color: 'primary.main', bgcolor: 'background.paper' }
             },
             '& .MuiTabs-indicator': {
-              backgroundColor: '#133829',
+              backgroundColor: 'primary.main',
               height: 3
             }
           }}
@@ -870,7 +872,7 @@ export default function UserProfile() {
           {activeTab === 0 && (
             <Grid container spacing={2.5}>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1 }}>
                   Contact & Identification
                 </Typography>
               </Grid>
@@ -998,7 +1000,7 @@ export default function UserProfile() {
           {activeTab === 1 && (
             <Grid container spacing={2.5}>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1 }}>
                   Official Organization Record (Verified by HR)
                 </Typography>
               </Grid>
@@ -1081,7 +1083,7 @@ export default function UserProfile() {
           {activeTab === 2 && (
             <Grid container spacing={2.5}>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1 }}>
                   Payroll Bank Account & Statutory Tax Credentials
                 </Typography>
               </Grid>
@@ -1217,9 +1219,9 @@ export default function UserProfile() {
 
                           {uploaded ? (
                             <Box sx={{ mt: 1 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#ffffff', p: 1, borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'background.paper', p: 1, borderRadius: '6px', border: '1px solid', borderColor: 'divider' }}>
                                 <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
-                                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {uploaded.name}
                                   </Typography>
                                   <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: 10 }}>
@@ -1294,7 +1296,7 @@ export default function UserProfile() {
           {activeTab === 4 && (
             <Grid container spacing={2.5}>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary', textTransform: 'uppercase', fontSize: 12, letterSpacing: '0.04em', mb: 1 }}>
                   Primary Emergency Contact Person
                 </Typography>
               </Grid>

@@ -1175,8 +1175,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
       </Box>
 
       {/* Sleek Workspace Context Header */}
-      <Card sx={{ mb: 2.5, borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
-        <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: '#ffffff', borderBottom: '1px solid #f1f5f9' }}>
+      <Card sx={{ mb: 2.5, borderRadius: '10px', border: '1px solid', borderColor: 'divider', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+        <Box sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexWrap: 'wrap', gap: 1.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Box
@@ -2465,13 +2465,13 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           {activeTab === 10 && (
             <Box>
               {/* Office Shift Timings & Grace Period Settings (Configurable) */}
-              <Box sx={{ mb: 4, p: { xs: 2, sm: 3 }, bgcolor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+              <Box sx={{ mb: 4, p: { xs: 2, sm: 3 }, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
                 {/* Header with Title and Segmented Switcher */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2.5 }}>
                   <Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <TimeIcon sx={{ color: timingTab === 'intern' ? '#7e22ce' : '#133829' }} />
-                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                      <TimeIcon sx={{ color: timingTab === 'intern' ? '#7e22ce' : 'primary.main' }} />
+                      <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'text.primary' }}>
                         Office Shift Hours & Required Working Hours
                       </Typography>
                     </Box>

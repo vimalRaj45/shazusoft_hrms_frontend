@@ -21,7 +21,7 @@ export default function MetricCards({
 }) {
   return (
     <Box sx={{ mb: 3.5 }}>
-      <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', mb: 2 }}>
         Monthly Attendance & Activity Metrics
       </Typography>
 
@@ -34,8 +34,9 @@ export default function MetricCards({
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              bgcolor: '#ffffff',
-              border: '1px solid #e5e7eb',
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
               borderRadius: '10px',
               position: 'relative',
               '&::before': {
@@ -56,7 +57,7 @@ export default function MetricCards({
                 <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, letterSpacing: '0.04em', minHeight: 20, display: 'flex', alignItems: 'center' }}>
                   TOTAL DAYS LOGGED
                 </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 800, color: '#0f172a', my: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: 'text.primary', my: 1 }}>
                   {daysCount}
                 </Typography>
               </Box>
@@ -69,8 +70,8 @@ export default function MetricCards({
                   mt: 0.5,
                   fontSize: 12,
                   fontWeight: 700,
-                  borderColor: '#e5e7eb',
-                  color: '#0f172a',
+                  borderColor: 'divider',
+                  color: 'text.primary',
                   py: 0.4,
                   borderRadius: '8px',
                   alignSelf: 'flex-start'
@@ -90,8 +91,9 @@ export default function MetricCards({
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              bgcolor: '#ffffff',
-              border: '1px solid #e5e7eb',
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
               borderRadius: '10px',
               position: 'relative',
               '&::before': {
@@ -112,7 +114,7 @@ export default function MetricCards({
                 <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, letterSpacing: '0.04em', minHeight: 20, display: 'flex', alignItems: 'center' }}>
                   NET WORKING TIME
                 </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 800, color: '#0f172a', my: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: 'text.primary', my: 1 }}>
                   {netHours}<span style={{ fontSize: '1.2rem', fontWeight: 600 }}>h</span>
                 </Typography>
               </Box>
@@ -131,8 +133,9 @@ export default function MetricCards({
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              bgcolor: '#ffffff',
-              border: '1px solid #e5e7eb',
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
               borderRadius: '10px',
               position: 'relative',
               '&::before': {
@@ -153,7 +156,7 @@ export default function MetricCards({
                 <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, letterSpacing: '0.04em', minHeight: 20, display: 'flex', alignItems: 'center' }}>
                   TASKS COMPLETED
                 </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 800, color: '#0f172a', my: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: 'text.primary', my: 1 }}>
                   {tasksCompleted}
                 </Typography>
               </Box>
@@ -172,8 +175,9 @@ export default function MetricCards({
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              bgcolor: '#ffffff',
-              border: '1px solid #e5e7eb',
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
               borderRadius: '10px',
               position: 'relative',
               '&::before': {
@@ -194,7 +198,7 @@ export default function MetricCards({
                 <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, letterSpacing: '0.04em', minHeight: 20, display: 'flex', alignItems: 'center' }}>
                   LEAVES & PERMISSIONS
                 </Typography>
-                <Typography variant="h3" sx={{ fontWeight: 800, color: '#0f172a', my: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: 'text.primary', my: 1 }}>
                   {leaveRemaining}<span style={{ fontSize: '1.2rem', fontWeight: 600 }}>d</span>
                 </Typography>
               </Box>
