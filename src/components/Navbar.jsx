@@ -11,8 +11,6 @@ import {
   Tooltip
 } from '@mui/material';
 import {
-  Brightness4 as DarkModeIcon,
-  Brightness7 as LightModeIcon,
   Logout as LogoutIcon,
   Analytics as AnalyticsIcon,
   Dashboard as DashboardIcon,
@@ -22,16 +20,16 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ activeTab, setActiveTab }) {
-  const { user, isAdmin, logout, themeMode, toggleThemeMode } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
 
   return (
     <AppBar
       position="sticky"
       elevation={0}
       sx={{
-        backgroundColor: themeMode === 'dark' ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
         backdropFilter: 'blur(12px)',
-        borderBottom: themeMode === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
         color: 'text.primary',
         zIndex: 1100
       }}
@@ -122,12 +120,6 @@ export default function Navbar({ activeTab, setActiveTab }) {
             </Box>
           </Box>
 
-          {/* Theme Toggle */}
-          <Tooltip title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
-            <IconButton onClick={toggleThemeMode} size="small" color="inherit">
-              {themeMode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
 
           {/* Logout */}
           <Tooltip title="Sign Out">

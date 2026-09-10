@@ -27,9 +27,7 @@ import {
   NotificationsOff as NotificationsOffIcon,
   Notifications as NotificationsIcon,
   HelpOutline as HelpOutlineIcon,
-  Refresh as RefreshIcon,
-  DarkMode as DarkModeIcon,
-  LightMode as LightModeIcon
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
@@ -46,7 +44,7 @@ export default function TopNavbar({
   isSidebarCollapsed = false,
   onToggleSidebar
 }) {
-  const { user, isAdmin, logout, themeMode, toggleThemeMode } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const { unreadCount, isPushSubscribed } = useNotifications();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [notifAnchorEl, setNotifAnchorEl] = React.useState(null);
@@ -111,7 +109,7 @@ export default function TopNavbar({
         borderColor: 'divider',
         color: 'text.primary',
         zIndex: 1100,
-        boxShadow: themeMode === 'dark' ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
         transition: 'left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
@@ -173,7 +171,7 @@ export default function TopNavbar({
                 color: 'text.secondary',
                 borderRadius: '8px',
                 p: 0.8,
-                '&:hover': { bgcolor: themeMode === 'dark' ? 'rgba(255,255,255,0.08)' : '#f1f5f9', color: 'primary.main' }
+                '&:hover': { bgcolor: '#f1f5f9', color: 'primary.main' }
               }}
             >
               {isSidebarCollapsed ? <MenuIcon /> : <MenuOpenIcon />}
@@ -191,7 +189,7 @@ export default function TopNavbar({
               borderRadius: '8px',
               border: '1px solid',
               borderColor: 'divider',
-              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc'
+              bgcolor: '#f8fafc'
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
@@ -218,7 +216,7 @@ export default function TopNavbar({
               borderRadius: '8px',
               border: '1px solid',
               borderColor: 'divider',
-              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc'
+              bgcolor: '#f8fafc'
             }}
           >
             <CalendarIcon sx={{ fontSize: 15, color: 'primary.main' }} />
@@ -236,7 +234,7 @@ export default function TopNavbar({
               borderRadius: '8px',
               border: '1px solid',
               borderColor: 'divider',
-              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc',
+              bgcolor: '#f8fafc',
               flexShrink: 0,
               whiteSpace: 'nowrap'
             }}
@@ -271,14 +269,14 @@ export default function TopNavbar({
             flex: { xs: '1 1 auto', sm: '0 0 auto' },
             minWidth: 0,
             maxWidth: { xs: 110, sm: 220, md: 360, lg: 420 },
-            bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc',
+            bgcolor: '#f8fafc',
             border: '1.5px solid',
             borderColor: 'divider',
             borderRadius: '10px',
             cursor: 'pointer',
             transition: 'all 0.15s ease',
             '&:hover': {
-              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#ffffff',
+              bgcolor: '#ffffff',
               borderColor: 'primary.main'
             }
           }}
@@ -295,7 +293,7 @@ export default function TopNavbar({
               height: 20,
               fontSize: 10,
               fontWeight: 800,
-              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#ffffff',
+              bgcolor: '#ffffff',
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: '6px',
@@ -317,30 +315,10 @@ export default function TopNavbar({
                 borderRadius: '8px',
                 p: 0.9,
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: themeMode === 'dark' ? 'rgba(255,255,255,0.08)' : '#f1f5f9', color: 'primary.main' }
+                '&:hover': { bgcolor: '#f1f5f9', color: 'primary.main' }
               }}
             >
               <RefreshIcon sx={{ fontSize: 20 }} />
-            </IconButton>
-          </Tooltip>
-
-          {/* Theme Mode Toggle (Light / Dark) */}
-          <Tooltip title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="bottom" arrow>
-            <IconButton
-              onClick={toggleThemeMode}
-              sx={{
-                color: themeMode === 'dark' ? '#fbbf24' : '#64748b',
-                borderRadius: '8px',
-                p: { xs: 0.6, sm: 0.9 },
-                transition: 'all 0.15s ease',
-                '&:hover': {
-                  bgcolor: themeMode === 'dark' ? 'rgba(251, 191, 36, 0.15)' : '#f1f5f9',
-                  color: themeMode === 'dark' ? '#f59e0b' : 'primary.main'
-                }
-              }}
-              aria-label="Toggle dark mode"
-            >
-              {themeMode === 'dark' ? <LightModeIcon sx={{ fontSize: 21 }} /> : <DarkModeIcon sx={{ fontSize: 21 }} />}
             </IconButton>
           </Tooltip>
 
@@ -495,24 +473,6 @@ export default function TopNavbar({
               System Guide & Features
             </MenuItem>
 
-            <MenuItem
-              onClick={() => {
-                toggleThemeMode();
-              }}
-              sx={{ fontWeight: 700, fontSize: 13, py: 1.2, color: 'text.primary' }}
-            >
-              {themeMode === 'dark' ? (
-                <>
-                  <LightModeIcon fontSize="small" sx={{ mr: 1.2, color: '#fbbf24' }} />
-                  Switch to Light Mode
-                </>
-              ) : (
-                <>
-                  <DarkModeIcon fontSize="small" sx={{ mr: 1.2, color: 'primary.main' }} />
-                  Switch to Dark Mode
-                </>
-              )}
-            </MenuItem>
 
             <MenuItem onClick={handleLogout} sx={{ color: '#dc2626', fontWeight: 700, fontSize: 13, py: 1.2 }}>
               <LogoutIcon fontSize="small" sx={{ mr: 1.2 }} />

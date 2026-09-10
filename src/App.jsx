@@ -74,7 +74,7 @@ import { attendanceAPI, reportsAPI, evaluationsAPI, leavesAPI, workDoneAPI, task
 import { format } from 'date-fns';
 
 function AppContent() {
-  const { user, loading, isAdmin, themeMode } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -164,7 +164,7 @@ function AppContent() {
   const [fullReportData, setFullReportData] = useState(null);
   const [loadingReport, setLoadingReport] = useState(false);
 
-  const theme = getTheme(themeMode || 'light');
+  const theme = getTheme();
 
   const fetchDashboardMetrics = async () => {
     if (!user) return;

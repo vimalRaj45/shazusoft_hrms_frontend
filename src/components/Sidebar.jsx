@@ -45,8 +45,7 @@ export default function Sidebar({
   onToggleCollapse,
   adminStats = {}
 }) {
-  const { isAdmin, themeMode } = useAuth();
-  const isDark = themeMode === 'dark';
+  const { isAdmin } = useAuth();
 
   const handleItemClick = (tabKey) => {
     onSelectTab(tabKey);
@@ -65,20 +64,14 @@ export default function Sidebar({
           px: isCollapsed ? 1 : 1.5,
           mb: 0.5,
           borderRadius: '8px',
-          bgcolor: isActive
-            ? (isDark ? 'rgba(16, 185, 129, 0.16)' : '#e8f5e9')
-            : 'transparent',
-          color: isActive
-            ? (isDark ? '#34d399' : '#133829')
-            : (isDark ? '#94a3b8' : '#475569'),
+          bgcolor: isActive ? '#e8f5e9' : 'transparent',
+          color: isActive ? '#133829' : '#475569',
           fontWeight: isActive ? 700 : 500,
           justifyContent: isCollapsed ? 'center' : 'flex-start',
           transition: 'all 0.15s ease-in-out',
           '&:hover': {
-            bgcolor: isActive
-              ? (isDark ? 'rgba(16, 185, 129, 0.22)' : '#e8f5e9')
-              : (isDark ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc'),
-            color: isDark ? '#34d399' : '#133829'
+            bgcolor: isActive ? '#e8f5e9' : '#f8fafc',
+            color: '#133829'
           }
         }}
       >
@@ -86,9 +79,7 @@ export default function Sidebar({
           sx={{
             minWidth: isCollapsed ? 'unset' : 30,
             justifyContent: 'center',
-            color: isActive
-              ? (isDark ? '#34d399' : '#133829')
-              : (isDark ? '#94a3b8' : '#64748b')
+            color: isActive ? '#133829' : '#64748b'
           }}
         >
           <IconComponent fontSize="small" />
@@ -114,12 +105,8 @@ export default function Sidebar({
                   height: 18,
                   fontSize: 9,
                   fontWeight: 800,
-                  bgcolor: isActive
-                    ? (isDark ? 'rgba(16, 185, 129, 0.25)' : '#c8e6c9')
-                    : (isDark ? 'rgba(255, 255, 255, 0.08)' : '#f1f5f9'),
-                  color: isActive
-                    ? (isDark ? '#34d399' : '#1b5e20')
-                    : (isDark ? '#cbd5e1' : '#475569'),
+                  bgcolor: isActive ? '#c8e6c9' : '#f1f5f9',
+                  color: isActive ? '#1b5e20' : '#475569',
                   borderRadius: '6px',
                   ml: 0.5,
                   flexShrink: 0
@@ -175,7 +162,7 @@ export default function Sidebar({
             width: isCollapsed ? 72 : 260,
             zIndex: 1200,
             bgcolor: 'background.paper',
-            boxShadow: isDark ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
             transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         >
@@ -190,7 +177,7 @@ export default function Sidebar({
               borderRadius: '6px',
               transition: 'all 0.15s ease',
               '&:hover': {
-                bgcolor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(19, 56, 41, 0.05)'
+                bgcolor: 'rgba(19, 56, 41, 0.05)'
               },
               '&:active': {
                 transform: 'scale(0.98)'
@@ -419,15 +406,15 @@ export default function Sidebar({
             sx={{
               p: 1.5,
               borderRadius: '10px',
-              bgcolor: isDark ? 'rgba(255, 255, 255, 0.03)' : '#f8fafc',
+              bgcolor: '#f8fafc',
               border: '1px solid',
               borderColor: 'divider',
               textAlign: 'center'
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mb: 0.4 }}>
-              <ShieldIcon sx={{ fontSize: 15, color: isDark ? '#34d399' : '#133829' }} />
-              <Typography variant="caption" sx={{ fontWeight: 800, color: isDark ? '#34d399' : '#133829' }}>
+              <ShieldIcon sx={{ fontSize: 15, color: '#133829' }} />
+              <Typography variant="caption" sx={{ fontWeight: 800, color: '#133829' }}>
                 Location Verified
               </Typography>
             </Box>
@@ -441,7 +428,7 @@ export default function Sidebar({
               sx={{
                 p: 1,
                 borderRadius: '10px',
-                bgcolor: isDark ? 'rgba(255, 255, 255, 0.03)' : '#f8fafc',
+                bgcolor: '#f8fafc',
                 border: '1px solid',
                 borderColor: 'divider',
                 display: 'flex',
@@ -450,7 +437,7 @@ export default function Sidebar({
                 cursor: 'pointer'
               }}
             >
-              <ShieldIcon sx={{ fontSize: 18, color: isDark ? '#34d399' : '#133829' }} />
+              <ShieldIcon sx={{ fontSize: 18, color: '#133829' }} />
             </Box>
           </Tooltip>
         )}

@@ -11,7 +11,11 @@ export const AuthProvider = ({ children }) => {
   });
   const [token, setToken] = useState(() => localStorage.getItem('shazusoft_token'));
   const [loading, setLoading] = useState(true);
-  const [themeMode, setThemeMode] = useState(() => localStorage.getItem('shazusoft_theme') || 'light');
+  useEffect(() => {
+    try {
+      localStorage.removeItem('shazusoft_theme');
+    } catch (e) {}
+  }, []);
 
   useEffect(() => {
     const verifyUser = async () => {
@@ -62,14 +66,6 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const toggleThemeMode = () => {
-    setThemeMode(prev => {
-      const next = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('shazusoft_theme', next);
-      return next;
-    });
-  };
-
   const updateUser = (newUserData) => {
     setUser(prev => {
       const updated = { ...(prev || {}), ...newUserData };
@@ -82,8 +78,8 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     loading,
-    themeMode,
-    toggleThemeMode,
+    themeMode: 'light',
+    toggleThemeMode: () => {},
     login,
     loginWithOTP,
     logout,
