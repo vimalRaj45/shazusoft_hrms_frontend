@@ -1,86 +1,88 @@
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
-const baseTheme = (mode = 'light') =>
-  createTheme({
+const baseTheme = (mode = 'light') => {
+  const isDark = mode === 'dark';
+
+  return createTheme({
     palette: {
       mode,
       primary: {
-        main: '#133829', // Deep Forest Green
-        light: '#1c4b37',
-        dark: '#0b2319',
+        main: isDark ? '#10b981' : '#133829', // Emerald accent in dark; Deep Forest Green in light
+        light: isDark ? '#34d399' : '#1c4b37',
+        dark: isDark ? '#059669' : '#0b2319',
         contrastText: '#ffffff'
       },
       secondary: {
-        main: '#0284c7', // Sky Blue
+        main: isDark ? '#38bdf8' : '#0284c7', // Sky Blue
         light: '#38bdf8',
         dark: '#0369a1',
         contrastText: '#ffffff'
       },
       success: {
-        main: '#059669', // Emerald Green
+        main: isDark ? '#10b981' : '#059669', // Emerald Green
         light: '#34d399',
         dark: '#047857'
       },
       warning: {
-        main: '#d97706', // Warm Amber
+        main: isDark ? '#fbbf24' : '#d97706', // Warm Amber
         light: '#fbbf24',
         dark: '#b45309'
       },
       error: {
-        main: '#dc2626',
-        light: '#f87171',
+        main: isDark ? '#f87171' : '#dc2626',
+        light: '#fca5a5',
         dark: '#b91c1c'
       },
       background: {
-        default: '#f7f9fa', // Crisp off-white canvas
-        paper: '#ffffff'
+        default: isDark ? '#0b1320' : '#f7f9fa', // Deep navy canvas or crisp off-white
+        paper: isDark ? '#152238' : '#ffffff'
       },
       text: {
-        primary: '#0f172a',
-        secondary: '#64748b'
+        primary: isDark ? '#f8fafc' : '#0f172a',
+        secondary: isDark ? '#94a3b8' : '#64748b'
       },
-      divider: '#e5e7eb'
+      divider: isDark ? 'rgba(255, 255, 255, 0.09)' : '#e5e7eb'
     },
     typography: {
       fontFamily: '"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       h1: {
         fontWeight: 800,
         letterSpacing: '-0.025em',
-        color: '#0f172a',
+        color: isDark ? '#f8fafc' : '#0f172a',
         fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
         lineHeight: 1.2
       },
       h2: {
         fontWeight: 800,
         letterSpacing: '-0.02em',
-        color: '#0f172a',
+        color: isDark ? '#f8fafc' : '#0f172a',
         fontSize: 'clamp(1.5rem, 3.5vw, 2rem)',
         lineHeight: 1.25
       },
       h3: {
         fontWeight: 700,
         letterSpacing: '-0.02em',
-        color: '#0f172a',
+        color: isDark ? '#f8fafc' : '#0f172a',
         fontSize: 'clamp(1.25rem, 3vw, 1.75rem)',
         lineHeight: 1.3
       },
       h4: {
         fontWeight: 700,
         letterSpacing: '-0.015em',
-        color: '#0f172a',
+        color: isDark ? '#f8fafc' : '#0f172a',
         fontSize: 'clamp(1.15rem, 2.5vw, 1.5rem)',
         lineHeight: 1.35
       },
       h5: {
         fontWeight: 700,
         letterSpacing: '-0.01em',
-        color: '#0f172a',
+        color: isDark ? '#f8fafc' : '#0f172a',
         fontSize: 'clamp(1rem, 2vw, 1.25rem)',
         lineHeight: 1.4
       },
       h6: {
         fontWeight: 700,
-        color: '#0f172a',
+        color: isDark ? '#f8fafc' : '#0f172a',
         fontSize: 'clamp(0.875rem, 1.8vw, 1.05rem)',
         lineHeight: 1.45
       },
@@ -147,17 +149,19 @@ const baseTheme = (mode = 'light') =>
             }
           },
           containedPrimary: {
-            backgroundColor: '#133829',
+            backgroundColor: isDark ? '#10b981' : '#133829',
+            color: '#ffffff',
             '&:hover': {
-              backgroundColor: '#0b2319'
+              backgroundColor: isDark ? '#059669' : '#0b2319'
             }
           },
           outlined: {
             borderRadius: '8px',
-            borderColor: '#e5e7eb',
+            borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e5e7eb',
+            color: isDark ? '#f8fafc' : 'inherit',
             '&:hover': {
-              borderColor: '#cbd5e1',
-              backgroundColor: '#f8fafc'
+              borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : '#cbd5e1',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : '#f8fafc'
             }
           }
         }
@@ -166,8 +170,9 @@ const baseTheme = (mode = 'light') =>
         styleOverrides: {
           root: {
             borderRadius: '10px',
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+            border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #e5e7eb',
+            boxShadow: isDark ? '0 4px 20px rgba(0, 0, 0, 0.25)' : '0 1px 2px rgba(0, 0, 0, 0.03)',
+            backgroundColor: isDark ? '#152238' : '#ffffff',
             backgroundImage: 'none',
             overflow: 'hidden'
           }
@@ -192,7 +197,9 @@ const baseTheme = (mode = 'light') =>
       MuiPaper: {
         styleOverrides: {
           root: {
-            borderRadius: '10px'
+            borderRadius: '10px',
+            backgroundColor: isDark ? '#152238' : '#ffffff',
+            backgroundImage: 'none'
           },
           rounded: {
             borderRadius: '10px'
@@ -209,6 +216,8 @@ const baseTheme = (mode = 'light') =>
           paper: {
             borderRadius: '12px',
             margin: '16px',
+            backgroundColor: isDark ? '#152238' : '#ffffff',
+            border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
             '@media (max-width: 600px)': {
               margin: '8px auto !important',
               width: 'calc(100vw - 16px) !important',
@@ -279,7 +288,14 @@ const baseTheme = (mode = 'light') =>
         styleOverrides: {
           root: {
             borderRadius: '8px',
-            fontSize: '0.875rem'
+            fontSize: '0.875rem',
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : '#ffffff',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : '#e2e8f0'
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: isDark ? '#34d399' : '#133829'
+            }
           }
         }
       },
@@ -293,21 +309,23 @@ const baseTheme = (mode = 'light') =>
       MuiMenu: {
         styleOverrides: {
           paper: {
-            borderRadius: '10px'
+            borderRadius: '10px',
+            backgroundColor: isDark ? '#152238' : '#ffffff',
+            border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #f1f5f9'
           }
         }
       },
       MuiTableHead: {
         styleOverrides: {
           root: {
-            backgroundColor: '#f8fafc',
+            backgroundColor: isDark ? '#0b1320' : '#f8fafc',
             '& .MuiTableCell-head': {
-              color: '#64748b',
+              color: isDark ? '#94a3b8' : '#64748b',
               fontWeight: 700,
               fontSize: '0.72rem',
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
-              borderBottom: '1px solid #e5e7eb',
+              borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e5e7eb',
               padding: '8px 10px',
               '@media (min-width: 600px)': {
                 padding: '10px 14px',
@@ -320,7 +338,8 @@ const baseTheme = (mode = 'light') =>
       MuiTableCell: {
         styleOverrides: {
           root: {
-            borderColor: '#f1f5f9',
+            borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#f1f5f9',
+            color: isDark ? '#f1f5f9' : 'inherit',
             padding: '8px 10px',
             fontSize: '0.82rem',
             '@media (min-width: 600px)': {
@@ -377,6 +396,8 @@ const baseTheme = (mode = 'light') =>
       MuiCssBaseline: {
         styleOverrides: {
           'html, body, #root': {
+            backgroundColor: isDark ? '#0b1320' : '#f7f9fa',
+            color: isDark ? '#f8fafc' : '#0f172a',
             touchAction: 'pan-x pan-y',
             WebkitTextSizeAdjust: '100%',
             overscrollBehaviorY: 'auto',
@@ -389,5 +410,6 @@ const baseTheme = (mode = 'light') =>
       }
     }
   });
+};
 
 export const getTheme = (mode = 'light') => responsiveFontSizes(baseTheme(mode));

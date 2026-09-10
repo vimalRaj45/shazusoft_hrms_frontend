@@ -27,7 +27,9 @@ import {
   NotificationsOff as NotificationsOffIcon,
   Notifications as NotificationsIcon,
   HelpOutline as HelpOutlineIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
@@ -44,7 +46,7 @@ export default function TopNavbar({
   isSidebarCollapsed = false,
   onToggleSidebar
 }) {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, logout, themeMode, toggleThemeMode } = useAuth();
   const { unreadCount, isPushSubscribed } = useNotifications();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [notifAnchorEl, setNotifAnchorEl] = React.useState(null);
@@ -104,11 +106,12 @@ export default function TopNavbar({
         position: 'fixed',
         left: { xs: 0, md: isSidebarCollapsed ? '72px' : '260px' },
         width: { xs: '100%', md: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 260px)' },
-        backgroundColor: '#ffffff',
-        borderBottom: '1px solid #e5e7eb',
-        color: '#0f172a',
+        backgroundColor: 'background.paper',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        color: 'text.primary',
         zIndex: 1100,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        boxShadow: themeMode === 'dark' ? '0 1px 4px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.04)',
         transition: 'left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
@@ -167,10 +170,10 @@ export default function TopNavbar({
               onClick={onToggleSidebar}
               sx={{
                 display: { xs: 'none', md: 'inline-flex' },
-                color: '#475569',
+                color: 'text.secondary',
                 borderRadius: '8px',
                 p: 0.8,
-                '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
+                '&:hover': { bgcolor: themeMode === 'dark' ? 'rgba(255,255,255,0.08)' : '#f1f5f9', color: 'primary.main' }
               }}
             >
               {isSidebarCollapsed ? <MenuIcon /> : <MenuOpenIcon />}
@@ -186,17 +189,18 @@ export default function TopNavbar({
               px: 1.5,
               py: 0.6,
               borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              bgcolor: '#f8fafc'
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc'
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-              <CalendarIcon sx={{ fontSize: 15, color: '#133829' }} />
-              <Typography variant="body2" sx={{ fontWeight: 700, fontSize: 12.5, color: '#0f172a' }}>
+              <CalendarIcon sx={{ fontSize: 15, color: 'primary.main' }} />
+              <Typography variant="body2" sx={{ fontWeight: 700, fontSize: 12.5, color: 'text.primary' }}>
                 {format(currentTime, 'EEE, dd MMM yyyy')}
               </Typography>
             </Box>
-            <Typography variant="caption" sx={{ color: '#cbd5e1', fontWeight: 800 }}>|</Typography>
+            <Typography variant="caption" sx={{ color: 'divider', fontWeight: 800 }}>|</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <TimeIcon sx={{ fontSize: 14, color: '#059669' }} />
               <Typography variant="body2" sx={{ fontWeight: 800, fontSize: 12.5, color: '#059669', fontFamily: 'monospace' }}>
@@ -212,12 +216,13 @@ export default function TopNavbar({
               px: 1.2,
               py: 0.6,
               borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              bgcolor: '#f8fafc'
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc'
             }}
           >
-            <CalendarIcon sx={{ fontSize: 15, color: '#133829' }} />
-            <Typography variant="body2" sx={{ fontWeight: 700, fontSize: 12, color: '#0f172a' }}>
+            <CalendarIcon sx={{ fontSize: 15, color: 'primary.main' }} />
+            <Typography variant="body2" sx={{ fontWeight: 700, fontSize: 12, color: 'text.primary' }}>
               {format(currentTime, 'dd MMM')} • {format(currentTime, 'hh:mm a')}
             </Typography>
           </Box>
@@ -229,8 +234,9 @@ export default function TopNavbar({
               px: 0.6,
               py: 0.25,
               borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              bgcolor: '#f8fafc',
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc',
               flexShrink: 0,
               whiteSpace: 'nowrap'
             }}
@@ -265,19 +271,20 @@ export default function TopNavbar({
             flex: { xs: '1 1 auto', sm: '0 0 auto' },
             minWidth: 0,
             maxWidth: { xs: 110, sm: 220, md: 360, lg: 420 },
-            bgcolor: '#f8fafc',
-            border: '1.5px solid #e2e8f0',
+            bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : '#f8fafc',
+            border: '1.5px solid',
+            borderColor: 'divider',
             borderRadius: '10px',
             cursor: 'pointer',
             transition: 'all 0.15s ease',
             '&:hover': {
-              bgcolor: '#ffffff',
-              borderColor: '#133829'
+              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#ffffff',
+              borderColor: 'primary.main'
             }
           }}
         >
-          <SearchIcon sx={{ fontSize: 16, color: '#133829', flexShrink: 0 }} />
-          <Typography variant="body2" sx={{ color: '#64748b', fontSize: { xs: 11, sm: 13 }, fontWeight: 500, flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <SearchIcon sx={{ fontSize: 16, color: 'primary.main', flexShrink: 0 }} />
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: 11, sm: 13 }, fontWeight: 500, flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             Search...
           </Typography>
           <Chip
@@ -288,15 +295,16 @@ export default function TopNavbar({
               height: 20,
               fontSize: 10,
               fontWeight: 800,
-              bgcolor: '#ffffff',
-              border: '1px solid #cbd5e1',
+              bgcolor: themeMode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#ffffff',
+              border: '1px solid',
+              borderColor: 'divider',
               borderRadius: '6px',
-              color: '#475569'
+              color: 'text.secondary'
             }}
           />
         </Box>
 
-        {/* Right Side: Push Notification Bell + User Profile */}
+        {/* Right Side: Theme Toggle + Push Notification Bell + User Profile */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 }, flexShrink: 0 }}>
 
           {/* Quick Refresh Page Button (Hidden on tiny mobile to preserve profile icon space) */}
@@ -305,14 +313,34 @@ export default function TopNavbar({
               onClick={() => window.location.reload()}
               sx={{
                 display: { xs: 'none', sm: 'inline-flex' },
-                color: '#64748b',
+                color: 'text.secondary',
                 borderRadius: '8px',
                 p: 0.9,
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
+                '&:hover': { bgcolor: themeMode === 'dark' ? 'rgba(255,255,255,0.08)' : '#f1f5f9', color: 'primary.main' }
               }}
             >
               <RefreshIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          </Tooltip>
+
+          {/* Theme Mode Toggle (Light / Dark) */}
+          <Tooltip title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} placement="bottom" arrow>
+            <IconButton
+              onClick={toggleThemeMode}
+              sx={{
+                color: themeMode === 'dark' ? '#fbbf24' : '#64748b',
+                borderRadius: '8px',
+                p: { xs: 0.6, sm: 0.9 },
+                transition: 'all 0.15s ease',
+                '&:hover': {
+                  bgcolor: themeMode === 'dark' ? 'rgba(251, 191, 36, 0.15)' : '#f1f5f9',
+                  color: themeMode === 'dark' ? '#f59e0b' : 'primary.main'
+                }
+              }}
+              aria-label="Toggle dark mode"
+            >
+              {themeMode === 'dark' ? <LightModeIcon sx={{ fontSize: 21 }} /> : <DarkModeIcon sx={{ fontSize: 21 }} />}
             </IconButton>
           </Tooltip>
 
@@ -403,14 +431,14 @@ export default function TopNavbar({
               {user?.name?.charAt(0) || 'U'}
             </Avatar>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="body2" sx={{ fontWeight: 800, lineHeight: 1.2, color: '#0f172a', fontSize: '0.875rem' }}>
+              <Typography variant="body2" sx={{ fontWeight: 800, lineHeight: 1.2, color: 'text.primary', fontSize: '0.875rem' }}>
                 {user?.name || 'Vimal Raj'}
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, fontSize: 11, display: 'block' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 11, display: 'block' }}>
                 {user?.designation || user?.department || 'System Admin'}
               </Typography>
             </Box>
-            <ArrowDownIcon sx={{ display: { xs: 'none', sm: 'block' }, fontSize: 16, color: '#64748b' }} />
+            <ArrowDownIcon sx={{ display: { xs: 'none', sm: 'block' }, fontSize: 16, color: 'text.secondary' }} />
           </Box>
 
           {/* User Profile Menu */}
@@ -419,26 +447,26 @@ export default function TopNavbar({
             open={Boolean(anchorEl)}
             onClose={handleCloseMenu}
             PaperProps={{
-              sx: { mt: 1.5, minWidth: 240, borderRadius: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }
+              sx: { mt: 1.5, minWidth: 240, borderRadius: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.18)' }
             }}
           >
-            <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #f1f5f9' }}>
+            <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                 <Avatar
                   src={user?.avatar_url
                     ? user.avatar_url.startsWith('http')
-                      ? user.avatar_url
-                      : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar_url}`
+                    ? user.avatar_url
+                    : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar_url}`
                     : ''}
-                  sx={{ width: 42, height: 42, borderRadius: '50%', bgcolor: '#0f172a', color: '#fff', fontWeight: 800 }}
+                  sx={{ width: 42, height: 42, borderRadius: '50%', bgcolor: 'primary.main', color: '#fff', fontWeight: 800 }}
                 >
                   {user?.name?.charAt(0) || 'U'}
                 </Avatar>
                 <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: 'text.primary' }}>
                     {user?.name}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: 11 }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', fontSize: 11 }}>
                     {user?.email}
                   </Typography>
                 </Box>
@@ -451,7 +479,7 @@ export default function TopNavbar({
               />
             </Box>
 
-            <MenuItem onClick={handleNavigateProfile} sx={{ fontWeight: 700, fontSize: 13, py: 1.2, color: '#0f172a' }}>
+            <MenuItem onClick={handleNavigateProfile} sx={{ fontWeight: 700, fontSize: 13, py: 1.2, color: 'text.primary' }}>
               <PersonIcon fontSize="small" sx={{ mr: 1.2, color: 'primary.main' }} />
               My Profile & Documents
             </MenuItem>
@@ -461,10 +489,29 @@ export default function TopNavbar({
                 handleCloseMenu();
                 if (onSelectView) onSelectView('system-guide');
               }}
-              sx={{ fontWeight: 700, fontSize: 13, py: 1.2, color: '#0f172a' }}
+              sx={{ fontWeight: 700, fontSize: 13, py: 1.2, color: 'text.primary' }}
             >
               <HelpOutlineIcon fontSize="small" sx={{ mr: 1.2, color: 'primary.main' }} />
               System Guide & Features
+            </MenuItem>
+
+            <MenuItem
+              onClick={() => {
+                toggleThemeMode();
+              }}
+              sx={{ fontWeight: 700, fontSize: 13, py: 1.2, color: 'text.primary' }}
+            >
+              {themeMode === 'dark' ? (
+                <>
+                  <LightModeIcon fontSize="small" sx={{ mr: 1.2, color: '#fbbf24' }} />
+                  Switch to Light Mode
+                </>
+              ) : (
+                <>
+                  <DarkModeIcon fontSize="small" sx={{ mr: 1.2, color: 'primary.main' }} />
+                  Switch to Dark Mode
+                </>
+              )}
             </MenuItem>
 
             <MenuItem onClick={handleLogout} sx={{ color: '#dc2626', fontWeight: 700, fontSize: 13, py: 1.2 }}>

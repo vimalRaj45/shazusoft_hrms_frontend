@@ -249,7 +249,7 @@ function AppContent() {
       <AlertConfirmProvider>
 
       {/* Main Layout: Left Full-Height Sidebar + Right Header/Content */}
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f7f9fa', width: '100%', overflowX: 'clip' }}>
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', width: '100%', overflowX: 'clip' }}>
         {/* Desktop Sidebar (Starts from the very top 0px) */}
         <Box
           component="aside"
@@ -258,8 +258,9 @@ function AppContent() {
             width: sidebarCollapsed ? 72 : 260,
             minWidth: sidebarCollapsed ? 72 : 260,
             flexShrink: 0,
-            bgcolor: '#ffffff',
-            borderRight: '1px solid #e5e7eb',
+            bgcolor: 'background.paper',
+            borderRight: '1px solid',
+            borderColor: 'divider',
             position: 'sticky',
             top: 0,
             height: '100vh',
@@ -287,7 +288,7 @@ function AppContent() {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { width: 260, bgcolor: '#ffffff', borderRadius: 0 }
+            '& .MuiDrawer-paper': { width: 260, bgcolor: 'background.paper', borderRadius: 0 }
           }}
         >
           <Sidebar
