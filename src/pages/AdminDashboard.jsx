@@ -264,7 +264,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   const [holidayForm, setHolidayForm] = useState({ date: '', name: '', type: 'Public Holiday' });
   const [addingHoliday, setAddingHoliday] = useState(false);
 
-  // Office Shift Timings & Working Hours state (Staff vs Intern criteria)
+  // Office Shift Timings & Working Hours state (Staff vs Part-Time criteria)
   const [timingTab, setTimingTab] = useState('staff');
   const [officeTimings, setOfficeTimings] = useState({
     opening_time: '09:30',
@@ -286,7 +286,8 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     if (!start || !end) return '9.0';
     const [sh, sm] = start.split(':').map(Number);
     const [eh, em] = end.split(':').map(Number);
-    const diff = (eh * 60 + em) - (sh * 60 + sm);
+    let diff = (eh * 60 + em) - (sh * 60 + sm);
+    if (diff < 0) diff += 1440;
     return diff > 0 ? (diff / 60).toFixed(1) : '9.0';
   };
 
@@ -294,15 +295,34 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     if (!start || !grace) return 15;
     const [sh, sm] = start.split(':').map(Number);
     const [gh, gm] = grace.split(':').map(Number);
-    const diff = (gh * 60 + gm) - (sh * 60 + sm);
+    let diff = (gh * 60 + gm) - (sh * 60 + sm);
+    if (diff < 0) diff += 1440;
     return diff >= 0 ? diff : 0;
+  };
+
+  const calculateAutoGraceTime = (startTime, offsetMinutes = 15) => {
+    if (!startTime) return '09:45';
+    const [h, m] = startTime.split(':').map(Number);
+    const totalM = (h * 60 + m + offsetMinutes) % 1440;
+    const gh = Math.floor(totalM / 60);
+    const gm = totalM % 60;
+    return `${String(gh).padStart(2, '0')}:${String(gm).padStart(2, '0')}`;
   };
 
   const handleSaveOfficeTimings = async (e) => {
     if (e) e.preventDefault();
     setSavingTimings(true);
     try {
-      const res = await adminAPI.updateOfficeTimings(officeTimings);
+      const payload = {
+        ...officeTimings,
+        part_time_opening_time: officeTimings.intern_opening_time,
+        part_time_closing_time: officeTimings.intern_closing_time,
+        part_time_late_grace_time: officeTimings.intern_late_grace_time,
+        part_time_half_day_hours: officeTimings.intern_half_day_hours,
+        part_time_full_day_hours: officeTimings.intern_full_day_hours,
+        part_time_avg_daily_hours: officeTimings.intern_avg_daily_hours
+      };
+      const res = await adminAPI.updateOfficeTimings(payload);
       toast.success(res.data?.message || 'Office shift timings updated successfully!');
       if (res.data?.timings) setOfficeTimings(res.data.timings);
     } catch (err) {
@@ -312,7 +332,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     }
   };
 
-  // Unified Monthly Leave Quotas & Permission Policy state (Same for Staff & Interns)
+  // Unified Monthly Leave Quotas & Permission Policy state (Same for Staff & Part-Time)
   const [leavePolicy, setLeavePolicy] = useState({
     casual_leave: 1,
     sick_leave: 1,
@@ -329,7 +349,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     setSavingPolicy(true);
     try {
       const res = await adminAPI.updateLeavePolicy(leavePolicy);
-      toast.success(res.data?.message || 'Monthly leave policy updated successfully for all staff & interns!');
+      toast.success(res.data?.message || 'Monthly leave policy updated successfully for all staff & part-time!');
       if (res.data?.policy) setLeavePolicy(res.data.policy);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update leave policy.');
@@ -339,16 +359,16 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
   };
 
   const handleConvertEmploymentType = async (emp) => {
-    const isCurrentlyIntern = emp.employment_type === 'internship';
-    const newType = isCurrentlyIntern ? 'full_time' : 'internship';
+    const isCurrentlyPartTime = ['part_time', 'parttime', 'internship'].includes(String(emp.employment_type || '').toLowerCase());
+    const newType = isCurrentlyPartTime ? 'full_time' : 'part_time';
 
     const confirmed = await muiToast.confirm({
-      title: isCurrentlyIntern ? 'Promote Intern to Full-Time Staff' : 'Switch to Internship Track',
-      message: isCurrentlyIntern
+      title: isCurrentlyPartTime ? 'Promote Part-Time Staff to Full-Time' : 'Switch to Part-Time Track',
+      message: isCurrentlyPartTime
         ? `Promote "${emp.name}" (${emp.id}) to Full-Time Staff in 1 click? Their classification will be upgraded to Full-Time Staff with standard CTC compensation.`
-        : `Switch "${emp.name}" (${emp.id}) to Internship classification?`,
-      confirmText: isCurrentlyIntern ? 'Promote to Full-Time Staff' : 'Switch Classification',
-      severity: isCurrentlyIntern ? 'success' : 'info'
+        : `Switch "${emp.name}" (${emp.id}) to Part-Time classification with flexible hours?`,
+      confirmText: isCurrentlyPartTime ? 'Promote to Full-Time Staff' : 'Switch Classification',
+      severity: isCurrentlyPartTime ? 'success' : 'info'
     });
 
     if (!confirmed) return;
@@ -949,7 +969,9 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     const matchesDept = filterDepartment === 'ALL' || emp.department === filterDepartment;
     const matchesWorkMode = filterWorkMode === 'ALL' || emp.work_mode === filterWorkMode;
     const matchesStatus = filterEmployeeStatus === 'ALL' || emp.status === filterEmployeeStatus;
-    const matchesCategory = filterEmploymentType === 'ALL' || (emp.employment_type || 'full_time') === filterEmploymentType;
+    const isEmpPartTime = ['part_time', 'parttime', 'internship'].includes(String(emp.employment_type || '').toLowerCase());
+    const matchesCategory = filterEmploymentType === 'ALL' ||
+      (filterEmploymentType === 'part_time' ? isEmpPartTime : (filterEmploymentType === 'full_time' ? !isEmpPartTime : (emp.employment_type || 'full_time') === filterEmploymentType));
     return matchesSearch && matchesDept && matchesWorkMode && matchesStatus && matchesCategory;
   });
 
@@ -1394,7 +1416,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                     >
                       <MenuItem value="ALL">All Categories</MenuItem>
                       <MenuItem value="full_time">Full-Time Staff</MenuItem>
-                      <MenuItem value="internship">Interns / Trainees</MenuItem>
+                      <MenuItem value="part_time">Part-Time Staff</MenuItem>
                     </TextField>
                   </Grid>
                 )}
@@ -1864,7 +1886,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5, flexWrap: 'wrap', gap: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Chip
-                        label="Unified Policy: Full-Time Staff & Interns"
+                        label="Unified Policy: Full-Time & Part-Time Staff"
                         size="small"
                         sx={{
                           fontWeight: 800,
@@ -2133,62 +2155,65 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       </TableCell>
                       <TableCell>{e.email}</TableCell>
                       <TableCell>
-                        {e.employment_type === 'internship' ? (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                            <Chip
-                              label="INTERN"
-                              size="small"
-                              sx={{
-                                fontWeight: 800,
-                                borderRadius: '6px',
-                                fontSize: '0.68rem',
-                                bgcolor: '#f3e8ff',
-                                color: '#7e22ce',
-                                border: '1px solid #d8b4fe'
-                              }}
-                            />
-                            <Tooltip title="1-Click: Promote this Intern to Full-Time Staff">
+                        {(() => {
+                          const isEmpPT = ['part_time', 'parttime', 'internship'].includes(String(e.employment_type || '').toLowerCase());
+                          return isEmpPT ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                               <Chip
-                                icon={<StarIcon sx={{ fontSize: '13px !important', color: '#15803d !important' }} />}
-                                label="Promote"
+                                label="PART-TIME"
+                                size="small"
+                                sx={{
+                                  fontWeight: 800,
+                                  borderRadius: '6px',
+                                  fontSize: '0.68rem',
+                                  bgcolor: '#f3e8ff',
+                                  color: '#7e22ce',
+                                  border: '1px solid #d8b4fe'
+                                }}
+                              />
+                              <Tooltip title="1-Click: Promote this Part-Time Staff to Full-Time">
+                                <Chip
+                                  icon={<StarIcon sx={{ fontSize: '13px !important', color: '#15803d !important' }} />}
+                                  label="Promote"
+                                  size="small"
+                                  clickable
+                                  onClick={() => handleConvertEmploymentType(e)}
+                                  sx={{
+                                    fontWeight: 800,
+                                    cursor: 'pointer',
+                                    fontSize: '0.68rem',
+                                    height: 22,
+                                    bgcolor: '#ecfdf5',
+                                    color: '#047857',
+                                    border: '1px solid #6ee7b7',
+                                    boxShadow: '0 1px 3px rgba(16,185,129,0.2)',
+                                    '&:hover': { bgcolor: '#d1fae5', transform: 'scale(1.05)' },
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                />
+                              </Tooltip>
+                            </Box>
+                          ) : (
+                            <Tooltip title="Click to switch between Full-Time Staff and Part-Time">
+                              <Chip
+                                label="FULL-TIME"
                                 size="small"
                                 clickable
                                 onClick={() => handleConvertEmploymentType(e)}
                                 sx={{
                                   fontWeight: 800,
                                   cursor: 'pointer',
+                                  borderRadius: '6px',
                                   fontSize: '0.68rem',
-                                  height: 22,
-                                  bgcolor: '#ecfdf5',
-                                  color: '#047857',
-                                  border: '1px solid #6ee7b7',
-                                  boxShadow: '0 1px 3px rgba(16,185,129,0.2)',
-                                  '&:hover': { bgcolor: '#d1fae5', transform: 'scale(1.05)' },
-                                  transition: 'all 0.15s ease'
+                                  bgcolor: '#dcfce7',
+                                  color: '#15803d',
+                                  border: '1px solid #86efac',
+                                  '&:hover': { bgcolor: '#bbf7d0' }
                                 }}
                               />
                             </Tooltip>
-                          </Box>
-                        ) : (
-                          <Tooltip title="Click to switch between Full-Time Staff and Internship">
-                            <Chip
-                              label="FULL-TIME"
-                              size="small"
-                              clickable
-                              onClick={() => handleConvertEmploymentType(e)}
-                              sx={{
-                                fontWeight: 800,
-                                cursor: 'pointer',
-                                borderRadius: '6px',
-                                fontSize: '0.68rem',
-                                bgcolor: '#dcfce7',
-                                color: '#15803d',
-                                border: '1px solid #86efac',
-                                '&:hover': { bgcolor: '#bbf7d0' }
-                              }}
-                            />
-                          </Tooltip>
-                        )}
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -2237,29 +2262,29 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         {(() => {
                           const struct = salaryStructures.find(s => s.employee_id === e.id);
                           const salary = parseFloat(struct?.monthly_salary) || 0;
-                          const isIntern = e.employment_type === 'internship';
+                          const isEmpPT = ['part_time', 'parttime', 'internship'].includes(String(e.employment_type || '').toLowerCase());
                           if (salary > 0) {
                             return (
                               <Box>
-                                <Typography variant="body2" sx={{ fontWeight: 800, color: isIntern ? '#7e22ce' : '#0f766e', fontFamily: 'monospace' }}>
+                                <Typography variant="body2" sx={{ fontWeight: 800, color: isEmpPT ? '#7e22ce' : '#0f766e', fontFamily: 'monospace' }}>
                                   {formatINR(salary)}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: '#64748b', fontSize: 10, display: 'block' }}>
-                                  {isIntern ? 'Monthly Stipend' : 'Monthly CTC'}
+                                  {isEmpPT ? 'Monthly Part-Time Pay' : 'Monthly CTC'}
                                 </Typography>
                               </Box>
                             );
                           }
                           return (
                             <Typography variant="caption" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>
-                              {isIntern ? 'No Stipend Set' : 'No Salary Set'}
+                              {isEmpPT ? 'No Pay Set' : 'No Salary Set'}
                             </Typography>
                           );
                         })()}
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                          {e.employment_type === 'internship' && (
+                          {['part_time', 'parttime', 'internship'].includes(String(e.employment_type || '').toLowerCase()) && (
                             <Button
                               size="small"
                               variant="contained"
@@ -2476,7 +2501,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       </Typography>
                     </Box>
                     <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
-                      Configure customized shift spans, punch-in late grace cutoffs, and average daily needed working hours separately for Staff and Interns.
+                      Configure customized shift spans, punch-in late grace cutoffs, and average daily needed working hours separately for Full-Time Staff and Part-Time Staff.
                     </Typography>
                   </Box>
 
@@ -2520,13 +2545,13 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         '&:hover': { bgcolor: timingTab === 'intern' ? '#6b21a8' : '#e2e8f0' }
                       }}
                     >
-                      Internship Trainees
+                      Part-Time Staff
                     </Button>
                   </Box>
                 </Box>
 
                 {/* Status KPI preview for current selected role */}
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2.5 }}>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2.5, alignItems: 'center' }}>
                   {timingTab === 'staff' ? (
                     <>
                       <Chip
@@ -2551,17 +2576,17 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       <Chip
                         size="small"
                         icon={<SchoolIcon sx={{ fontSize: '14px !important', color: '#7e22ce !important' }} />}
-                        label={`Intern Shift: ${getShiftDuration(officeTimings.intern_opening_time || '10:00', officeTimings.intern_closing_time || '16:30')} hrs (${formatTime12h(officeTimings.intern_opening_time || '10:00')} – ${formatTime12h(officeTimings.intern_closing_time || '16:30')})`}
+                        label={`Part-Time Shift: ${getShiftDuration(officeTimings.intern_opening_time || '10:00', officeTimings.intern_closing_time || '16:30')} hrs (${formatTime12h(officeTimings.intern_opening_time || '10:00')} – ${formatTime12h(officeTimings.intern_closing_time || '16:30')})`}
                         sx={{ fontWeight: 700, bgcolor: '#faf5ff', color: '#7e22ce', borderRadius: '6px', border: '1px solid #d8b4fe' }}
                       />
                       <Chip
                         size="small"
-                        label={`Intern Grace: +${getGraceMinutes(officeTimings.intern_opening_time || '10:00', officeTimings.intern_late_grace_time || '10:15')}m (until ${formatTime12h(officeTimings.intern_late_grace_time || '10:15')})`}
+                        label={`Part-Time Grace: +${getGraceMinutes(officeTimings.intern_opening_time || '10:00', officeTimings.intern_late_grace_time || '10:15')}m (until ${formatTime12h(officeTimings.intern_late_grace_time || '10:15')})`}
                         sx={{ fontWeight: 700, bgcolor: '#fffbeb', color: '#b45309', borderRadius: '6px', border: '1px solid #fde68a' }}
                       />
                       <Chip
                         size="small"
-                        label={`Intern Daily Target: ${officeTimings.intern_avg_daily_hours || officeTimings.intern_full_day_hours || 6.0} hrs/day`}
+                        label={`Part-Time Daily Target: ${officeTimings.intern_avg_daily_hours || officeTimings.intern_full_day_hours || 6.0} hrs/day`}
                         sx={{ fontWeight: 800, bgcolor: '#f3e8ff', color: '#6b21a8', borderRadius: '6px', border: '1px solid #d8b4fe' }}
                       />
                     </>
@@ -2570,7 +2595,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
 
                 {timingTab === 'intern' && (
                   <Alert severity="info" sx={{ mb: 2.5, borderRadius: '8px', fontSize: 13 }}>
-                    <strong>Intern Lighter Hours Policy:</strong> Interns do not have the same heavy shift requirements as regular full-time staff. Punch-in late grace, timesheet average performance, and minimum working hours are calibrated against these intern criteria.
+                    <strong>Part-Time Flexible Hours Policy:</strong> Part-time staff can have tailored work hours (such as evening 05:30 PM – 08:30 PM, afternoon, or morning shifts). Punch-in late grace, daily targets, and timesheet completion percentages will automatically evaluate against these exact criteria.
                   </Alert>
                 )}
 
@@ -2587,19 +2612,29 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         />
                       </Grid>
                       <Grid item xs={12} sm={6} md={4}>
-                        <TimePicker12h
-                          label="Late Entry Grace Cutoff"
-                          value={officeTimings.late_grace_time}
-                          onChange={(e) => setOfficeTimings(p => ({ ...p, late_grace_time: e.target.value }))}
-                          helperText="Punches after this are marked Late"
-                        />
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                          <TimePicker12h
+                            label="Late Entry Grace Cutoff"
+                            value={officeTimings.late_grace_time}
+                            onChange={(e) => setOfficeTimings(p => ({ ...p, late_grace_time: e.target.value }))}
+                            helperText="Punches after this are marked Late"
+                          />
+                          <Button
+                            size="small"
+                            variant="text"
+                            onClick={() => setOfficeTimings(p => ({ ...p, late_grace_time: calculateAutoGraceTime(p.opening_time, 15) }))}
+                            sx={{ alignSelf: 'flex-end', fontSize: 11, mt: 0.3, textTransform: 'none', py: 0 }}
+                          >
+                            ⚡ Auto-Sync (+15 min)
+                          </Button>
+                        </Box>
                       </Grid>
                       <Grid item xs={12} sm={6} md={4}>
                         <TimePicker12h
                           label="Office Closing Time"
                           value={officeTimings.closing_time}
                           onChange={(e) => setOfficeTimings(p => ({ ...p, closing_time: e.target.value }))}
-                          helperText="Official shift end (e.g. 06:30 PM)"
+                          helperText="Official shift end (e.g. 06:30 PM or 08:30 PM)"
                         />
                       </Grid>
 
@@ -2646,43 +2681,59 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                     </Grid>
                   ) : (
                     <Grid container spacing={2.5}>
-                      {/* Section 1: Intern Shift Timings */}
+                      {/* Section 1: Part-Time Shift Timings */}
                       <Grid item xs={12} sm={6} md={4}>
                         <TimePicker12h
-                          label="Intern Opening Time"
+                          label="Part-Time Opening Time"
                           value={officeTimings.intern_opening_time || '10:00'}
-                          onChange={(e) => setOfficeTimings(p => ({ ...p, intern_opening_time: e.target.value }))}
-                          helperText="Intern arrival (e.g. 10:00 AM)"
+                          onChange={(e) => {
+                            const newStart = e.target.value;
+                            setOfficeTimings(p => ({
+                              ...p,
+                              intern_opening_time: newStart
+                            }));
+                          }}
+                          helperText="Part-Time arrival (e.g. 05:30 PM or 10:00 AM)"
                         />
                       </Grid>
                       <Grid item xs={12} sm={6} md={4}>
-                        <TimePicker12h
-                          label="Intern Late Grace Cutoff"
-                          value={officeTimings.intern_late_grace_time || '10:15'}
-                          onChange={(e) => setOfficeTimings(p => ({ ...p, intern_late_grace_time: e.target.value }))}
-                          helperText="Intern grace until (e.g. 10:15 AM)"
-                        />
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                          <TimePicker12h
+                            label="Part-Time Late Grace Cutoff"
+                            value={officeTimings.intern_late_grace_time || '10:15'}
+                            onChange={(e) => setOfficeTimings(p => ({ ...p, intern_late_grace_time: e.target.value }))}
+                            helperText="Grace threshold (e.g. 05:45 PM or 10:15 AM)"
+                          />
+                          <Button
+                            size="small"
+                            variant="text"
+                            onClick={() => setOfficeTimings(p => ({ ...p, intern_late_grace_time: calculateAutoGraceTime(p.intern_opening_time || '10:00', 15) }))}
+                            sx={{ alignSelf: 'flex-end', fontSize: 11, mt: 0.3, textTransform: 'none', py: 0, color: '#7e22ce' }}
+                          >
+                            ⚡ Auto-Sync (+15 min)
+                          </Button>
+                        </Box>
                       </Grid>
                       <Grid item xs={12} sm={6} md={4}>
                         <TimePicker12h
-                          label="Intern Closing Time"
-                          value={(officeTimings.intern_closing_time && officeTimings.intern_closing_time !== '18:30') ? officeTimings.intern_closing_time : '16:30'}
+                          label="Part-Time Closing Time"
+                          value={officeTimings.intern_closing_time || '16:30'}
                           onChange={(e) => setOfficeTimings(p => ({ ...p, intern_closing_time: e.target.value }))}
-                          helperText="Intern shift ends (e.g. 04:30 PM)"
+                          helperText="Shift ends (e.g. 08:30 PM or 04:30 PM)"
                         />
                       </Grid>
 
-                      {/* Section 2: Intern Lighter Required Working Hours */}
+                      {/* Section 2: Part-Time Required Working Hours */}
                       <Grid item xs={12} sm={6} md={4}>
                         <TextField
                           fullWidth
                           size="small"
                           type="number"
-                          label="Intern Full-Day Min Hours"
+                          label="Part-Time Full-Day Min Hours"
                           value={officeTimings.intern_full_day_hours !== undefined ? officeTimings.intern_full_day_hours : 6.0}
                           onChange={(e) => setOfficeTimings(p => ({ ...p, intern_full_day_hours: parseFloat(e.target.value) || 0 }))}
                           inputProps={{ min: 1, max: 24, step: 0.5 }}
-                          helperText="Min hrs for 'Present' (e.g. 6.0h)"
+                          helperText="Min hrs for 'Present' (e.g. 3.0h or 6.0h)"
                           sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                         />
                       </Grid>
@@ -2691,11 +2742,11 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                           fullWidth
                           size="small"
                           type="number"
-                          label="Intern Half-Day Min Hours"
+                          label="Part-Time Half-Day Min Hours"
                           value={officeTimings.intern_half_day_hours !== undefined ? officeTimings.intern_half_day_hours : 3.0}
                           onChange={(e) => setOfficeTimings(p => ({ ...p, intern_half_day_hours: parseFloat(e.target.value) || 0 }))}
                           inputProps={{ min: 1, max: 24, step: 0.5 }}
-                          helperText="Min hrs for 'Half Day' (e.g. 3.0h)"
+                          helperText="Min hrs for 'Half Day' (e.g. 1.5h or 3.0h)"
                           sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                         />
                       </Grid>
@@ -2704,11 +2755,11 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                           fullWidth
                           size="small"
                           type="number"
-                          label="Intern Needed Daily Average"
+                          label="Part-Time Needed Daily Average"
                           value={officeTimings.intern_avg_daily_hours !== undefined ? officeTimings.intern_avg_daily_hours : 6.0}
                           onChange={(e) => setOfficeTimings(p => ({ ...p, intern_avg_daily_hours: parseFloat(e.target.value) || 0 }))}
                           inputProps={{ min: 1, max: 24, step: 0.5 }}
-                          helperText="Target daily average (e.g. 6.0h/day)"
+                          helperText="Target daily average (e.g. 3.0h or 6.0h/day)"
                           sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
                         />
                       </Grid>
@@ -2720,7 +2771,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                     <Typography variant="caption" sx={{ color: '#64748b' }}>
                       {timingTab === 'staff'
                         ? `Staff punches submitted after ${formatTime12h(officeTimings.late_grace_time)} will automatically flag attendance as Late.`
-                        : `Intern punches submitted after ${formatTime12h(officeTimings.intern_late_grace_time || '10:15')} will automatically flag attendance as Late.`}
+                        : `Part-time punches submitted after ${formatTime12h(officeTimings.intern_late_grace_time || '10:15')} will automatically flag attendance as Late.`}
                     </Typography>
                     <Button
                       type="submit"
@@ -2738,7 +2789,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         width: { xs: '100%', sm: 'auto' }
                       }}
                     >
-                      {savingTimings ? 'Saving Timings...' : 'Save Office & Intern Working Hours'}
+                      {savingTimings ? 'Saving Timings...' : 'Save Office & Part-Time Working Hours'}
                     </Button>
                   </Box>
                 </form>
@@ -2962,12 +3013,13 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   fullWidth
                   select
                   label="Employment Category"
-                  value={empForm.employment_type || 'full_time'}
+                  value={['part_time', 'parttime', 'internship'].includes(empForm.employment_type) ? 'part_time' : (empForm.employment_type || 'full_time')}
                   onChange={(e) => {
                     const newType = e.target.value;
-                    const autoDesignation = newType === 'internship' && empForm.designation === 'Software Developer'
-                      ? 'Software Intern'
-                      : (newType === 'full_time' && empForm.designation === 'Software Intern' ? 'Software Developer' : empForm.designation);
+                    const isPT = newType === 'part_time';
+                    const autoDesignation = isPT && (empForm.designation === 'Software Developer' || !empForm.designation)
+                      ? 'Junior Developer (Part-Time)'
+                      : (!isPT && empForm.designation === 'Junior Developer (Part-Time)' ? 'Software Developer' : empForm.designation);
                     setEmpForm({
                       ...empForm,
                       employment_type: newType,
@@ -2976,7 +3028,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                   }}
                 >
                   <MenuItem value="full_time">Full-Time Staff (Regular Permanent)</MenuItem>
-                  <MenuItem value="internship">Internship / Trainee (Learning Track)</MenuItem>
+                  <MenuItem value="part_time">Part-Time Staff (Flexible Hours Track)</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>

@@ -226,24 +226,19 @@ export default function GeofencePunch({ todayData, onRefresh }) {
     }
   })();
 
-  const isIntern = Boolean(
-    timingInfo?.employment_type === 'internship' ||
-    cachedUser?.employment_type === 'internship' ||
+  const isPartTime = Boolean(
+    ['part_time', 'parttime', 'internship'].includes(String(timingInfo?.employment_type || '').toLowerCase()) ||
+    ['part_time', 'parttime', 'internship'].includes(String(cachedUser?.employment_type || '').toLowerCase()) ||
+    cachedUser?.designation?.toLowerCase()?.includes('part-time') ||
     cachedUser?.designation?.toLowerCase()?.includes('intern') ||
     cachedUser?.role === 'intern'
   );
 
-  const displayOpeningTime = (isIntern && (!timingInfo || timingInfo?.employment_type !== 'internship'))
-    ? '10:00'
-    : (timingInfo?.timings?.opening_time || (isIntern ? '10:00' : '09:30'));
-  const displayClosingTime = (isIntern && (!timingInfo || timingInfo?.employment_type !== 'internship'))
-    ? '16:30'
-    : (timingInfo?.timings?.closing_time || (isIntern ? '16:30' : '18:30'));
-  const displayGraceTime = (isIntern && (!timingInfo || timingInfo?.employment_type !== 'internship'))
-    ? '10:15'
-    : (timingInfo?.timings?.late_grace_time || (isIntern ? '10:15' : '09:45'));
-  const targetNeededHours = isIntern
-    ? (timingInfo?.employment_type === 'internship' && timingInfo?.timings?.avg_daily_hours ? parseFloat(timingInfo.timings.avg_daily_hours) : 6.0)
+  const displayOpeningTime = timingInfo?.timings?.opening_time || (isPartTime ? '10:00' : '09:30');
+  const displayClosingTime = timingInfo?.timings?.closing_time || (isPartTime ? '16:30' : '18:30');
+  const displayGraceTime = timingInfo?.timings?.late_grace_time || (isPartTime ? '10:15' : '09:45');
+  const targetNeededHours = isPartTime
+    ? (timingInfo?.timings?.avg_daily_hours ? parseFloat(timingInfo.timings.avg_daily_hours) : 6.0)
     : parseFloat(timingInfo?.timings?.avg_daily_hours || timingInfo?.timings?.full_day_hours || 8.5);
 
   const elapsedHours = calculateElapsedHours();
@@ -482,13 +477,13 @@ export default function GeofencePunch({ todayData, onRefresh }) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip
               size="small"
-              label={isIntern ? 'INTERNSHIP SHIFT' : 'FULL-TIME SHIFT'}
+              label={isPartTime ? 'PART-TIME SHIFT' : 'FULL-TIME SHIFT'}
               sx={{
                 fontWeight: 800,
                 fontSize: 10,
                 borderRadius: '6px',
-                bgcolor: isIntern ? '#f3e8ff' : '#dcfce7',
-                color: isIntern ? '#7e22ce' : '#15803d'
+                bgcolor: isPartTime ? '#f3e8ff' : '#dcfce7',
+                color: isPartTime ? '#7e22ce' : '#15803d'
               }}
             />
             <Typography variant="caption" sx={{ fontWeight: 700, color: '#334155' }}>
@@ -510,13 +505,13 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 </Typography>
                 <Chip
                   size="small"
-                  label={timingInfo?.employment_type === 'internship' ? 'INTERN TARGET' : 'STAFF TARGET'}
+                  label={isPartTime ? 'PART-TIME TARGET' : 'STAFF TARGET'}
                   sx={{
                     height: 20,
                     fontSize: 10,
                     fontWeight: 800,
-                    bgcolor: timingInfo?.employment_type === 'internship' ? '#f3e8ff' : '#dcfce7',
-                    color: timingInfo?.employment_type === 'internship' ? '#7e22ce' : '#15803d'
+                    bgcolor: isPartTime ? '#f3e8ff' : '#dcfce7',
+                    color: isPartTime ? '#7e22ce' : '#15803d'
                   }}
                 />
               </Box>
@@ -536,7 +531,7 @@ export default function GeofencePunch({ todayData, onRefresh }) {
                 bgcolor: '#e2e8f0',
                 '& .MuiLinearProgress-bar': {
                   borderRadius: 4,
-                  bgcolor: isGoalReached ? '#10b981' : (timingInfo?.employment_type === 'internship' ? '#a855f7' : '#3b82f6')
+                  bgcolor: isGoalReached ? '#10b981' : (isPartTime ? '#a855f7' : '#3b82f6')
                 }
               }}
             />

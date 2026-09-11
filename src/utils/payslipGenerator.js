@@ -138,9 +138,10 @@ export async function generatePayslipPDF(payslipData) {
   const logoDataUrl = await loadImageAsDataUrl('/logo.png');
 
   let currentY = 14;
-  const isIntern = String(payslipData.employment_type || '').toLowerCase() === 'internship' ||
+  const isPartTime = ['part_time', 'parttime', 'internship'].includes(String(payslipData.employment_type || '').toLowerCase()) ||
+    String(employee_id || '').startsWith('PT-') ||
     String(employee_id || '').startsWith('INT-') ||
-    /intern/i.test(designation || '');
+    /(?:part-time|part\s*time|intern)/i.test(designation || '');
 
   // 1. BRAND HEADER & REPORT REFERENCE (Exact reference match)
   if (logoDataUrl) {
@@ -168,7 +169,7 @@ export async function generatePayslipPDF(payslipData) {
   doc.setFontSize(8);
   doc.setTextColor(17, 24, 39);
   doc.text(
-    `REPORT REF: SS-HRMS-${isIntern ? 'INT' : 'PAY'}-${(employee_id || 'EMP').toUpperCase()}-${payroll_month}`,
+    `REPORT REF: SS-HRMS-${isPartTime ? 'PT' : 'PAY'}-${(employee_id || 'EMP').toUpperCase()}-${payroll_month}`,
     pageWidth - margin,
     currentY + 4.5,
     { align: 'right' }
@@ -179,7 +180,7 @@ export async function generatePayslipPDF(payslipData) {
   doc.setTextColor(100, 116, 139);
   doc.text(`Generated: ${timestamp}`, pageWidth - margin, currentY + 9, { align: 'right' });
   doc.text(
-    `Status: ${status === 'Paid' ? 'OFFICIAL DISBURSED RECORD' : (isIntern ? 'OFFICIAL STIPEND RECORD' : 'OFFICIAL SALARY RECORD')}`,
+    `Status: ${status === 'Paid' ? 'OFFICIAL DISBURSED RECORD' : (isPartTime ? 'OFFICIAL PART-TIME RECORD' : 'OFFICIAL SALARY RECORD')}`,
     pageWidth - margin,
     currentY + 13.5,
     { align: 'right' }
@@ -198,8 +199,8 @@ export async function generatePayslipPDF(payslipData) {
   doc.setFontSize(11);
   doc.setTextColor(15, 23, 42);
   doc.text(
-    isIntern
-      ? 'INTERNSHIP MONTHLY STIPEND VOUCHER & REMUNERATION STATEMENT'
+    isPartTime
+      ? 'PART-TIME MONTHLY SALARY VOUCHER & REMUNERATION STATEMENT'
       : 'EMPLOYEE MONTHLY SALARY PAYSLIP & REMUNERATION STATEMENT',
     pageWidth / 2,
     currentY,
@@ -246,7 +247,7 @@ export async function generatePayslipPDF(payslipData) {
         { content: 'Department:', styles: { fontStyle: 'bold' } },
         { content: department || 'General' },
         { content: 'Role & Classification:', styles: { fontStyle: 'bold' } },
-        { content: `${designation || 'Staff'} • ${isIntern ? 'Internship Trainee' : 'Full-Time Staff'}` }
+        { content: `${designation || 'Staff'} • ${isPartTime ? 'Part-Time Staff' : 'Full-Time Staff'}` }
       ],
       [
         { content: 'Bank Name & A/C:', styles: { fontStyle: 'bold' } },
@@ -363,7 +364,7 @@ export async function generatePayslipPDF(payslipData) {
     },
     body: [
       [
-        isIntern ? 'Monthly Internship Stipend' : 'Monthly Base Salary',
+        isPartTime ? 'Monthly Part-Time Salary' : 'Monthly Base Salary',
         formatPDFAmount(monthly_salary),
         lopTitle,
         formatPDFAmount(lop_deduction)

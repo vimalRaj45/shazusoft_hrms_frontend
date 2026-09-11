@@ -1201,9 +1201,9 @@ export default function IssueResolutionChatHub({ user }) {
                                       color: staff.role === 'admin' ? '#991b1b' : '#475569'
                                     }}
                                   />
-                                  {staff.employment_type === 'internship' && (
+                                  {['part_time', 'parttime', 'internship'].includes(String(staff.employment_type || '').toLowerCase()) && (
                                     <Chip
-                                      label="INTERN"
+                                      label="PART-TIME"
                                       size="small"
                                       sx={{
                                         height: 18,

@@ -697,15 +697,15 @@ export default function UserProfile() {
                 sx={{ fontWeight: 700, borderRadius: '6px', fontSize: 10, height: 20 }}
               />
               <Chip
-                label={profileData.employment_type === 'internship' ? 'INTERNSHIP' : 'FULL-TIME STAFF'}
+                label={['part_time', 'parttime', 'internship'].includes(String(profileData.employment_type || '').toLowerCase()) ? 'PART-TIME' : 'FULL-TIME STAFF'}
                 size="small"
                 sx={{
                   fontWeight: 800,
                   borderRadius: '6px',
                   fontSize: 10,
                   height: 20,
-                  bgcolor: profileData.employment_type === 'internship' ? '#f3e8ff' : '#dcfce7',
-                  color: profileData.employment_type === 'internship' ? '#7e22ce' : '#15803d'
+                  bgcolor: ['part_time', 'parttime', 'internship'].includes(String(profileData.employment_type || '').toLowerCase()) ? '#f3e8ff' : '#dcfce7',
+                  color: ['part_time', 'parttime', 'internship'].includes(String(profileData.employment_type || '').toLowerCase()) ? '#7e22ce' : '#15803d'
                 }}
               />
             </Box>
@@ -1072,7 +1072,7 @@ export default function UserProfile() {
                   label="Employment Classification"
                   size="small"
                   fullWidth
-                  value={profileData.employment_type === 'internship' ? 'Internship / Trainee (Learning & Stipend Track)' : 'Full-Time Staff (Permanent / Regular)'}
+                  value={['part_time', 'parttime', 'internship'].includes(String(profileData.employment_type || '').toLowerCase()) ? 'Part-Time Staff (Flexible / Hourly Track)' : 'Full-Time Staff (Permanent / Regular)'}
                   disabled
                 />
               </Grid>
@@ -1088,10 +1088,10 @@ export default function UserProfile() {
                 </Typography>
               </Grid>
 
-              {profileData.employment_type === 'internship' && (
+              {['part_time', 'parttime', 'internship'].includes(String(profileData.employment_type || '').toLowerCase()) && (
                 <Grid item xs={12}>
                   <Alert severity="info" sx={{ borderRadius: '8px', fontSize: '0.85rem' }}>
-                    <strong>Internship Compensation Structure:</strong> Interns receive monthly educational stipend disbursements. Statutory PF and ESI contributions are generally exempt during internship training.
+                    <strong>Part-Time Compensation Structure:</strong> Part-time staff receive monthly pro-rated remuneration disbursements based on hours logged and contractual terms. Statutory deductions comply with part-time standards.
                   </Alert>
                 </Grid>
               )}

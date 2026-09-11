@@ -73,17 +73,18 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'PRESENT' | 'LATE' | 'LEAVE_ABSENT'
   const [searchQuery, setSearchQuery] = useState('');
 
-  const isIntern = Boolean(
-    timesheetData?.employment_type === 'internship' ||
-    timesheetData?.employee?.employment_type === 'internship' ||
-    cachedUser?.employment_type === 'internship' ||
+  const isPartTime = Boolean(
+    ['part_time', 'parttime', 'internship'].includes(String(timesheetData?.employment_type || '').toLowerCase()) ||
+    ['part_time', 'parttime', 'internship'].includes(String(timesheetData?.employee?.employment_type || '').toLowerCase()) ||
+    ['part_time', 'parttime', 'internship'].includes(String(cachedUser?.employment_type || '').toLowerCase()) ||
+    cachedUser?.designation?.toLowerCase()?.includes('part-time') ||
     cachedUser?.designation?.toLowerCase()?.includes('intern') ||
     cachedUser?.role === 'intern'
   );
 
-  const targetAvgHours = isIntern
-    ? ((timesheetData?.employment_type === 'internship' && timesheetData?.target_avg_hours_per_day) ? timesheetData.target_avg_hours_per_day : 6.0)
-    : (timesheetData?.target_avg_hours_per_day || 8.5);
+  const targetAvgHours = timesheetData?.target_avg_hours_per_day
+    ? parseFloat(timesheetData.target_avg_hours_per_day)
+    : (isPartTime ? 6.0 : 8.5);
 
   // Regularization modal state
   const [openRegModal, setOpenRegModal] = useState(false);
@@ -164,10 +165,10 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                 <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>
                   {timesheetData?.month_label || 'Monthly Attendance Timesheet'}
                 </Typography>
-                {isIntern ? (
+                {isPartTime ? (
                   <Chip
                     size="small"
-                    label={`INTERN • ${targetAvgHours}h/day req`}
+                    label={`PART-TIME • ${targetAvgHours}h/day req`}
                     sx={{ fontWeight: 800, bgcolor: '#f3e8ff', color: '#7e22ce', border: '1px solid #d8b4fe', height: 22, fontSize: 11 }}
                   />
                 ) : (
@@ -251,7 +252,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                 {formatDuration(timesheetData?.avg_hours_per_day)}
               </Typography>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, mt: 0.5, display: 'block' }}>
-                Target: <strong>{targetAvgHours}h/day</strong> ({isIntern ? 'Intern Target' : 'Staff Target'})
+                Target: <strong>{targetAvgHours}h/day</strong> ({isPartTime ? 'Part-Time Target' : 'Staff Target'})
               </Typography>
             </CardContent>
           </Card>

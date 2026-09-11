@@ -200,7 +200,7 @@ export default function LeavesSection() {
 
   const balances = balanceData?.balances || {};
   const policy = balanceData?.policy || {};
-  const isIntern = balanceData?.employment_type === 'internship';
+  const isPartTime = ['part_time', 'parttime', 'internship'].includes(String(balanceData?.employment_type || '').toLowerCase());
   const permPolicy = balanceData?.permissionPolicy || { monthlyLimit: 2, usedThisMonth: 0, remainingThisMonth: 2 };
 
   return (
@@ -282,11 +282,11 @@ export default function LeavesSection() {
           <Grid item xs={6} sm={3} sx={{ display: 'flex' }}>
             <Box sx={{ width: '100%', height: '100%', p: 2, borderRadius: '10px', bgcolor: '#f8fafc', border: '1px solid #e5e7eb', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, minHeight: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>PAID ANNUAL LEAVE (PL)</Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: isIntern ? '#94a3b8' : '#0284c7', mt: 0.5 }}>
-                {isIntern ? 'EXEMPT' : (balances['Paid Leave']?.remainingDays ?? 1)} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{isIntern ? '' : `/ ${balances['Paid Leave']?.totalQuota ?? 1}d`}</span>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: isPartTime ? '#94a3b8' : '#0284c7', mt: 0.5 }}>
+                {isPartTime ? 'EXEMPT' : (balances['Paid Leave']?.remainingDays ?? 1)} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{isPartTime ? '' : `/ ${balances['Paid Leave']?.totalQuota ?? 1}d`}</span>
               </Typography>
               <Typography variant="caption" sx={{ color: '#64748b' }}>
-                {isIntern ? 'Not available for Interns' : `${balances['Paid Leave']?.approvedDays ?? 0} days used this month`}
+                {isPartTime ? 'Not applicable for Part-Time' : `${balances['Paid Leave']?.approvedDays ?? 0} days used this month`}
               </Typography>
             </Box>
           </Grid>
@@ -500,9 +500,9 @@ export default function LeavesSection() {
                 >
                   <MenuItem value="Casual Leave">Casual Leave ({balances['Casual Leave']?.remainingDays ?? (policy?.casual_leave ?? 1)} days left this month)</MenuItem>
                   <MenuItem value="Sick Leave">Sick Leave ({balances['Sick Leave']?.remainingDays ?? (policy?.sick_leave ?? 1)} days left this month)</MenuItem>
-                  {isIntern ? (
+                  {isPartTime ? (
                     <MenuItem value="Paid Leave" disabled>
-                      Paid Annual Leave (Not Available for Interns)
+                      Paid Annual Leave (Not Available for Part-Time)
                     </MenuItem>
                   ) : (
                     <MenuItem value="Paid Leave">Paid Annual Leave ({balances['Paid Leave']?.remainingDays ?? (policy?.paid_leave ?? 1)} days left this month)</MenuItem>
@@ -558,11 +558,11 @@ export default function LeavesSection() {
       <Dialog open={openPermModal} onClose={() => setOpenPermModal(false)} maxWidth="sm" fullWidth>
         <form onSubmit={handleApplyPermission}>
           <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <PermissionIcon color="secondary" /> Request Short Permission Pass (Max {permPolicy.maxPermissionHours || (isIntern ? 1.5 : 2)} hrs)
+            <PermissionIcon color="secondary" /> Request Short Permission Pass (Max {permPolicy.maxPermissionHours || (isPartTime ? 1.5 : 2)} hrs)
           </DialogTitle>
           <DialogContent dividers>
             <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>
-              Monthly Limit: <strong>{permPolicy.monthlyLimit} {permPolicy.monthlyLimit === 1 ? 'pass' : 'passes'} allowed per month</strong> ({isIntern ? 'Internship Allowance' : 'Full-Time Allowance'}). You have <strong>{permPolicy.remainingThisMonth} remaining</strong>.
+              Monthly Limit: <strong>{permPolicy.monthlyLimit} {permPolicy.monthlyLimit === 1 ? 'pass' : 'passes'} allowed per month</strong> ({isPartTime ? 'Part-Time Allowance' : 'Full-Time Allowance'}). You have <strong>{permPolicy.remainingThisMonth} remaining</strong>.
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
