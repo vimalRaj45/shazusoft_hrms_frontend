@@ -794,6 +794,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     try {
       await leavesAPI.updateStatus(id, status);
       toast.success(`Leave application ${status.toLowerCase()} successfully.`);
+      fetchDashboardData();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update leave.');
       fetchDashboardData();
@@ -806,6 +807,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     try {
       await leavesAPI.updatePermissionStatus(id, status);
       toast.success(`Permission pass ${status.toLowerCase()} successfully.`);
+      fetchDashboardData();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update permission.');
       fetchDashboardData();

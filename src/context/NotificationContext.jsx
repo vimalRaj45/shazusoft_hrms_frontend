@@ -186,7 +186,12 @@ export const NotificationProvider = ({ children }) => {
 
       // Fastify backend base URL from API_BASE_URL or production fallback
       let baseUrl = (API_BASE_URL || '/api').trim().replace(/\/+$/, '');
-      if (baseUrl === '/api' && typeof window !== 'undefined' && window.location.hostname === 'hrms.shazusofttechnologies.org') {
+      if (baseUrl === '/api' && typeof window !== 'undefined' && (
+        window.location.hostname.includes('shazusofttechnologies.org') ||
+        window.location.hostname.includes('vercel.app') ||
+        window.location.hostname.includes('onrender.com') ||
+        window.location.hostname.includes('netlify.app')
+      )) {
         baseUrl = 'https://shazusoft-hrms-backend.onrender.com/api';
       }
       const endpoint = baseUrl.endsWith('/api')

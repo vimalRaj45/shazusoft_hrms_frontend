@@ -2,7 +2,12 @@ import axios from 'axios';
 
 export const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL)
   || (typeof process !== 'undefined' && process.env?.VITE_API_URL)
-  || (typeof window !== 'undefined' && window.location.hostname === 'hrms.shazusofttechnologies.org'
+  || (typeof window !== 'undefined' && (
+      window.location.hostname.includes('shazusofttechnologies.org') ||
+      window.location.hostname.includes('vercel.app') ||
+      window.location.hostname.includes('onrender.com') ||
+      window.location.hostname.includes('netlify.app')
+    )
     ? 'https://shazusoft-hrms-backend.onrender.com/api'
     : '/api');
 
