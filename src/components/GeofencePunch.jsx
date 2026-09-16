@@ -30,7 +30,7 @@ import toast from '../utils/muiToast';
 import { attendanceAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import AttendanceRegularizationModal from './AttendanceRegularizationModal';
-import { formatTime12h } from '../utils/timeUtils';
+import { formatTime12h, timeTo24h } from '../utils/timeUtils';
 import { format } from 'date-fns';
 
 export default function GeofencePunch({ todayData, onRefresh }) {
@@ -201,13 +201,15 @@ export default function GeofencePunch({ todayData, onRefresh }) {
   const calculateElapsedHours = () => {
     if (!attendance || !attendance.login_time) return 0;
     try {
-      const [lh, lm] = attendance.login_time.split(':').map(Number);
+      const login24 = timeTo24h(attendance.login_time);
+      const [lh, lm] = login24.split(':').map(Number);
       const loginDate = new Date();
       loginDate.setHours(lh, lm, 0, 0);
 
       let endDate = currentTime;
       if (attendance.logout_time) {
-        const [eh, em] = attendance.logout_time.split(':').map(Number);
+        const logout24 = timeTo24h(attendance.logout_time);
+        const [eh, em] = logout24.split(':').map(Number);
         endDate = new Date();
         endDate.setHours(eh, em, 0, 0);
       }

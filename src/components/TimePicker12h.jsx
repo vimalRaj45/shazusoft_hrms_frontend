@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { timeTo24h } from '../utils/timeUtils';
 
 /**
  * Standard 12-Hour Time Picker & Input Component
@@ -243,7 +244,44 @@ export default function TimePicker12h({
           }
         }}
       >
-        <AccessTimeIcon sx={{ color: '#64748b', fontSize: 18, ml: 0.5 }} />
+        {/* Native clock picker helper */}
+        <input
+          type="time"
+          disabled={disabled}
+          value={timeTo24h(`${hour || '12'}:${minute || '00'} ${ampm}`)}
+          onChange={(e) => {
+            if (!e.target.value) return;
+            const p = parseTime(e.target.value);
+            setHour(p.hour);
+            setMinute(p.minute);
+            setAmpm(p.ampm);
+            emitChange(p.hour, p.minute, p.ampm);
+          }}
+          style={{
+            position: 'absolute',
+            opacity: 0,
+            pointerEvents: 'none',
+            width: 0,
+            height: 0
+          }}
+          id={`time-picker-native-${label ? label.replace(/\s+/g, '-').toLowerCase() : 'field'}`}
+        />
+
+        <Tooltip title="Click to pick exact time using Clock dialog">
+          <IconButton
+            size="small"
+            disabled={disabled}
+            onClick={() => {
+              const el = document.getElementById(`time-picker-native-${label ? label.replace(/\s+/g, '-').toLowerCase() : 'field'}`);
+              if (el && el.showPicker) {
+                try { el.showPicker(); } catch (e) { el.click(); }
+              }
+            }}
+            sx={{ p: 0.4, color: '#133829' }}
+          >
+            <AccessTimeIcon sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Tooltip>
 
         {/* Hour Input (1-12) */}
         <TextField
@@ -258,19 +296,19 @@ export default function TimePicker12h({
             style: {
               textAlign: 'center',
               fontWeight: 800,
-              fontSize: '0.9rem',
-              padding: '4px 2px',
-              width: '28px'
+              fontSize: '0.95rem',
+              padding: '5px 4px',
+              width: '32px'
             }
           }}
           sx={{
-            width: 36,
-            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-            '& .MuiInputBase-root': { bgcolor: '#f8fafc', borderRadius: '4px' }
+            width: 44,
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
+            '& .MuiInputBase-root': { bgcolor: '#f8fafc', borderRadius: '6px' }
           }}
         />
 
-        <Typography sx={{ fontWeight: 800, color: '#64748b', fontSize: '0.9rem' }}>:</Typography>
+        <Typography sx={{ fontWeight: 800, color: '#64748b', fontSize: '1rem' }}>:</Typography>
 
         {/* Minute Input (00-59) */}
         <TextField
@@ -285,29 +323,29 @@ export default function TimePicker12h({
             style: {
               textAlign: 'center',
               fontWeight: 800,
-              fontSize: '0.9rem',
-              padding: '4px 2px',
-              width: '28px'
+              fontSize: '0.95rem',
+              padding: '5px 4px',
+              width: '32px'
             }
           }}
           sx={{
-            width: 36,
-            '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-            '& .MuiInputBase-root': { bgcolor: '#f8fafc', borderRadius: '4px' }
+            width: 44,
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
+            '& .MuiInputBase-root': { bgcolor: '#f8fafc', borderRadius: '6px' }
           }}
         />
 
         {/* AM / PM Segmented Control */}
-        <ButtonGroup size="small" sx={{ ml: 'auto', height: 26 }}>
+        <ButtonGroup size="small" sx={{ ml: 'auto', height: 28 }}>
           <Button
             type="button"
             disabled={disabled}
             onClick={() => handleAmpmToggle('AM')}
             variant={ampm === 'AM' ? 'contained' : 'outlined'}
             sx={{
-              px: 1,
+              px: 1.2,
               py: 0,
-              fontSize: '0.72rem',
+              fontSize: '0.75rem',
               fontWeight: 800,
               borderRadius: '6px 0 0 6px',
               bgcolor: ampm === 'AM' ? '#0284c7' : 'transparent',
@@ -326,9 +364,9 @@ export default function TimePicker12h({
             onClick={() => handleAmpmToggle('PM')}
             variant={ampm === 'PM' ? 'contained' : 'outlined'}
             sx={{
-              px: 1,
+              px: 1.2,
               py: 0,
-              fontSize: '0.72rem',
+              fontSize: '0.75rem',
               fontWeight: 800,
               borderRadius: '0 6px 6px 0',
               bgcolor: ampm === 'PM' ? '#133829' : 'transparent',
@@ -344,7 +382,7 @@ export default function TimePicker12h({
         </ButtonGroup>
 
         {/* Quick Presets Dropdown */}
-        <Tooltip title="Quick 12-Hour Presets">
+        <Tooltip title="Quick Presets">
           <span>
             <IconButton
               size="small"
