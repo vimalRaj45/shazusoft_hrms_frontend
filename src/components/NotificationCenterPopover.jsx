@@ -9,6 +9,7 @@ import {
   Tab,
   List,
   ListItem,
+  ListItemButton,
   ListItemAvatar,
   ListItemText,
   Avatar,
@@ -30,8 +31,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import SendIcon from '@mui/icons-material/Send';
-import WifiIcon from '@mui/icons-material/Wifi';
-import WifiOffIcon from '@mui/icons-material/WifiOff';
+import StarIcon from '@mui/icons-material/Star';
 import { useNotifications } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -68,59 +68,167 @@ export function resolveNotificationTargetTab(item, isAdmin) {
   const msg = (item.message || '').toLowerCase();
 
   // 1. PAYROLL / SALARY / PAYSLIPS
-  if (rawTab.includes('payroll') || rawTab.includes('payslip') || rawTab.includes('salary') || type === 'payroll' || title.includes('salary') || title.includes('payroll') || title.includes('disbursed') || msg.includes('salary') || msg.includes('disbursed')) {
+  if (
+    rawTab.includes('payroll') ||
+    rawTab.includes('payslip') ||
+    rawTab.includes('salary') ||
+    type === 'payroll' ||
+    type === 'salary' ||
+    title.includes('salary') ||
+    title.includes('payroll') ||
+    title.includes('payslip') ||
+    title.includes('disbursed') ||
+    msg.includes('salary') ||
+    msg.includes('disbursed') ||
+    msg.includes('payslip')
+  ) {
     return isAdmin ? 'admin-payroll' : 'my-payslips';
   }
 
-  // 2. LEAVES & SHORT PERMISSIONS
-  if (rawTab.includes('leave') || rawTab.includes('permission') || type === 'leave' || title.includes('leave') || title.includes('permission') || msg.includes('leave') || msg.includes('permission')) {
-    return isAdmin ? 'admin-leaves' : 'leaves';
-  }
-
-  // 3. SUPPORT TICKETS / LIVE CHAT HUB
-  if (rawTab.includes('ticket') || rawTab.includes('support') || rawTab.includes('chat') || type === 'ticket' || title.includes('ticket') || title.includes('chat') || title.includes('support') || title.includes('issue') || msg.includes('ticket')) {
+  // 2. SUPPORT TICKETS / LIVE CHAT HUB / QUERIES
+  if (
+    rawTab.includes('ticket') ||
+    rawTab.includes('support') ||
+    rawTab.includes('chat') ||
+    type === 'ticket' ||
+    type === 'chat' ||
+    type === 'support' ||
+    title.includes('ticket') ||
+    title.includes('chat') ||
+    title.includes('support') ||
+    title.includes('tkt-') ||
+    title.includes('issue') ||
+    msg.includes('ticket') ||
+    msg.includes('support') ||
+    msg.includes('tkt-')
+  ) {
     return 'chat-hub';
   }
 
+  // 3. LEAVES & SHORT PERMISSIONS
+  if (
+    rawTab.includes('leave') ||
+    rawTab.includes('permission') ||
+    type === 'leave' ||
+    type === 'permission' ||
+    title.includes('leave') ||
+    title.includes('permission') ||
+    msg.includes('leave') ||
+    msg.includes('permission')
+  ) {
+    return isAdmin ? 'admin-leaves' : 'leaves';
+  }
+
   // 4. TASK DELEGATION & TRACKING
-  if (rawTab === 'task-tracker' || rawTab === 'tasks' || type === 'task' || title.includes('task assign') || title.includes('task track') || title.includes('delegat') || msg.includes('task assign')) {
+  if (
+    rawTab === 'task-tracker' ||
+    rawTab === 'tasks' ||
+    rawTab === 'task' ||
+    rawTab === 'admin-tasks' ||
+    type === 'task' ||
+    title.includes('task assign') ||
+    title.includes('task track') ||
+    title.includes('delegat') ||
+    title.includes('task') ||
+    msg.includes('task assign') ||
+    msg.includes('task')
+  ) {
     return 'task-tracker';
   }
 
-  // 5. DAILY WORK DONE / PLANS
-  if (rawTab.includes('workdone') || rawTab.includes('work') || title.includes('work done') || title.includes('work plan') || msg.includes('work plan')) {
-    return isAdmin ? 'admin-workdone' : 'workdone';
-  }
-
-  // 6. ATTENDANCE & REGULARIZATION
-  if (rawTab.includes('regulariz') || title.includes('regulariz') || msg.includes('regulariz')) {
+  // 5. ATTENDANCE REGULARIZATIONS
+  if (
+    rawTab.includes('regulariz') ||
+    title.includes('regulariz') ||
+    title.includes('missing punch') ||
+    msg.includes('regulariz') ||
+    msg.includes('missing punch')
+  ) {
     return isAdmin ? 'admin-regularizations' : 'attendance';
   }
-  if (rawTab.includes('attend') || type === 'attendance' || title.includes('punch') || title.includes('geofence') || title.includes('check-in')) {
+
+  // 6. ATTENDANCE / LIVE PRESENCE / GEOFENCE / PUNCH
+  if (
+    rawTab.includes('attend') ||
+    type === 'attendance' ||
+    title.includes('attendance') ||
+    title.includes('punch') ||
+    title.includes('geofence') ||
+    title.includes('check-in') ||
+    msg.includes('punch') ||
+    msg.includes('geofence') ||
+    msg.includes('attendance')
+  ) {
     return isAdmin ? 'admin-live' : 'attendance';
   }
 
-  // 7. MEMOS & OFFICIAL NOTICES
-  if (rawTab.includes('memo') || rawTab.includes('broadcast') || type === 'memo' || type === 'broadcast' || title.includes('memo') || title.includes('directive') || title.includes('announcement') || msg.includes('memo')) {
+  // 7. DAILY WORK DONE / PLANS
+  if (
+    rawTab.includes('workdone') ||
+    rawTab.includes('work') ||
+    type === 'workdone' ||
+    title.includes('work done') ||
+    title.includes('work plan') ||
+    title.includes('deliverable') ||
+    msg.includes('work plan') ||
+    msg.includes('work done')
+  ) {
+    return isAdmin ? 'admin-workdone' : 'workdone';
+  }
+
+  // 8. MEMOS & OFFICIAL NOTICES / ANNOUNCEMENTS
+  if (
+    rawTab.includes('memo') ||
+    rawTab.includes('broadcast') ||
+    type === 'memo' ||
+    type === 'broadcast' ||
+    title.includes('memo') ||
+    title.includes('directive') ||
+    title.includes('announcement') ||
+    title.includes('notice') ||
+    msg.includes('memo') ||
+    msg.includes('directive') ||
+    msg.includes('announcement')
+  ) {
     return isAdmin ? 'admin-memos' : 'memos';
   }
 
-  // 8. MONTHLY SELF-EVALUATION APPRAISALS
-  if (rawTab.includes('eval') || rawTab.includes('appraisal') || title.includes('appraisal') || title.includes('evaluation') || msg.includes('appraisal')) {
+  // 9. MONTHLY SELF-EVALUATION APPRAISALS
+  if (
+    rawTab.includes('eval') ||
+    rawTab.includes('appraisal') ||
+    type === 'eval' ||
+    type === 'appraisal' ||
+    title.includes('appraisal') ||
+    title.includes('evaluation') ||
+    title.includes('self-eval') ||
+    msg.includes('appraisal') ||
+    msg.includes('evaluation')
+  ) {
     return isAdmin ? 'admin-evals' : 'self-eval';
   }
 
-  // 9. WEEKLY REPORTS
-  if (rawTab.includes('weekly') || title.includes('weekly') || msg.includes('weekly')) {
+  // 10. WEEKLY REPORTS
+  if (
+    rawTab.includes('weekly') ||
+    type === 'weekly' ||
+    title.includes('weekly') ||
+    msg.includes('weekly')
+  ) {
     return isAdmin ? 'admin-weekly' : 'weekly-report';
   }
 
-  // 10. PROFILE & DOCUMENTS
-  if (rawTab.includes('profile') || title.includes('profile') || title.includes('document') || msg.includes('document')) {
+  // 11. PROFILE & DOCUMENTS
+  if (
+    rawTab.includes('profile') ||
+    title.includes('profile') ||
+    title.includes('document') ||
+    msg.includes('document')
+  ) {
     return 'profile';
   }
 
-  // 11. Fallback for rawTab
+  // 12. Fallback for rawTab
   if (rawTab) {
     if (isAdmin) {
       if (rawTab === 'leaves') return 'admin-leaves';
@@ -130,6 +238,17 @@ export function resolveNotificationTargetTab(item, isAdmin) {
       if (rawTab === 'tickets') return 'chat-hub';
       if (rawTab === 'tasks') return 'task-tracker';
       if (rawTab === 'attendance') return 'admin-live';
+      if (rawTab === 'evals' || rawTab === 'self-eval') return 'admin-evals';
+      if (rawTab === 'weekly' || rawTab === 'weekly-report') return 'admin-weekly';
+    } else {
+      if (rawTab === 'admin-payroll') return 'my-payslips';
+      if (rawTab === 'admin-leaves') return 'leaves';
+      if (rawTab === 'admin-workdone') return 'workdone';
+      if (rawTab === 'admin-memos') return 'memos';
+      if (rawTab === 'admin-tasks') return 'task-tracker';
+      if (rawTab === 'admin-live') return 'attendance';
+      if (rawTab === 'admin-evals') return 'self-eval';
+      if (rawTab === 'admin-weekly') return 'weekly-report';
     }
     return rawTab;
   }
@@ -137,59 +256,88 @@ export function resolveNotificationTargetTab(item, isAdmin) {
   return isAdmin ? 'admin-live' : 'dashboard';
 }
 
-function getCategoryConfig(type) {
-  switch (type) {
-    case 'leave':
-      return {
-        icon: <FlightTakeoffIcon sx={{ fontSize: 18 }} />,
-        bg: '#FFF7ED',
-        color: '#EA580C',
-        label: 'Leaves'
-      };
-    case 'task':
-      return {
-        icon: <AssignmentIcon sx={{ fontSize: 18 }} />,
-        bg: '#EEF2FF',
-        color: '#4F46E5',
-        label: 'Tasks'
-      };
-    case 'ticket':
-      return {
-        icon: <ForumIcon sx={{ fontSize: 18 }} />,
-        bg: '#F5F3FF',
-        color: '#7C3AED',
-        label: 'Chat-Hub'
-      };
-    case 'attendance':
-      return {
-        icon: <AccessTimeIcon sx={{ fontSize: 18 }} />,
-        bg: '#ECFDF5',
-        color: '#059669',
-        label: 'Attendance'
-      };
-    case 'payroll':
-      return {
-        icon: <PaymentsIcon sx={{ fontSize: 18 }} />,
-        bg: '#F0FDF4',
-        color: '#16A34A',
-        label: 'Payroll'
-      };
-    case 'broadcast':
-    case 'memo':
-      return {
-        icon: <CampaignIcon sx={{ fontSize: 18 }} />,
-        bg: '#FFF1F2',
-        color: '#E11D48',
-        label: 'Memos'
-      };
-    default:
-      return {
-        icon: <NotificationsActiveIcon sx={{ fontSize: 18 }} />,
-        bg: '#F0F9FF',
-        color: '#0284C7',
-        label: 'Alert'
-      };
+function getCategoryConfig(item) {
+  const type = (item?.type || '').toLowerCase().trim();
+  const title = (item?.title || '').toLowerCase();
+  const msg = (item?.message || '').toLowerCase();
+  const rawTab = (item?.target_tab || '').toLowerCase();
+
+  // Payroll / Salary
+  if (type === 'payroll' || type === 'salary' || rawTab.includes('payroll') || title.includes('salary') || title.includes('payroll') || title.includes('disbursed') || msg.includes('salary') || msg.includes('disbursed')) {
+    return {
+      icon: <PaymentsIcon sx={{ fontSize: 18 }} />,
+      bg: '#F0FDF4',
+      color: '#16A34A',
+      label: 'Payroll'
+    };
   }
+
+  // Tickets / Chat-Hub
+  if (type === 'ticket' || type === 'chat' || type === 'support' || rawTab.includes('ticket') || title.includes('ticket') || title.includes('chat') || title.includes('support') || title.includes('tkt-') || msg.includes('ticket') || msg.includes('tkt-')) {
+    return {
+      icon: <ForumIcon sx={{ fontSize: 18 }} />,
+      bg: '#F5F3FF',
+      color: '#7C3AED',
+      label: 'Chat-Hub'
+    };
+  }
+
+  // Leaves & Permissions
+  if (type === 'leave' || type === 'permission' || rawTab.includes('leave') || title.includes('leave') || title.includes('permission') || msg.includes('leave') || msg.includes('permission')) {
+    return {
+      icon: <FlightTakeoffIcon sx={{ fontSize: 18 }} />,
+      bg: '#FFF7ED',
+      color: '#EA580C',
+      label: 'Leaves'
+    };
+  }
+
+  // Tasks
+  if (type === 'task' || rawTab.includes('task') || title.includes('task') || msg.includes('task')) {
+    return {
+      icon: <AssignmentIcon sx={{ fontSize: 18 }} />,
+      bg: '#EEF2FF',
+      color: '#4F46E5',
+      label: 'Tasks'
+    };
+  }
+
+  // Attendance
+  if (type === 'attendance' || type === 'regularization' || rawTab.includes('attend') || title.includes('attendance') || title.includes('punch') || title.includes('geofence') || msg.includes('attendance') || msg.includes('punch')) {
+    return {
+      icon: <AccessTimeIcon sx={{ fontSize: 18 }} />,
+      bg: '#ECFDF5',
+      color: '#059669',
+      label: 'Attendance'
+    };
+  }
+
+  // Memos & Notices
+  if (type === 'memo' || type === 'broadcast' || rawTab.includes('memo') || title.includes('memo') || title.includes('directive') || title.includes('announcement') || msg.includes('memo') || msg.includes('announcement')) {
+    return {
+      icon: <CampaignIcon sx={{ fontSize: 18 }} />,
+      bg: '#FFF1F2',
+      color: '#E11D48',
+      label: 'Memos'
+    };
+  }
+
+  // Appraisal / Evaluation
+  if (type === 'eval' || type === 'appraisal' || rawTab.includes('eval') || title.includes('appraisal') || title.includes('evaluation') || msg.includes('appraisal')) {
+    return {
+      icon: <StarIcon sx={{ fontSize: 18 }} />,
+      bg: '#FDF4FF',
+      color: '#C026D3',
+      label: 'Appraisal'
+    };
+  }
+
+  return {
+    icon: <NotificationsActiveIcon sx={{ fontSize: 18 }} />,
+    bg: '#F0F9FF',
+    color: '#0284C7',
+    label: 'Alert'
+  };
 }
 
 export default function NotificationCenterPopover({ anchorEl, open, onClose, onNavigateTab }) {
@@ -224,6 +372,7 @@ export default function NotificationCenterPopover({ anchorEl, open, onClose, onN
     if (target && onNavigateTab) {
       onNavigateTab(target);
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     onClose();
   };
 
@@ -414,30 +563,15 @@ export default function NotificationCenterPopover({ anchorEl, open, onClose, onN
             </Typography>
           </Box>
         ) : (
-          <List sx={{ p: 0 }}>
+          <List sx={{ disablePadding: true, p: 0 }}>
             {filteredNotifications.map((item) => {
-              const cfg = getCategoryConfig(item.type);
+              const cfg = getCategoryConfig(item);
               const isUnread = !item.is_read;
 
               return (
                 <ListItem
                   key={item.id}
-                  onClick={() => handleNotificationClick(item)}
-                  sx={{
-                    px: 2,
-                    py: 1.5,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    bgcolor: isUnread
-                      ? (isDark ? 'rgba(79,70,229,0.08)' : 'rgba(238,242,255,0.6)')
-                      : 'transparent',
-                    borderLeft: isUnread ? '3px solid #4F46E5' : '3px solid transparent',
-                    borderBottom: `1px solid ${isDark ? '#334155' : '#F1F5F9'}`,
-                    '&:hover': {
-                      bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#F8FAFC',
-                      '& .delete-btn': { opacity: 1 }
-                    }
-                  }}
+                  disablePadding
                   secondaryAction={
                     <Tooltip title="Delete notification">
                       <IconButton
@@ -457,83 +591,104 @@ export default function NotificationCenterPopover({ anchorEl, open, onClose, onN
                       </IconButton>
                     </Tooltip>
                   }
+                  sx={{
+                    borderBottom: `1px solid ${isDark ? '#334155' : '#F1F5F9'}`,
+                    '&:hover .delete-btn': { opacity: 1 }
+                  }}
                 >
-                  <ListItemAvatar sx={{ minWidth: 44 }}>
-                    <Avatar
-                      sx={{
-                        width: 34,
-                        height: 34,
-                        bgcolor: cfg.bg,
-                        color: cfg.color,
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                      }}
-                    >
-                      {cfg.icon}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, pr: 2 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontWeight: isUnread ? 700 : 500,
-                            color: isDark ? '#F1F5F9' : '#0F172A',
-                            fontSize: '0.84rem',
-                            lineHeight: 1.3
-                          }}
-                        >
-                          {item.title}
-                        </Typography>
-                        {isUnread && (
-                          <Box
+                  <ListItemButton
+                    onClick={() => handleNotificationClick(item)}
+                    sx={{
+                      px: 2,
+                      py: 1.5,
+                      pr: 6,
+                      transition: 'all 0.15s ease',
+                      bgcolor: isUnread
+                        ? (isDark ? 'rgba(79,70,229,0.08)' : 'rgba(238,242,255,0.6)')
+                        : 'transparent',
+                      borderLeft: isUnread ? '3px solid #4F46E5' : '3px solid transparent',
+                      '&:hover': {
+                        bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#F8FAFC'
+                      }
+                    }}
+                  >
+                    <ListItemAvatar sx={{ minWidth: 44 }}>
+                      <Avatar
+                        sx={{
+                          width: 34,
+                          height: 34,
+                          bgcolor: cfg.bg,
+                          color: cfg.color,
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                        }}
+                      >
+                        {cfg.icon}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, pr: 1 }}>
+                          <Typography
+                            variant="body2"
                             sx={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: '50%',
-                              bgcolor: '#4F46E5',
-                              flexShrink: 0
+                              fontWeight: isUnread ? 700 : 500,
+                              color: isDark ? '#F1F5F9' : '#0F172A',
+                              fontSize: '0.84rem',
+                              lineHeight: 1.3
                             }}
-                          />
-                        )}
-                      </Box>
-                    }
-                    secondary={
-                      <Box sx={{ mt: 0.3 }}>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            color: isDark ? '#94A3B8' : '#64748B',
-                            fontSize: '0.78rem',
-                            lineHeight: 1.35
-                          }}
-                        >
-                          {item.message}
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                          <Typography variant="caption" sx={{ fontSize: '0.7rem', color: isDark ? '#64748B' : '#94A3B8' }}>
-                            {formatRelativeTime(item.created_at)}
+                          >
+                            {item.title}
                           </Typography>
-                          <Chip
-                            label={cfg.label || item.target_tab || 'Notice'}
-                            size="small"
-                            sx={{
-                              height: 18,
-                              fontSize: '0.68rem',
-                              fontWeight: 700,
-                              bgcolor: isDark ? 'rgba(255,255,255,0.08)' : cfg.bg,
-                              color: isDark ? '#CBD5E1' : cfg.color,
-                              textTransform: 'capitalize'
-                            }}
-                          />
+                          {isUnread && (
+                            <Box
+                              sx={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                bgcolor: '#4F46E5',
+                                flexShrink: 0
+                              }}
+                            />
+                          )}
                         </Box>
-                      </Box>
-                    }
-                  />
+                      }
+                      secondary={
+                        <Box sx={{ mt: 0.3 }}>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              color: isDark ? '#94A3B8' : '#64748B',
+                              fontSize: '0.78rem',
+                              lineHeight: 1.35
+                            }}
+                          >
+                            {item.message}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: isDark ? '#64748B' : '#94A3B8' }}>
+                              {formatRelativeTime(item.created_at)}
+                            </Typography>
+                            <Chip
+                              label={cfg.label || 'Notice'}
+                              size="small"
+                              sx={{
+                                height: 18,
+                                fontSize: '0.68rem',
+                                fontWeight: 700,
+                                bgcolor: isDark ? 'rgba(255,255,255,0.08)' : cfg.bg,
+                                color: isDark ? '#CBD5E1' : cfg.color,
+                                textTransform: 'capitalize'
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      }
+                    />
+                  </ListItemButton>
                 </ListItem>
               );
             })}
