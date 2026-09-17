@@ -33,6 +33,7 @@ import SendIcon from '@mui/icons-material/Send';
 import WifiIcon from '@mui/icons-material/Wifi';
 import WifiOffIcon from '@mui/icons-material/WifiOff';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 
 function formatRelativeTime(isoString) {
   if (!isoString) return '';
@@ -49,6 +50,93 @@ function formatRelativeTime(isoString) {
   return new Date(isoString).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+export function resolveNotificationTargetTab(item, isAdmin) {
+  if (!item) return isAdmin ? 'admin-live' : 'dashboard';
+
+  let rawTab = (item.target_tab || '').toLowerCase().trim();
+
+  // If item has a target_url, extract tab query param if available
+  if (!rawTab && item.target_url) {
+    try {
+      const urlObj = new URL(item.target_url, window.location.origin);
+      rawTab = (urlObj.searchParams.get('tab') || '').toLowerCase().trim();
+    } catch (e) {}
+  }
+
+  const type = (item.type || '').toLowerCase().trim();
+  const title = (item.title || '').toLowerCase();
+  const msg = (item.message || '').toLowerCase();
+
+  // 1. PAYROLL / SALARY / PAYSLIPS
+  if (rawTab.includes('payroll') || rawTab.includes('payslip') || rawTab.includes('salary') || type === 'payroll' || title.includes('salary') || title.includes('payroll') || title.includes('disbursed') || msg.includes('salary') || msg.includes('disbursed')) {
+    return isAdmin ? 'admin-payroll' : 'my-payslips';
+  }
+
+  // 2. LEAVES & SHORT PERMISSIONS
+  if (rawTab.includes('leave') || rawTab.includes('permission') || type === 'leave' || title.includes('leave') || title.includes('permission') || msg.includes('leave') || msg.includes('permission')) {
+    return isAdmin ? 'admin-leaves' : 'leaves';
+  }
+
+  // 3. SUPPORT TICKETS / LIVE CHAT HUB
+  if (rawTab.includes('ticket') || rawTab.includes('support') || rawTab.includes('chat') || type === 'ticket' || title.includes('ticket') || title.includes('chat') || title.includes('support') || title.includes('issue') || msg.includes('ticket')) {
+    return 'chat-hub';
+  }
+
+  // 4. TASK DELEGATION & TRACKING
+  if (rawTab === 'task-tracker' || rawTab === 'tasks' || type === 'task' || title.includes('task assign') || title.includes('task track') || title.includes('delegat') || msg.includes('task assign')) {
+    return 'task-tracker';
+  }
+
+  // 5. DAILY WORK DONE / PLANS
+  if (rawTab.includes('workdone') || rawTab.includes('work') || title.includes('work done') || title.includes('work plan') || msg.includes('work plan')) {
+    return isAdmin ? 'admin-workdone' : 'workdone';
+  }
+
+  // 6. ATTENDANCE & REGULARIZATION
+  if (rawTab.includes('regulariz') || title.includes('regulariz') || msg.includes('regulariz')) {
+    return isAdmin ? 'admin-regularizations' : 'attendance';
+  }
+  if (rawTab.includes('attend') || type === 'attendance' || title.includes('punch') || title.includes('geofence') || title.includes('check-in')) {
+    return isAdmin ? 'admin-live' : 'attendance';
+  }
+
+  // 7. MEMOS & OFFICIAL NOTICES
+  if (rawTab.includes('memo') || rawTab.includes('broadcast') || type === 'memo' || type === 'broadcast' || title.includes('memo') || title.includes('directive') || title.includes('announcement') || msg.includes('memo')) {
+    return isAdmin ? 'admin-memos' : 'memos';
+  }
+
+  // 8. MONTHLY SELF-EVALUATION APPRAISALS
+  if (rawTab.includes('eval') || rawTab.includes('appraisal') || title.includes('appraisal') || title.includes('evaluation') || msg.includes('appraisal')) {
+    return isAdmin ? 'admin-evals' : 'self-eval';
+  }
+
+  // 9. WEEKLY REPORTS
+  if (rawTab.includes('weekly') || title.includes('weekly') || msg.includes('weekly')) {
+    return isAdmin ? 'admin-weekly' : 'weekly-report';
+  }
+
+  // 10. PROFILE & DOCUMENTS
+  if (rawTab.includes('profile') || title.includes('profile') || title.includes('document') || msg.includes('document')) {
+    return 'profile';
+  }
+
+  // 11. Fallback for rawTab
+  if (rawTab) {
+    if (isAdmin) {
+      if (rawTab === 'leaves') return 'admin-leaves';
+      if (rawTab === 'payroll' || rawTab === 'my-payslips') return 'admin-payroll';
+      if (rawTab === 'workdone') return 'admin-workdone';
+      if (rawTab === 'memos') return 'admin-memos';
+      if (rawTab === 'tickets') return 'chat-hub';
+      if (rawTab === 'tasks') return 'task-tracker';
+      if (rawTab === 'attendance') return 'admin-live';
+    }
+    return rawTab;
+  }
+
+  return isAdmin ? 'admin-live' : 'dashboard';
+}
+
 function getCategoryConfig(type) {
   switch (type) {
     case 'leave':
@@ -56,21 +144,21 @@ function getCategoryConfig(type) {
         icon: <FlightTakeoffIcon sx={{ fontSize: 18 }} />,
         bg: '#FFF7ED',
         color: '#EA580C',
-        label: 'Leave'
+        label: 'Leaves'
       };
     case 'task':
       return {
         icon: <AssignmentIcon sx={{ fontSize: 18 }} />,
         bg: '#EEF2FF',
         color: '#4F46E5',
-        label: 'Task'
+        label: 'Tasks'
       };
     case 'ticket':
       return {
         icon: <ForumIcon sx={{ fontSize: 18 }} />,
         bg: '#F5F3FF',
         color: '#7C3AED',
-        label: 'Support'
+        label: 'Chat-Hub'
       };
     case 'attendance':
       return {
@@ -87,11 +175,12 @@ function getCategoryConfig(type) {
         label: 'Payroll'
       };
     case 'broadcast':
+    case 'memo':
       return {
         icon: <CampaignIcon sx={{ fontSize: 18 }} />,
         bg: '#FFF1F2',
         color: '#E11D48',
-        label: 'Notice'
+        label: 'Memos'
       };
     default:
       return {
@@ -106,6 +195,7 @@ function getCategoryConfig(type) {
 export default function NotificationCenterPopover({ anchorEl, open, onClose, onNavigateTab }) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const { isAdmin } = useAuth();
   const {
     notifications,
     unreadCount,
@@ -130,20 +220,11 @@ export default function NotificationCenterPopover({ anchorEl, open, onClose, onN
     if (!item.is_read) {
       markAsRead(item.id);
     }
-    if (item.target_tab && onNavigateTab) {
-      onNavigateTab(item.target_tab);
-      onClose();
-    } else if (item.target_url) {
-      try {
-        const urlObj = new URL(item.target_url, window.location.origin);
-        const tabParam = urlObj.searchParams.get('tab');
-        if (tabParam && onNavigateTab) {
-          onNavigateTab(tabParam);
-          onClose();
-          return;
-        }
-      } catch (e) {}
+    const target = resolveNotificationTargetTab(item, isAdmin);
+    if (target && onNavigateTab) {
+      onNavigateTab(target);
     }
+    onClose();
   };
 
   const handleSendTest = async () => {
@@ -437,19 +518,18 @@ export default function NotificationCenterPopover({ anchorEl, open, onClose, onN
                           <Typography variant="caption" sx={{ fontSize: '0.7rem', color: isDark ? '#64748B' : '#94A3B8' }}>
                             {formatRelativeTime(item.created_at)}
                           </Typography>
-                          {item.target_tab && (
-                            <Chip
-                              label={item.target_tab}
-                              size="small"
-                              sx={{
-                                height: 16,
-                                fontSize: '0.65rem',
-                                bgcolor: isDark ? '#334155' : '#E2E8F0',
-                                color: isDark ? '#CBD5E1' : '#475569',
-                                textTransform: 'capitalize'
-                              }}
-                            />
-                          )}
+                          <Chip
+                            label={cfg.label || item.target_tab || 'Notice'}
+                            size="small"
+                            sx={{
+                              height: 18,
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              bgcolor: isDark ? 'rgba(255,255,255,0.08)' : cfg.bg,
+                              color: isDark ? '#CBD5E1' : cfg.color,
+                              textTransform: 'capitalize'
+                            }}
+                          />
                         </Box>
                       </Box>
                     }
