@@ -502,12 +502,12 @@ export default function EmployeeReportViewer({ reportData }) {
                         <TableCell sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{day.date}</TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {day.loginTime || '--'} - {day.logoutTime || 'Active'}
+                            {day.loginTime || '--'} - {day.logoutTime ? (day.logoutTime === 'In Progress' ? 'In Progress' : day.logoutTime) : (day.attendanceStatus === 'Absent' ? '--' : '--')}
                           </Typography>
                           <Chip
                             label={day.attendanceStatus}
                             size="small"
-                            color={day.attendanceStatus === 'Late' ? 'warning' : day.attendanceStatus === 'Present' ? 'success' : 'default'}
+                            color={day.attendanceStatus === 'Late' ? 'warning' : day.attendanceStatus?.includes('Present') ? 'success' : day.attendanceStatus === 'Absent' ? 'error' : 'default'}
                             sx={{ fontWeight: 700, height: 20, fontSize: 10, mt: 0.3 }}
                           />
                         </TableCell>
