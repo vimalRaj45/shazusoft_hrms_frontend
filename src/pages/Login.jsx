@@ -24,8 +24,11 @@ import toast from '../utils/muiToast';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 
+const GOOGLE_CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_CLIENT_ID) 
+  || '962237321507-ga044e9nnncjbju1dl7if6vao4bca403.apps.googleusercontent.com';
+
 export default function Login() {
-  const { loginWithOTP } = useAuth();
+  const { loginWithOTP, loginWithGoogle } = useAuth();
 
   // OTP Login State
   const [email, setEmail] = useState('');
@@ -33,6 +36,65 @@ export default function Login() {
   const [step, setStep] = useState(1); // 1 = Enter Email, 2 = Enter OTP
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+
+  // Initialize Google Identity Services (GIS)
+  useEffect(() => {
+    if (step !== 1) return;
+
+    const handleGoogleCredential = async (response) => {
+      if (!response.credential) return;
+      setLoading(true);
+      try {
+        await loginWithGoogle(response.credential);
+        toast.success('Signed in with Google successfully. Welcome to your workspace!');
+      } catch (err) {
+        toast.error(err.response?.data?.error || 'Google Sign-In failed. Please verify your account is registered.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const renderGoogleBtn = () => {
+      if (window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleCredential,
+            auto_select: false,
+            cancel_on_tap_outside: true
+          });
+
+          const container = document.getElementById('googleSignInContainer');
+          if (container) {
+            container.innerHTML = '';
+            window.google.accounts.id.renderButton(container, {
+              theme: 'outline',
+              size: 'large',
+              type: 'standard',
+              shape: 'rectangular',
+              text: 'signin_with',
+              logo_alignment: 'left',
+              width: container.offsetWidth > 100 ? container.offsetWidth : 320
+            });
+          }
+        } catch (err) {
+          console.warn('[Google Auth Init]', err);
+        }
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      renderGoogleBtn();
+    } else {
+      const interval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(interval);
+          renderGoogleBtn();
+        }
+      }, 250);
+      return () => clearInterval(interval);
+    }
+  }, [step, loginWithGoogle]);
 
   // Resend countdown timer
   useEffect(() => {
@@ -299,16 +361,39 @@ export default function Login() {
 
             <Box sx={{ mb: 3 }}>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', mb: 0.5, fontSize: { xs: '1.25rem', md: '1.4rem' } }}>
-                Sign In with One-Time Password
+                Sign In to Workspace
               </Typography>
               <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.85rem' }}>
-                Enter your registered work email to receive a secure 6-digit login verification code.
+                Sign in with your Google account or request a 6-digit email OTP.
               </Typography>
             </Box>
 
-            {/* STEP 1: Enter Email */}
+            {/* STEP 1: Google Sign-In & Email OTP */}
             {step === 1 ? (
-              <form onSubmit={handleSendOTP}>
+              <Box>
+                {/* Official Google Sign-In Button */}
+                <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div
+                    id="googleSignInContainer"
+                    style={{
+                      width: '100%',
+                      minHeight: '44px',
+                      display: 'flex',
+                      justifyContent: 'center'
+                    }}
+                  />
+                </Box>
+
+                {/* Elegant Divider */}
+                <Box sx={{ display: 'flex', alignItems: 'center', my: 2.2 }}>
+                  <Box sx={{ flex: 1, height: '1px', bgcolor: '#e2e8f0' }} />
+                  <Typography variant="caption" sx={{ px: 1.5, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: 11 }}>
+                    Or continue with OTP
+                  </Typography>
+                  <Box sx={{ flex: 1, height: '1px', bgcolor: '#e2e8f0' }} />
+                </Box>
+
+                <form onSubmit={handleSendOTP}>
                 <Box sx={{ mb: 2.5 }}>
                   <TextField
                     fullWidth
@@ -356,7 +441,8 @@ export default function Login() {
                   {loading ? 'Sending Code...' : 'Send Verification Code'}
                 </Button>
               </form>
-            ) : (
+            </Box>
+          ) : (
               /* STEP 2: Enter OTP */
               <form onSubmit={handleVerifyOTP}>
                 <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

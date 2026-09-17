@@ -57,6 +57,7 @@ api.interceptors.response.use((response) => response, (error) => {
 
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
+  googleLogin: (data) => api.post('/auth/google', data),
   sendOTP: (data) => api.post('/auth/send-otp', data),
   sendOtp: (data) => api.post('/auth/send-otp', data),
   verifyOTP: (data) => api.post('/auth/verify-otp', data),

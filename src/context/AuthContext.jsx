@@ -59,6 +59,18 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const loginWithGoogle = async (credential) => {
+    const res = await authAPI.googleLogin({ credential });
+    const { token: jwtToken, user: userData } = res.data;
+    localStorage.setItem('shazusoft_token', jwtToken);
+    localStorage.setItem('shazusoft_user', JSON.stringify(userData));
+    setToken(jwtToken);
+    setUser(userData);
+    // Automatically enable push notifications on every login
+    autoEnablePushNotificationsOnLogin().catch(() => {});
+    return userData;
+  };
+
   const logout = () => {
     localStorage.removeItem('shazusoft_token');
     localStorage.removeItem('shazusoft_user');
@@ -82,6 +94,7 @@ export const AuthProvider = ({ children }) => {
     toggleThemeMode: () => {},
     login,
     loginWithOTP,
+    loginWithGoogle,
     logout,
     updateUser,
     isAuthenticated: !!user,
