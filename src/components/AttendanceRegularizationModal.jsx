@@ -100,7 +100,7 @@ export default function AttendanceRegularizationModal({ open, onClose, onSuccess
         <DialogContent sx={{ py: 2.5 }}>
           <Box sx={{ mb: 2, p: 1.5, bgcolor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px' }}>
             <Typography variant="caption" sx={{ color: '#166534', fontWeight: 600, display: 'block' }}>
-              ℹ️ Management will verify your request against office records before regularizing your attendance.
+              Management will verify your request against office records before regularizing your attendance.
             </Typography>
           </Box>
 

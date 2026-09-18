@@ -24,20 +24,29 @@ const HOURS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11',
 const ALL_MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 const QUICK_MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
 
-const PRESET_SHIFTS = [
-  { label: '08:00 AM (Early)', val: '08:00 AM' },
-  { label: '09:00 AM (Start)', val: '09:00 AM' },
-  { label: '09:30 AM (Standard Office)', val: '09:30 AM' },
-  { label: '09:45 AM (Grace Cutoff)', val: '09:45 AM' },
-  { label: '10:00 AM (Mid Start)', val: '10:00 AM' },
-  { label: '10:15 AM (Part-Time Grace)', val: '10:15 AM' },
-  { label: '01:00 PM (Lunch Return)', val: '01:00 PM' },
-  { label: '04:30 PM (Part-Time End)', val: '04:30 PM' },
-  { label: '06:00 PM (Early End)', val: '06:00 PM' },
-  { label: '06:30 PM (Standard Close)', val: '06:30 PM' },
-  { label: '07:00 PM (Overtime 1)', val: '07:00 PM' },
-  { label: '08:00 PM (Late Shift)', val: '08:00 PM' },
-  { label: '08:30 PM (Night Close)', val: '08:30 PM' }
+const PRESET_TIMES = [
+  '08:00 AM',
+  '08:30 AM',
+  '09:00 AM',
+  '09:15 AM',
+  '09:30 AM',
+  '09:45 AM',
+  '10:00 AM',
+  '10:15 AM',
+  '10:30 AM',
+  '11:00 AM',
+  '01:00 PM',
+  '01:30 PM',
+  '02:00 PM',
+  '04:30 PM',
+  '05:00 PM',
+  '05:30 PM',
+  '06:00 PM',
+  '06:30 PM',
+  '07:00 PM',
+  '07:30 PM',
+  '08:00 PM',
+  '08:30 PM'
 ];
 
 /**
