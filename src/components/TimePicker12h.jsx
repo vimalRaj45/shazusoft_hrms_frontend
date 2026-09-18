@@ -5,26 +5,44 @@ import {
   TextField,
   Button,
   ButtonGroup,
-  Menu,
-  MenuItem,
+  Popover,
   IconButton,
   Tooltip,
-  Chip
+  Chip,
+  Divider
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
+import NightlightIcon from '@mui/icons-material/Nightlight';
 import { timeTo24h } from '../utils/timeUtils';
 
+const HOURS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+const ALL_MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+const QUICK_MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+
+const PRESET_SHIFTS = [
+  { label: '08:00 AM (Early)', val: '08:00 AM' },
+  { label: '09:00 AM (Start)', val: '09:00 AM' },
+  { label: '09:30 AM (Standard Office)', val: '09:30 AM' },
+  { label: '09:45 AM (Grace Cutoff)', val: '09:45 AM' },
+  { label: '10:00 AM (Mid Start)', val: '10:00 AM' },
+  { label: '10:15 AM (Part-Time Grace)', val: '10:15 AM' },
+  { label: '01:00 PM (Lunch Return)', val: '01:00 PM' },
+  { label: '04:30 PM (Part-Time End)', val: '04:30 PM' },
+  { label: '06:00 PM (Early End)', val: '06:00 PM' },
+  { label: '06:30 PM (Standard Close)', val: '06:30 PM' },
+  { label: '07:00 PM (Overtime 1)', val: '07:00 PM' },
+  { label: '08:00 PM (Late Shift)', val: '08:00 PM' },
+  { label: '08:30 PM (Night Close)', val: '08:30 PM' }
+];
+
 /**
- * Standard 12-Hour Time Picker & Input Component
- * Replaces 24-hour inputs across Shazusoft HRMS.
- * Guarantees that time is ALWAYS displayed, selected, and edited in 12-hour AM/PM format.
- * Supports exact minute typing, keyboard stepping, clock wheel, and preset picks.
- *
- * Emits synthetic event with:
- *   e.target.value: 24h "HH:mm" (for backend compatibility)
- *   e.target.value12h: 12h "hh:mm A" (e.g. "09:12 AM" or "04:30 PM")
+ * Standard 12-Hour Time Picker with Full Visual Chooser Popover
+ * Supports exact minute selection (00-59), visual hour dial, AM/PM toggle, steppers, and direct typing.
  */
 export default function TimePicker12h({
   label,
@@ -39,6 +57,8 @@ export default function TimePicker12h({
 }) {
   const hourInputRef = useRef(null);
   const minuteInputRef = useRef(null);
+  const minuteScrollRef = useRef(null);
+  const containerRef = useRef(null);
 
   // Parse incoming value (can be "16:30", "04:30 PM", "10:00", etc.)
   const parseTime = (val) => {
@@ -81,7 +101,10 @@ export default function TimePicker12h({
   const [hour, setHour] = useState(initial.hour);
   const [minute, setMinute] = useState(initial.minute);
   const [ampm, setAmpm] = useState(initial.ampm);
-  const [menuAnchor, setMenuAnchor] = useState(null);
+
+  // Popover State
+  const [popoverAnchor, setPopoverAnchor] = useState(null);
+  const isChooserOpen = Boolean(popoverAnchor);
 
   // Synchronize when external value changes
   useEffect(() => {
@@ -90,6 +113,16 @@ export default function TimePicker12h({
     setMinute(p.minute);
     setAmpm(p.ampm);
   }, [value]);
+
+  // Scroll active minute into view when popover opens
+  useEffect(() => {
+    if (isChooserOpen && minuteScrollRef.current) {
+      const activeEl = minuteScrollRef.current.querySelector(`[data-minute="${minute}"]`);
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    }
+  }, [isChooserOpen, minute]);
 
   const emitChange = (h, m, ap) => {
     let intH = parseInt(h, 10) || 12;
@@ -126,7 +159,6 @@ export default function TimePicker12h({
       return;
     }
     let num = parseInt(raw, 10);
-    // If user typed 24h number like 16, 18, convert automatically to 12h PM
     if (num > 12 && num < 24) {
       num = num - 12;
       setAmpm('PM');
@@ -141,7 +173,6 @@ export default function TimePicker12h({
     setHour(formatted);
     emitChange(formatted, minute, ampm);
 
-    // Auto-advance to minute field if 2 digits entered or if number >= 2 (since in 12h clock hours are 01-12)
     if (raw.length === 2 || (num >= 2 && num <= 9)) {
       if (minuteInputRef.current) {
         minuteInputRef.current.focus();
@@ -257,16 +288,48 @@ export default function TimePicker12h({
     emitChange(hour, minute, newAp);
   };
 
-  const handlePresetSelect = (preset12h) => {
-    const p = parseTime(preset12h);
-    setHour(p.hour);
-    setMinute(p.minute);
-    setAmpm(p.ampm);
-    emitChange(p.hour, p.minute, p.ampm);
-    setMenuAnchor(null);
+  // Direct Selection Handlers for Full Chooser Popover
+  const handleSelectHour = (selectedH) => {
+    setHour(selectedH);
+    emitChange(selectedH, minute, ampm);
   };
 
-  // Set to real-world current local time
+  const handleSelectMinute = (selectedM) => {
+    setMinute(selectedM);
+    emitChange(hour, selectedM, ampm);
+  };
+
+  const handleSelectAmpm = (selectedAp) => {
+    setAmpm(selectedAp);
+    emitChange(hour, minute, selectedAp);
+  };
+
+  const handleStepMinute = (delta) => {
+    let intH = parseInt(hour, 10) || 12;
+    let intM = parseInt(minute, 10) || 0;
+    let curAp = ampm;
+
+    let totalMins = (intH % 12) * 60 + intM + delta;
+    if (curAp === 'PM') totalMins += 12 * 60;
+
+    totalMins = (totalMins + 1440) % 1440;
+
+    const newH24 = Math.floor(totalMins / 60);
+    const newM = totalMins % 60;
+
+    const newAp = newH24 >= 12 ? 'PM' : 'AM';
+    let newH12 = newH24 % 12;
+    if (newH12 === 0) newH12 = 12;
+
+    const cleanH = String(newH12).padStart(2, '0');
+    const cleanM = String(newM).padStart(2, '0');
+
+    setHour(cleanH);
+    setMinute(cleanM);
+    setAmpm(newAp);
+    emitChange(cleanH, cleanM, newAp);
+  };
+
   const handleSetCurrentTime = () => {
     const now = new Date();
     let h24 = now.getHours();
@@ -281,41 +344,20 @@ export default function TimePicker12h({
     setMinute(cleanM);
     setAmpm(ap);
     emitChange(cleanH, cleanM, ap);
-    setMenuAnchor(null);
   };
 
-  const COMMON_PRESETS = [
-    '08:00 AM',
-    '08:30 AM',
-    '09:00 AM',
-    '09:15 AM',
-    '09:30 AM',
-    '09:45 AM',
-    '10:00 AM',
-    '10:15 AM',
-    '10:30 AM',
-    '11:00 AM',
-    '01:00 PM',
-    '01:30 PM',
-    '02:00 PM',
-    '04:30 PM',
-    '05:00 PM',
-    '05:30 PM',
-    '05:45 PM',
-    '06:00 PM',
-    '06:30 PM',
-    '07:00 PM',
-    '07:30 PM',
-    '08:00 PM',
-    '08:30 PM',
-    '09:00 PM',
-    '10:00 PM'
-  ];
+  const handlePresetSelect = (preset12h) => {
+    const p = parseTime(preset12h);
+    setHour(p.hour);
+    setMinute(p.minute);
+    setAmpm(p.ampm);
+    emitChange(p.hour, p.minute, p.ampm);
+  };
 
   const current12hDisplay = `${hour || '12'}:${minute || '00'} ${ampm}`;
 
   return (
-    <Box sx={{ width: fullWidth ? '100%' : 'auto', ...sx }}>
+    <Box ref={containerRef} sx={{ width: fullWidth ? '100%' : 'auto', ...sx }}>
       {label && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.6 }}>
           <Typography variant="caption" sx={{ fontWeight: 700, color: '#334155', fontSize: '0.78rem' }}>
@@ -342,22 +384,31 @@ export default function TimePicker12h({
                 }}
               />
             </Tooltip>
-            <Chip
-              size="small"
-              label={current12hDisplay}
-              sx={{
-                height: 18,
-                fontSize: '0.7rem',
-                fontWeight: 800,
-                bgcolor: ampm === 'PM' ? '#dcfce7' : '#e0f2fe',
-                color: ampm === 'PM' ? '#15803d' : '#0369a1',
-                border: `1px solid ${ampm === 'PM' ? '#86efac' : '#bae6fd'}`
-              }}
-            />
+            <Tooltip title="Click to open Full Interactive Time Chooser">
+              <Chip
+                size="small"
+                label={current12hDisplay}
+                clickable
+                disabled={disabled}
+                onClick={(e) => setPopoverAnchor(containerRef.current || e.currentTarget)}
+                sx={{
+                  height: 18,
+                  fontSize: '0.7rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  bgcolor: ampm === 'PM' ? '#dcfce7' : '#e0f2fe',
+                  color: ampm === 'PM' ? '#15803d' : '#0369a1',
+                  border: `1px solid ${ampm === 'PM' ? '#86efac' : '#bae6fd'}`,
+                  '&:hover': { transform: 'scale(1.05)' },
+                  transition: 'all 0.15s ease'
+                }}
+              />
+            </Tooltip>
           </Box>
         </Box>
       )}
 
+      {/* Main Input Control Bar */}
       <Box
         sx={{
           display: 'flex',
@@ -374,46 +425,24 @@ export default function TimePicker12h({
           }
         }}
       >
-        {/* Native clock picker helper */}
-        <input
-          type="time"
-          disabled={disabled}
-          value={timeTo24h(`${hour || '12'}:${minute || '00'} ${ampm}`)}
-          onChange={(e) => {
-            if (!e.target.value) return;
-            const p = parseTime(e.target.value);
-            setHour(p.hour);
-            setMinute(p.minute);
-            setAmpm(p.ampm);
-            emitChange(p.hour, p.minute, p.ampm);
-          }}
-          style={{
-            position: 'absolute',
-            opacity: 0,
-            pointerEvents: 'none',
-            width: 0,
-            height: 0
-          }}
-          id={`time-picker-native-${label ? label.replace(/\s+/g, '-').toLowerCase() : 'field'}`}
-        />
-
-        <Tooltip title="Click for interactive visual clock dialog">
+        <Tooltip title="Click to Open Full Interactive Time Chooser Dialog">
           <IconButton
             size="small"
             disabled={disabled}
-            onClick={() => {
-              const el = document.getElementById(`time-picker-native-${label ? label.replace(/\s+/g, '-').toLowerCase() : 'field'}`);
-              if (el && el.showPicker) {
-                try { el.showPicker(); } catch (e) { el.click(); }
-              }
+            onClick={(e) => setPopoverAnchor(containerRef.current || e.currentTarget)}
+            sx={{
+              p: 0.4,
+              color: '#133829',
+              bgcolor: '#f1f5f9',
+              borderRadius: '6px',
+              '&:hover': { bgcolor: '#e2e8f0', transform: 'scale(1.08)' }
             }}
-            sx={{ p: 0.4, color: '#133829' }}
           >
             <AccessTimeIcon sx={{ fontSize: 20 }} />
           </IconButton>
         </Tooltip>
 
-        {/* Hour Input (1-12) */}
+        {/* Hour Direct Input */}
         <TextField
           inputRef={hourInputRef}
           size="small"
@@ -442,7 +471,7 @@ export default function TimePicker12h({
 
         <Typography sx={{ fontWeight: 800, color: '#64748b', fontSize: '1rem' }}>:</Typography>
 
-        {/* Minute Input (00-59, type any exact minute e.g. 12, 23, 41) */}
+        {/* Minute Direct Input (Any Exact Minute 00-59) */}
         <TextField
           inputRef={minuteInputRef}
           size="small"
@@ -515,57 +544,30 @@ export default function TimePicker12h({
           </Button>
         </ButtonGroup>
 
-        {/* Quick Presets & Options Dropdown */}
-        <Tooltip title="Preset Templates & Exact Options">
-          <span>
-            <IconButton
-              size="small"
-              disabled={disabled}
-              onClick={(e) => setMenuAnchor(e.currentTarget)}
-              sx={{ p: 0.3, color: '#64748b' }}
-            >
-              <ArrowDropDownIcon fontSize="small" />
-            </IconButton>
-          </span>
-        </Tooltip>
-
-        <Menu
-          anchorEl={menuAnchor}
-          open={Boolean(menuAnchor)}
-          onClose={() => setMenuAnchor(null)}
-          PaperProps={{
-            sx: { maxHeight: 300, width: 170, borderRadius: '10px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }
-          }}
-        >
-          <MenuItem
-            onClick={handleSetCurrentTime}
+        {/* Full Chooser Expand Button */}
+        <Tooltip title="Open Full Interactive Time Chooser">
+          <Button
+            size="small"
+            variant="text"
+            disabled={disabled}
+            onClick={(e) => setPopoverAnchor(containerRef.current || e.currentTarget)}
             sx={{
-              fontSize: '0.8rem',
+              minWidth: 32,
+              p: '2px 4px',
+              color: '#475569',
               fontWeight: 800,
-              py: 0.8,
-              bgcolor: '#ecfdf5',
-              color: '#047857',
-              borderBottom: '1px solid #e2e8f0',
+              fontSize: 11,
+              borderRadius: '6px',
+              textTransform: 'none',
               display: 'flex',
               alignItems: 'center',
-              gap: 0.8,
-              '&:hover': { bgcolor: '#d1fae5' }
+              gap: 0.2,
+              '&:hover': { bgcolor: '#f1f5f9', color: '#133829' }
             }}
           >
-            <FlashOnIcon sx={{ fontSize: 16 }} />
-            Current Time (Now)
-          </MenuItem>
-          {COMMON_PRESETS.map((preset) => (
-            <MenuItem
-              key={preset}
-              onClick={() => handlePresetSelect(preset)}
-              selected={preset === current12hDisplay}
-              sx={{ fontSize: '0.8rem', fontWeight: 700, py: 0.6 }}
-            >
-              {preset}
-            </MenuItem>
-          ))}
-        </Menu>
+            <ArrowDropDownIcon fontSize="small" />
+          </Button>
+        </Tooltip>
       </Box>
 
       {helperText && (
@@ -573,6 +575,341 @@ export default function TimePicker12h({
           {helperText}
         </Typography>
       )}
+
+      {/* =========================================================
+          FULL VISUAL INTERACTIVE TIME CHOOSER POPOVER
+          ========================================================= */}
+      <Popover
+        open={isChooserOpen}
+        anchorEl={popoverAnchor}
+        onClose={() => setPopoverAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        PaperProps={{
+          sx: {
+            mt: 0.8,
+            width: { xs: 320, sm: 380 },
+            borderRadius: '16px',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.22), 0 2px 6px rgba(0,0,0,0.08)',
+            border: '1px solid #cbd5e1',
+            overflow: 'hidden',
+            bgcolor: '#ffffff'
+          }
+        }}
+      >
+        {/* Chooser Header */}
+        <Box
+          sx={{
+            p: 1.8,
+            bgcolor: '#0f172a',
+            color: '#ffffff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ p: 0.6, borderRadius: '8px', bgcolor: 'rgba(255,255,255,0.12)', display: 'flex' }}>
+              <AccessTimeIcon sx={{ color: '#38bdf8', fontSize: 20 }} />
+            </Box>
+            <Box>
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Time Chooser
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 800, fontFamily: 'monospace', lineHeight: 1.1, color: '#f8fafc' }}>
+                {hour || '12'} : {minute || '00'}{' '}
+                <span style={{ color: ampm === 'PM' ? '#4ade80' : '#38bdf8', fontSize: '0.9rem' }}>
+                  {ampm}
+                </span>
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+            <Button
+              size="small"
+              startIcon={<FlashOnIcon sx={{ fontSize: '13px !important' }} />}
+              onClick={handleSetCurrentTime}
+              sx={{
+                fontSize: 11,
+                fontWeight: 800,
+                color: '#38bdf8',
+                bgcolor: 'rgba(56, 189, 248, 0.15)',
+                borderRadius: '8px',
+                px: 1.2,
+                py: 0.3,
+                textTransform: 'none',
+                '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.25)' }
+              }}
+            >
+              Set Current Time
+            </Button>
+            <IconButton size="small" onClick={() => setPopoverAnchor(null)} sx={{ color: '#94a3b8', '&:hover': { color: '#ffffff' } }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </Box>
+
+        {/* Quick Minute Steppers Bar */}
+        <Box sx={{ p: '8px 12px', bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', fontSize: 11 }}>
+            Quick Adjust:
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {[
+              { label: '-15m', d: -15 },
+              { label: '-5m', d: -5 },
+              { label: '-1m', d: -1 },
+              { label: '+1m', d: 1 },
+              { label: '+5m', d: 5 },
+              { label: '+15m', d: 15 }
+            ].map(step => (
+              <Chip
+                key={step.label}
+                label={step.label}
+                size="small"
+                clickable
+                onClick={() => handleStepMinute(step.d)}
+                sx={{
+                  height: 20,
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  bgcolor: '#ffffff',
+                  border: '1px solid #cbd5e1',
+                  color: '#334155',
+                  cursor: 'pointer',
+                  '&:hover': { bgcolor: '#e2e8f0' }
+                }}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Main 3-Column Interactive Picker */}
+        <Box sx={{ p: 1.5, display: 'grid', gridTemplateColumns: '1fr 1fr 100px', gap: 1.5 }}>
+          {/* Column 1: Hour Selector (01 - 12) */}
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.8, fontSize: 11, textAlign: 'center' }}>
+              HOUR (1-12)
+            </Typography>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: 0.6,
+                p: 0.5,
+                bgcolor: '#f8fafc',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}
+            >
+              {HOURS.map(h => {
+                const isSel = h === hour;
+                return (
+                  <Button
+                    key={h}
+                    size="small"
+                    onClick={() => handleSelectHour(h)}
+                    sx={{
+                      minWidth: 0,
+                      p: '6px 0',
+                      fontWeight: isSel ? 900 : 700,
+                      fontSize: '0.85rem',
+                      fontFamily: 'monospace',
+                      borderRadius: '8px',
+                      bgcolor: isSel ? '#0f172a' : 'transparent',
+                      color: isSel ? '#ffffff' : '#334155',
+                      boxShadow: isSel ? '0 2px 6px rgba(15,23,42,0.3)' : 'none',
+                      '&:hover': {
+                        bgcolor: isSel ? '#1e293b' : '#e2e8f0'
+                      }
+                    }}
+                  >
+                    {h}
+                  </Button>
+                );
+              })}
+            </Box>
+          </Box>
+
+          {/* Column 2: Exact Minute Selector (00 - 59) */}
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.8, fontSize: 11, textAlign: 'center' }}>
+              EXACT MINUTE (00-59)
+            </Typography>
+
+            {/* Quick 5-min jump chips */}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4, mb: 0.8, justifyContent: 'center' }}>
+              {QUICK_MINUTES.map(qm => (
+                <Chip
+                  key={qm}
+                  label={qm}
+                  size="small"
+                  clickable
+                  onClick={() => handleSelectMinute(qm)}
+                  sx={{
+                    height: 18,
+                    fontSize: '0.62rem',
+                    fontWeight: qm === minute ? 900 : 700,
+                    fontFamily: 'monospace',
+                    bgcolor: qm === minute ? '#059669' : '#ffffff',
+                    color: qm === minute ? '#ffffff' : '#475569',
+                    border: qm === minute ? '1px solid #059669' : '1px solid #cbd5e1',
+                    '&:hover': { bgcolor: qm === minute ? '#047857' : '#f1f5f9' }
+                  }}
+                />
+              ))}
+            </Box>
+
+            {/* Scrollable list of ALL 60 Exact Minutes */}
+            <Box
+              ref={minuteScrollRef}
+              sx={{
+                maxHeight: 140,
+                overflowY: 'auto',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: 0.4,
+                p: 0.5,
+                bgcolor: '#f8fafc',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0'
+              }}
+            >
+              {ALL_MINUTES.map(m => {
+                const isSel = m === minute;
+                return (
+                  <Button
+                    key={m}
+                    data-minute={m}
+                    size="small"
+                    onClick={() => handleSelectMinute(m)}
+                    sx={{
+                      minWidth: 0,
+                      p: '4px 0',
+                      fontWeight: isSel ? 900 : 600,
+                      fontSize: '0.78rem',
+                      fontFamily: 'monospace',
+                      borderRadius: '6px',
+                      bgcolor: isSel ? '#10b981' : 'transparent',
+                      color: isSel ? '#ffffff' : '#334155',
+                      boxShadow: isSel ? '0 2px 4px rgba(16,185,129,0.3)' : 'none',
+                      '&:hover': {
+                        bgcolor: isSel ? '#059669' : '#e2e8f0'
+                      }
+                    }}
+                  >
+                    {m}
+                  </Button>
+                );
+              })}
+            </Box>
+          </Box>
+
+          {/* Column 3: AM / PM Period Selector */}
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.8, fontSize: 11, textAlign: 'center' }}>
+              PERIOD
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, height: '100%', justifyContent: 'center' }}>
+              <Button
+                variant={ampm === 'AM' ? 'contained' : 'outlined'}
+                onClick={() => handleSelectAmpm('AM')}
+                startIcon={<WbSunnyIcon />}
+                sx={{
+                  py: 1.2,
+                  fontWeight: 900,
+                  fontSize: '0.85rem',
+                  borderRadius: '10px',
+                  bgcolor: ampm === 'AM' ? '#0284c7' : 'transparent',
+                  borderColor: '#0284c7',
+                  color: ampm === 'AM' ? '#ffffff' : '#0284c7',
+                  boxShadow: ampm === 'AM' ? '0 3px 8px rgba(2,132,199,0.35)' : 'none',
+                  '&:hover': {
+                    bgcolor: ampm === 'AM' ? '#0369a1' : '#f0f9ff',
+                    borderColor: '#0284c7'
+                  }
+                }}
+              >
+                AM
+              </Button>
+
+              <Button
+                variant={ampm === 'PM' ? 'contained' : 'outlined'}
+                onClick={() => handleSelectAmpm('PM')}
+                startIcon={<NightlightIcon />}
+                sx={{
+                  py: 1.2,
+                  fontWeight: 900,
+                  fontSize: '0.85rem',
+                  borderRadius: '10px',
+                  bgcolor: ampm === 'PM' ? '#133829' : 'transparent',
+                  borderColor: '#133829',
+                  color: ampm === 'PM' ? '#ffffff' : '#133829',
+                  boxShadow: ampm === 'PM' ? '0 3px 8px rgba(19,56,41,0.35)' : 'none',
+                  '&:hover': {
+                    bgcolor: ampm === 'PM' ? '#0a2318' : '#f0fdf4',
+                    borderColor: '#133829'
+                  }
+                }}
+              >
+                PM
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Common Shifts Quick Pick Section */}
+        <Box sx={{ p: '8px 12px', bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', fontSize: 10, display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
+            Official Shift Presets:
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: 65, overflowY: 'auto' }}>
+            {PRESET_SHIFTS.map(preset => (
+              <Chip
+                key={preset.label}
+                label={preset.label}
+                size="small"
+                clickable
+                onClick={() => handlePresetSelect(preset.val)}
+                sx={{
+                  height: 19,
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  bgcolor: preset.val === current12hDisplay ? '#e0f2fe' : '#ffffff',
+                  color: preset.val === current12hDisplay ? '#0369a1' : '#475569',
+                  border: preset.val === current12hDisplay ? '1px solid #7dd3fc' : '1px solid #cbd5e1',
+                  '&:hover': { bgcolor: '#e2e8f0' }
+                }}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Chooser Bottom Action Bar */}
+        <Box sx={{ p: 1.5, bgcolor: '#ffffff', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="caption" sx={{ color: '#64748b', fontSize: 11 }}>
+            Selected: <strong style={{ color: '#0f172a' }}>{current12hDisplay}</strong>
+          </Typography>
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<CheckIcon />}
+            onClick={() => setPopoverAnchor(null)}
+            sx={{
+              fontWeight: 800,
+              borderRadius: '8px',
+              px: 2,
+              py: 0.6,
+              bgcolor: '#133829',
+              color: '#ffffff',
+              '&:hover': { bgcolor: '#0f291e' }
+            }}
+          >
+            Done
+          </Button>
+        </Box>
+      </Popover>
     </Box>
   );
 }
