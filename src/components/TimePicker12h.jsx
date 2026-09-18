@@ -868,26 +868,26 @@ export default function TimePicker12h({
           </Box>
         </Box>
 
-        {/* Common Shifts Quick Pick Section */}
+        {/* Quick Time Presets Section */}
         <Box sx={{ p: '8px 12px', bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
           <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', fontSize: 10, display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
-            Official Shift Presets:
+            Quick Presets:
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: 65, overflowY: 'auto' }}>
-            {PRESET_SHIFTS.map(preset => (
+            {PRESET_TIMES.map(t => (
               <Chip
-                key={preset.label}
-                label={preset.label}
+                key={t}
+                label={t}
                 size="small"
                 clickable
-                onClick={() => handlePresetSelect(preset.val)}
+                onClick={() => handlePresetSelect(t)}
                 sx={{
                   height: 19,
                   fontSize: '0.65rem',
                   fontWeight: 700,
-                  bgcolor: preset.val === current12hDisplay ? '#e0f2fe' : '#ffffff',
-                  color: preset.val === current12hDisplay ? '#0369a1' : '#475569',
-                  border: preset.val === current12hDisplay ? '1px solid #7dd3fc' : '1px solid #cbd5e1',
+                  bgcolor: t === current12hDisplay ? '#e0f2fe' : '#ffffff',
+                  color: t === current12hDisplay ? '#0369a1' : '#475569',
+                  border: t === current12hDisplay ? '1px solid #7dd3fc' : '1px solid #cbd5e1',
                   '&:hover': { bgcolor: '#e2e8f0' }
                 }}
               />

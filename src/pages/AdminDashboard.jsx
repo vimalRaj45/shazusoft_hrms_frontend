@@ -3226,12 +3226,12 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
               {[
-                { label: 'Standard (09:30 - 18:30)', start: '09:30', end: '18:30', grace: '09:45', target: '8.5' },
-                { label: 'Early Shift (08:00 - 17:00)', start: '08:00', end: '17:00', grace: '08:15', target: '8.5' },
-                { label: 'Mid Shift (10:00 - 19:00)', start: '10:00', end: '19:00', grace: '10:15', target: '8.5' },
-                { label: 'Late Shift (11:00 - 20:00)', start: '11:00', end: '20:00', grace: '11:15', target: '8.5' },
-                { label: 'Night Shift (13:00 - 22:00)', start: '13:00', end: '22:00', grace: '13:15', target: '8.5' },
-                { label: 'Part-Time (10:00 - 16:30)', start: '10:00', end: '16:30', grace: '10:15', target: '6.0' }
+                { label: '09:30 - 18:30', start: '09:30', end: '18:30', grace: '09:45', target: '8.5' },
+                { label: '08:00 - 17:00', start: '08:00', end: '17:00', grace: '08:15', target: '8.5' },
+                { label: '10:00 - 19:00', start: '10:00', end: '19:00', grace: '10:15', target: '8.5' },
+                { label: '11:00 - 20:00', start: '11:00', end: '20:00', grace: '11:15', target: '8.5' },
+                { label: '13:00 - 22:00', start: '13:00', end: '22:00', grace: '13:15', target: '8.5' },
+                { label: '10:00 - 16:30', start: '10:00', end: '16:30', grace: '10:15', target: '6.0' }
               ].map(preset => (
                 <Chip
                   key={preset.label}
