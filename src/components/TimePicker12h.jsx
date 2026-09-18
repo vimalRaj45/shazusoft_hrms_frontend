@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -13,16 +13,18 @@ import {
 } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
 import { timeTo24h } from '../utils/timeUtils';
 
 /**
  * Standard 12-Hour Time Picker & Input Component
  * Replaces 24-hour inputs across Shazusoft HRMS.
  * Guarantees that time is ALWAYS displayed, selected, and edited in 12-hour AM/PM format.
+ * Supports exact minute typing, keyboard stepping, clock wheel, and preset picks.
  *
  * Emits synthetic event with:
  *   e.target.value: 24h "HH:mm" (for backend compatibility)
- *   e.target.value12h: 12h "hh:mm A" (e.g. "04:30 PM")
+ *   e.target.value12h: 12h "hh:mm A" (e.g. "09:12 AM" or "04:30 PM")
  */
 export default function TimePicker12h({
   label,
@@ -35,6 +37,9 @@ export default function TimePicker12h({
   size = 'small',
   sx = {}
 }) {
+  const hourInputRef = useRef(null);
+  const minuteInputRef = useRef(null);
+
   // Parse incoming value (can be "16:30", "04:30 PM", "10:00", etc.)
   const parseTime = (val) => {
     if (!val || val === '--' || val === '--:--' || val === 'In Progress') {
@@ -128,12 +133,51 @@ export default function TimePicker12h({
       const formatted = String(num).padStart(2, '0');
       setHour(formatted);
       emitChange(formatted, minute, 'PM');
+      if (minuteInputRef.current) minuteInputRef.current.focus();
       return;
     }
     if (num > 12) num = 12;
     const formatted = String(num).padStart(2, '0');
     setHour(formatted);
     emitChange(formatted, minute, ampm);
+
+    // Auto-advance to minute field if 2 digits entered or if number >= 2 (since in 12h clock hours are 01-12)
+    if (raw.length === 2 || (num >= 2 && num <= 9)) {
+      if (minuteInputRef.current) {
+        minuteInputRef.current.focus();
+        minuteInputRef.current.select();
+      }
+    }
+  };
+
+  const handleHourKeyDown = (e) => {
+    if (e.key === ':' || e.key === 'Enter' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (minuteInputRef.current) {
+        minuteInputRef.current.focus();
+        minuteInputRef.current.select();
+      }
+    } else if (e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      handleAmpmToggle('AM');
+    } else if (e.key.toLowerCase() === 'p') {
+      e.preventDefault();
+      handleAmpmToggle('PM');
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const currentH = parseInt(hour, 10) || 12;
+      const nextH = currentH >= 12 ? 1 : currentH + 1;
+      const formatted = String(nextH).padStart(2, '0');
+      setHour(formatted);
+      emitChange(formatted, minute, ampm);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const currentH = parseInt(hour, 10) || 12;
+      const prevH = currentH <= 1 ? 12 : currentH - 1;
+      const formatted = String(prevH).padStart(2, '0');
+      setHour(formatted);
+      emitChange(formatted, minute, ampm);
+    }
   };
 
   const handleHourBlur = () => {
@@ -157,6 +201,44 @@ export default function TimePicker12h({
     const formatted = String(num).padStart(2, '0');
     setMinute(formatted);
     emitChange(hour, formatted, ampm);
+  };
+
+  const handleMinuteKeyDown = (e) => {
+    if (e.key === 'Backspace' && !minute) {
+      e.preventDefault();
+      if (hourInputRef.current) {
+        hourInputRef.current.focus();
+        hourInputRef.current.select();
+      }
+    } else if (e.key === 'ArrowLeft') {
+      if (hourInputRef.current) {
+        hourInputRef.current.focus();
+        hourInputRef.current.select();
+      }
+    } else if (e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      handleAmpmToggle('AM');
+    } else if (e.key.toLowerCase() === 'p') {
+      e.preventDefault();
+      handleAmpmToggle('PM');
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const step = e.shiftKey ? 5 : 1;
+      const currentM = parseInt(minute, 10) || 0;
+      const nextM = (currentM + step) % 60;
+      const formatted = String(nextM).padStart(2, '0');
+      setMinute(formatted);
+      emitChange(hour, formatted, ampm);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const step = e.shiftKey ? 5 : 1;
+      const currentM = parseInt(minute, 10) || 0;
+      let prevM = currentM - step;
+      if (prevM < 0) prevM = 60 + prevM;
+      const formatted = String(prevM).padStart(2, '0');
+      setMinute(formatted);
+      emitChange(hour, formatted, ampm);
+    }
   };
 
   const handleMinuteBlur = () => {
@@ -184,14 +266,38 @@ export default function TimePicker12h({
     setMenuAnchor(null);
   };
 
+  // Set to real-world current local time
+  const handleSetCurrentTime = () => {
+    const now = new Date();
+    let h24 = now.getHours();
+    let m = now.getMinutes();
+    const ap = h24 >= 12 ? 'PM' : 'AM';
+    let h12 = h24 % 12;
+    if (h12 === 0) h12 = 12;
+    const cleanH = String(h12).padStart(2, '0');
+    const cleanM = String(m).padStart(2, '0');
+
+    setHour(cleanH);
+    setMinute(cleanM);
+    setAmpm(ap);
+    emitChange(cleanH, cleanM, ap);
+    setMenuAnchor(null);
+  };
+
   const COMMON_PRESETS = [
+    '08:00 AM',
+    '08:30 AM',
     '09:00 AM',
+    '09:15 AM',
     '09:30 AM',
     '09:45 AM',
     '10:00 AM',
     '10:15 AM',
+    '10:30 AM',
+    '11:00 AM',
     '01:00 PM',
     '01:30 PM',
+    '02:00 PM',
     '04:30 PM',
     '05:00 PM',
     '05:30 PM',
@@ -201,7 +307,9 @@ export default function TimePicker12h({
     '07:00 PM',
     '07:30 PM',
     '08:00 PM',
-    '08:30 PM'
+    '08:30 PM',
+    '09:00 PM',
+    '10:00 PM'
   ];
 
   const current12hDisplay = `${hour || '12'}:${minute || '00'} ${ampm}`;
@@ -213,18 +321,40 @@ export default function TimePicker12h({
           <Typography variant="caption" sx={{ fontWeight: 700, color: '#334155', fontSize: '0.78rem' }}>
             {label} {required && <span style={{ color: '#ef4444' }}>*</span>}
           </Typography>
-          <Chip
-            size="small"
-            label={current12hDisplay}
-            sx={{
-              height: 18,
-              fontSize: '0.7rem',
-              fontWeight: 800,
-              bgcolor: ampm === 'PM' ? '#dcfce7' : '#e0f2fe',
-              color: ampm === 'PM' ? '#15803d' : '#0369a1',
-              border: `1px solid ${ampm === 'PM' ? '#86efac' : '#bae6fd'}`
-            }}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Tooltip title="Click to fill exact current local time">
+              <Chip
+                size="small"
+                icon={<FlashOnIcon sx={{ fontSize: '11px !important', color: '#0f766e !important' }} />}
+                label="Now"
+                clickable
+                disabled={disabled}
+                onClick={handleSetCurrentTime}
+                sx={{
+                  height: 18,
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  bgcolor: '#f0fdf4',
+                  color: '#15803d',
+                  border: '1px solid #bbf7d0',
+                  '&:hover': { bgcolor: '#dcfce7' }
+                }}
+              />
+            </Tooltip>
+            <Chip
+              size="small"
+              label={current12hDisplay}
+              sx={{
+                height: 18,
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                bgcolor: ampm === 'PM' ? '#dcfce7' : '#e0f2fe',
+                color: ampm === 'PM' ? '#15803d' : '#0369a1',
+                border: `1px solid ${ampm === 'PM' ? '#86efac' : '#bae6fd'}`
+              }}
+            />
+          </Box>
         </Box>
       )}
 
@@ -267,7 +397,7 @@ export default function TimePicker12h({
           id={`time-picker-native-${label ? label.replace(/\s+/g, '-').toLowerCase() : 'field'}`}
         />
 
-        <Tooltip title="Click to pick exact time using Clock dialog">
+        <Tooltip title="Click for interactive visual clock dialog">
           <IconButton
             size="small"
             disabled={disabled}
@@ -285,10 +415,12 @@ export default function TimePicker12h({
 
         {/* Hour Input (1-12) */}
         <TextField
+          inputRef={hourInputRef}
           size="small"
           disabled={disabled}
           value={hour}
           onChange={handleHourChange}
+          onKeyDown={handleHourKeyDown}
           onBlur={handleHourBlur}
           placeholder="HH"
           inputProps={{
@@ -310,12 +442,14 @@ export default function TimePicker12h({
 
         <Typography sx={{ fontWeight: 800, color: '#64748b', fontSize: '1rem' }}>:</Typography>
 
-        {/* Minute Input (00-59) */}
+        {/* Minute Input (00-59, type any exact minute e.g. 12, 23, 41) */}
         <TextField
+          inputRef={minuteInputRef}
           size="small"
           disabled={disabled}
           value={minute}
           onChange={handleMinuteChange}
+          onKeyDown={handleMinuteKeyDown}
           onBlur={handleMinuteBlur}
           placeholder="MM"
           inputProps={{
@@ -381,8 +515,8 @@ export default function TimePicker12h({
           </Button>
         </ButtonGroup>
 
-        {/* Quick Presets Dropdown */}
-        <Tooltip title="Quick Presets">
+        {/* Quick Presets & Options Dropdown */}
+        <Tooltip title="Preset Templates & Exact Options">
           <span>
             <IconButton
               size="small"
@@ -400,9 +534,27 @@ export default function TimePicker12h({
           open={Boolean(menuAnchor)}
           onClose={() => setMenuAnchor(null)}
           PaperProps={{
-            sx: { maxHeight: 260, width: 140, borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }
+            sx: { maxHeight: 300, width: 170, borderRadius: '10px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }
           }}
         >
+          <MenuItem
+            onClick={handleSetCurrentTime}
+            sx={{
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              py: 0.8,
+              bgcolor: '#ecfdf5',
+              color: '#047857',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.8,
+              '&:hover': { bgcolor: '#d1fae5' }
+            }}
+          >
+            <FlashOnIcon sx={{ fontSize: 16 }} />
+            Current Time (Now)
+          </MenuItem>
           {COMMON_PRESETS.map((preset) => (
             <MenuItem
               key={preset}
