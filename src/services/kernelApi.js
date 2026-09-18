@@ -32,8 +32,10 @@ kernelClient.interceptors.response.use(
 );
 
 export const kernelAPI = {
-  // Authentication
-  login: (credentials) => kernelClient.post('/auth/login', credentials),
+  // Authentication (Root Email OTP Only)
+  getAuthConfig: () => kernelClient.get('/auth/config'),
+  sendOTP: (email) => kernelClient.post('/auth/send-otp', { email }),
+  verifyOTP: (email, otp) => kernelClient.post('/auth/verify-otp', { email, otp }),
   getMe: () => kernelClient.get('/auth/me'),
   logout: () => {
     if (typeof localStorage !== 'undefined') {

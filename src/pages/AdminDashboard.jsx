@@ -442,6 +442,79 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     }
   };
 
+  // Individual Employee Shift Schedule State & Handlers
+  const [openShiftModal, setOpenShiftModal] = useState(false);
+  const [selectedShiftEmp, setSelectedShiftEmp] = useState(null);
+  const [shiftForm, setShiftForm] = useState({
+    shift_start_time: '',
+    shift_end_time: '',
+    shift_late_grace_time: '',
+    shift_target_hours: ''
+  });
+  const [savingShift, setSavingShift] = useState(false);
+
+  const handleOpenShiftModal = (emp) => {
+    setSelectedShiftEmp(emp);
+    setShiftForm({
+      shift_start_time: emp.shift_start_time || '',
+      shift_end_time: emp.shift_end_time || '',
+      shift_late_grace_time: emp.shift_late_grace_time || '',
+      shift_target_hours: emp.shift_target_hours !== null && emp.shift_target_hours !== undefined ? String(emp.shift_target_hours) : ''
+    });
+    setOpenShiftModal(true);
+  };
+
+  const handleSaveShiftSchedule = async (e) => {
+    if (e) e.preventDefault();
+    if (!selectedShiftEmp) return;
+    setSavingShift(true);
+    try {
+      const res = await adminAPI.updateShiftSchedule(selectedShiftEmp.id, shiftForm);
+      toast.success(res.data?.message || `Shift schedule updated for ${selectedShiftEmp.name}!`);
+      if (res.data?.employee) {
+        setEmployees(prev => prev.map(emp => emp.id === selectedShiftEmp.id ? { ...emp, ...res.data.employee } : emp));
+      } else {
+        fetchDashboardData();
+      }
+      setOpenShiftModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update shift schedule.');
+    } finally {
+      setSavingShift(false);
+    }
+  };
+
+  const handleResetShiftSchedule = async () => {
+    if (!selectedShiftEmp) return;
+    const confirmed = await muiToast.confirm({
+      title: 'Reset to Standard Company Shift',
+      message: `Revert ${selectedShiftEmp.name} (${selectedShiftEmp.id}) to company standard office timings? Custom individual start, end, grace, and target hour overrides will be removed.`,
+      confirmText: 'Reset to Standard',
+      severity: 'warning'
+    });
+    if (!confirmed) return;
+    setSavingShift(true);
+    try {
+      const res = await adminAPI.updateShiftSchedule(selectedShiftEmp.id, {
+        shift_start_time: null,
+        shift_end_time: null,
+        shift_late_grace_time: null,
+        shift_target_hours: null
+      });
+      toast.success(res.data?.message || `Reverted ${selectedShiftEmp.name} to company standard office timings.`);
+      if (res.data?.employee) {
+        setEmployees(prev => prev.map(emp => emp.id === selectedShiftEmp.id ? { ...emp, ...res.data.employee } : emp));
+      } else {
+        fetchDashboardData();
+      }
+      setOpenShiftModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to reset shift schedule.');
+    } finally {
+      setSavingShift(false);
+    }
+  };
+
   const handleOpenLogWorkModal = (empId = '') => {
     setLogWorkForm({
       employee_id: empId || (employees.length > 0 ? employees[0].id : ''),
@@ -685,7 +758,9 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
         department: 'Software Engineering',
         designation: 'Software Developer',
         work_mode: 'office',
-        employment_type: 'full_time'
+        employment_type: 'full_time',
+        shift_start_time: '',
+        shift_end_time: ''
       });
       fetchDashboardData();
     } catch (err) {
@@ -2139,6 +2214,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                       <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Work Mode</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Shift Schedule</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Designation</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Compensation</TableCell>
@@ -2258,6 +2334,27 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                           }}
                         />
                       </TableCell>
+                      <TableCell>
+                        <Tooltip title={e.shift_start_time ? `Custom Shift: ${e.shift_start_time} - ${e.shift_end_time || '18:30'} (Grace: ${e.shift_late_grace_time || 'Auto (+15m)'}, Daily Target: ${e.shift_target_hours || '8.5'} hrs). Click to customize.` : 'Company Default Standard Shift (09:30 - 18:30). Click to configure custom shift.'}>
+                          <Chip
+                            icon={<TimeIcon sx={{ fontSize: '13px !important', color: e.shift_start_time ? '#4338ca !important' : '#64748b !important' }} />}
+                            label={e.shift_start_time ? `${e.shift_start_time} - ${e.shift_end_time || '18:30'}` : 'Standard'}
+                            size="small"
+                            clickable
+                            onClick={() => handleOpenShiftModal(e)}
+                            sx={{
+                              fontWeight: 700,
+                              borderRadius: '6px',
+                              fontSize: '0.68rem',
+                              cursor: 'pointer',
+                              bgcolor: e.shift_start_time ? '#e0e7ff' : '#f1f5f9',
+                              color: e.shift_start_time ? '#3730a3' : '#475569',
+                              border: e.shift_start_time ? '1px solid #c7d2fe' : '1px solid #e2e8f0',
+                              '&:hover': { bgcolor: e.shift_start_time ? '#c7d2fe' : '#e2e8f0' }
+                            }}
+                          />
+                        </Tooltip>
+                      </TableCell>
                       <TableCell>{e.department}</TableCell>
                       <TableCell>{e.designation}</TableCell>
                       <TableCell>
@@ -2373,6 +2470,24 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 11 }}
                           >
                             {e.work_mode === 'wfh' ? 'Switch to Office' : 'Switch to WFH'}
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<TimeIcon />}
+                            onClick={() => handleOpenShiftModal(e)}
+                            disabled={actionLoading}
+                            sx={{
+                              fontWeight: 700,
+                              borderRadius: '8px',
+                              fontSize: 11,
+                              borderColor: e.shift_start_time ? '#6366f1' : '#cbd5e1',
+                              color: e.shift_start_time ? '#4338ca' : '#475569',
+                              bgcolor: e.shift_start_time ? '#eef2ff' : 'transparent',
+                              '&:hover': { bgcolor: '#e0e7ff', borderColor: '#4f46e5' }
+                            }}
+                          >
+                            {e.shift_start_time ? 'Edit Shift' : 'Set Shift'}
                           </Button>
                           <Button
                             size="small"
@@ -3045,6 +3160,22 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
               <Grid item xs={12} sm={6}>
                 <TextField fullWidth label="Designation" value={empForm.designation} onChange={(e) => setEmpForm({ ...empForm, designation: e.target.value })} />
               </Grid>
+              <Grid item xs={12} sm={6}>
+                <TimePicker12h
+                  label="Custom Shift Start (Optional)"
+                  value={empForm.shift_start_time || ''}
+                  onChange={(e) => setEmpForm({ ...empForm, shift_start_time: e.target.value })}
+                  helperText="Leave empty for standard office opening"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TimePicker12h
+                  label="Custom Shift End (Optional)"
+                  value={empForm.shift_end_time || ''}
+                  onChange={(e) => setEmpForm({ ...empForm, shift_end_time: e.target.value })}
+                  helperText="Leave empty for standard office closing"
+                />
+              </Grid>
             </Grid>
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
@@ -3052,6 +3183,175 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
             <Button type="submit" variant="contained" color="primary" disabled={actionLoading} sx={{ fontWeight: 700 }}>
               {actionLoading ? 'Creating...' : 'Register Employee'}
             </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Individual Employee Custom Shift Schedule Modal */}
+      <Dialog
+        open={openShiftModal}
+        onClose={() => !savingShift && setOpenShiftModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '16px', overflow: 'hidden' } }}
+      >
+        <form onSubmit={handleSaveShiftSchedule}>
+          <DialogTitle sx={{ fontWeight: 800, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ p: 1, borderRadius: '10px', bgcolor: '#e0e7ff', color: '#4338ca', display: 'flex' }}>
+                <TimeIcon />
+              </Box>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+                  Configure Shift Schedule
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#64748b' }}>
+                  {selectedShiftEmp?.name} ({selectedShiftEmp?.id}) • {selectedShiftEmp?.department}
+                </Typography>
+              </Box>
+            </Box>
+            {selectedShiftEmp?.shift_start_time && (
+              <Chip label="CUSTOM SHIFT ACTIVE" size="small" sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 800, fontSize: 10 }} />
+            )}
+          </DialogTitle>
+
+          <DialogContent sx={{ p: 3 }}>
+            <Alert severity="info" sx={{ mb: 2.5, borderRadius: '10px', fontSize: 12 }}>
+              <strong>Custom Shift Overrides</strong>: Setting custom shift start/end timings for this employee will take first priority over standard office timings. The system will evaluate punch-in late arrival grace, punch-out, and timesheet target hours based on this schedule.
+            </Alert>
+
+            {/* Quick Shift Presets */}
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', display: 'block', mb: 1 }}>
+              QUICK PRESET TEMPLATES
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+              {[
+                { label: 'Standard (09:30 - 18:30)', start: '09:30', end: '18:30', grace: '09:45', target: '8.5' },
+                { label: 'Early Shift (08:00 - 17:00)', start: '08:00', end: '17:00', grace: '08:15', target: '8.5' },
+                { label: 'Mid Shift (10:00 - 19:00)', start: '10:00', end: '19:00', grace: '10:15', target: '8.5' },
+                { label: 'Late Shift (11:00 - 20:00)', start: '11:00', end: '20:00', grace: '11:15', target: '8.5' },
+                { label: 'Night Shift (13:00 - 22:00)', start: '13:00', end: '22:00', grace: '13:15', target: '8.5' },
+                { label: 'Part-Time (10:00 - 16:30)', start: '10:00', end: '16:30', grace: '10:15', target: '6.0' }
+              ].map(preset => (
+                <Chip
+                  key={preset.label}
+                  label={preset.label}
+                  size="small"
+                  clickable
+                  onClick={() => setShiftForm({
+                    shift_start_time: preset.start,
+                    shift_end_time: preset.end,
+                    shift_late_grace_time: preset.grace,
+                    shift_target_hours: preset.target
+                  })}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: 11,
+                    bgcolor: '#f1f5f9',
+                    '&:hover': { bgcolor: '#e2e8f0' }
+                  }}
+                />
+              ))}
+            </Box>
+
+            <Grid container spacing={2.5}>
+              <Grid item xs={12} sm={6}>
+                <TimePicker12h
+                  label="Shift Login Time (Start)"
+                  value={shiftForm.shift_start_time}
+                  onChange={(e) => {
+                    const newStart = e.target.value;
+                    setShiftForm(prev => ({
+                      ...prev,
+                      shift_start_time: newStart,
+                      shift_late_grace_time: prev.shift_late_grace_time || calculateAutoGraceTime(newStart, 15)
+                    }));
+                  }}
+                  helperText="Official login/punch-in start time"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  <TimePicker12h
+                    label="Late Arrival Grace Cutoff"
+                    value={shiftForm.shift_late_grace_time}
+                    onChange={(e) => setShiftForm(prev => ({ ...prev, shift_late_grace_time: e.target.value }))}
+                    helperText="Punches after this are marked Late"
+                  />
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => {
+                      if (shiftForm.shift_start_time) {
+                        setShiftForm(prev => ({ ...prev, shift_late_grace_time: calculateAutoGraceTime(prev.shift_start_time, 15) }));
+                      }
+                    }}
+                    sx={{ alignSelf: 'flex-end', fontSize: 11, mt: 0.3, textTransform: 'none', py: 0 }}
+                  >
+                    ⚡ Auto-Sync (+15 min)
+                  </Button>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TimePicker12h
+                  label="Shift Logout Time (End)"
+                  value={shiftForm.shift_end_time}
+                  onChange={(e) => setShiftForm(prev => ({ ...prev, shift_end_time: e.target.value }))}
+                  helperText="Official shift completion time"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Daily Target Working Hours"
+                  value={shiftForm.shift_target_hours}
+                  onChange={(e) => setShiftForm(prev => ({ ...prev, shift_target_hours: e.target.value }))}
+                  inputProps={{ step: '0.5', min: '1', max: '24' }}
+                  helperText="Required daily hours (e.g. 8.5 or 6.0)"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">hrs</InputAdornment>
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2.5, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0', justifyContent: 'space-between' }}>
+            {selectedShiftEmp?.shift_start_time ? (
+              <Button
+                color="error"
+                variant="outlined"
+                onClick={handleResetShiftSchedule}
+                disabled={savingShift}
+                sx={{ fontWeight: 700, borderRadius: '8px' }}
+              >
+                Reset to Company Standard
+              </Button>
+            ) : <Box />}
+
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button onClick={() => setOpenShiftModal(false)} disabled={savingShift} color="inherit" sx={{ fontWeight: 600 }}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={savingShift}
+                sx={{
+                  fontWeight: 700,
+                  borderRadius: '8px',
+                  bgcolor: '#4338ca',
+                  color: '#fff',
+                  '&:hover': { bgcolor: '#3730a3' }
+                }}
+              >
+                {savingShift ? 'Saving...' : 'Apply Shift Schedule'}
+              </Button>
+            </Box>
           </DialogActions>
         </form>
       </Dialog>

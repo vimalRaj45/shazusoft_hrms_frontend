@@ -64,7 +64,7 @@ import kernelAPI from '../services/kernelApi';
 import toast from '../utils/muiToast';
 
 export default function KernelAdminPortal({ onExitToApp }) {
-  // ─── AUTHENTICATION STATE ───
+  // ─── AUTHENTICATION STATE (ROOT EMAIL OTP ONLY) ───
   const [token, setToken] = useState(() => localStorage.getItem('shazusoft_kernel_token'));
   const [kernelUser, setKernelUser] = useState(() => {
     try {
@@ -75,13 +75,35 @@ export default function KernelAdminPortal({ onExitToApp }) {
     }
   });
 
-  // Login Form States
-  const [loginMode, setLoginMode] = useState('masterKey'); // 'masterKey' | 'credentials'
-  const [masterKey, setMasterKey] = useState('');
-  const [adminEmail, setAdminEmail] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
+  const [rootEmail, setRootEmail] = useState('');
+  const [maskedEmail, setMaskedEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [authStep, setAuthStep] = useState(1); // 1 = Request OTP, 2 = Enter 6-digit OTP
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [countdown, setCountdown] = useState(0);
+
+  // Load configured root email from .env backend
+  useEffect(() => {
+    kernelAPI.getAuthConfig()
+      .then(res => {
+        if (res.data?.rootEmail) {
+          setRootEmail(res.data.rootEmail);
+          setMaskedEmail(res.data.maskedEmail || res.data.rootEmail);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   // ─── CONSOLE NAVIGATION & DATA STATES ───
   const [activeTab, setActiveTab] = useState(0); // 0: Table Explorer, 1: Audit Ledger, 2: Diagnostics
@@ -145,28 +167,50 @@ export default function KernelAdminPortal({ onExitToApp }) {
     }
   }, [token]);
 
-  const handleLogin = async (e) => {
+  const handleSendRootOTP = async (e) => {
     if (e) e.preventDefault();
+    if (!rootEmail.trim()) {
+      setAuthError('Root Administrator Email is required.');
+      return;
+    }
     setAuthLoading(true);
     setAuthError('');
 
     try {
-      const payload = loginMode === 'masterKey'
-        ? { masterKey }
-        : { email: adminEmail, password: adminPassword, passcode: masterKey };
+      const res = await kernelAPI.sendOTP(rootEmail.trim());
+      toast.success(res.data?.message || 'Root Verification Code sent to designated Root Email.');
+      setAuthStep(2);
+      setCountdown(60);
+    } catch (err) {
+      setAuthError(err.response?.data?.error || 'Failed to dispatch Root OTP.');
+      toast.error('Root OTP Dispatch Failed');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
-      const res = await kernelAPI.login(payload);
+  const handleVerifyRootOTP = async (e) => {
+    if (e) e.preventDefault();
+    if (!otpCode || otpCode.trim().length < 6) {
+      setAuthError('Please enter the full 6-digit OTP code.');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+
+    try {
+      const res = await kernelAPI.verifyOTP(rootEmail.trim(), otpCode.trim());
       const { token: jwtToken, user } = res.data;
 
       localStorage.setItem('shazusoft_kernel_token', jwtToken);
       localStorage.setItem('shazusoft_kernel_user', JSON.stringify(user));
       setToken(jwtToken);
       setKernelUser(user);
-      toast.success(res.data.message || 'Kernel Root Console Authorized');
+      toast.success(res.data?.message || 'Kernel Root Console Authorized');
       fetchTablesList();
     } catch (err) {
-      setAuthError(err.response?.data?.error || 'Authentication failed. Please verify credentials.');
-      toast.error('Kernel Access Denied');
+      setAuthError(err.response?.data?.error || 'Invalid or expired OTP code.');
+      toast.error('Root Verification Failed');
     } finally {
       setAuthLoading(false);
     }
@@ -176,6 +220,8 @@ export default function KernelAdminPortal({ onExitToApp }) {
     kernelAPI.logout();
     setToken(null);
     setKernelUser(null);
+    setAuthStep(1);
+    setOtpCode('');
     toast.info('Kernel Session Terminated');
   };
 
@@ -490,50 +536,93 @@ export default function KernelAdminPortal({ onExitToApp }) {
               </Alert>
             )}
 
-            {/* Switch Mode Tabs */}
-            <Box sx={{ display: 'flex', background: '#0b0f19', p: 0.5, borderRadius: '8px', mb: 3 }}>
-              <Button
-                fullWidth
-                size="small"
-                onClick={() => setLoginMode('masterKey')}
-                sx={{
-                  py: 0.8,
-                  borderRadius: '6px',
-                  fontWeight: 700,
-                  fontSize: '0.75rem',
-                  background: loginMode === 'masterKey' ? '#4f46e5' : 'transparent',
-                  color: loginMode === 'masterKey' ? '#fff' : '#64748b'
-                }}
-              >
-                Master Root Key
-              </Button>
-              <Button
-                fullWidth
-                size="small"
-                onClick={() => setLoginMode('credentials')}
-                sx={{
-                  py: 0.8,
-                  borderRadius: '6px',
-                  fontWeight: 700,
-                  fontSize: '0.75rem',
-                  background: loginMode === 'credentials' ? '#4f46e5' : 'transparent',
-                  color: loginMode === 'credentials' ? '#fff' : '#64748b'
-                }}
-              >
-                Admin Credentials Gate
-              </Button>
-            </Box>
+            {/* Step 1: Request Root OTP */}
+            {authStep === 1 ? (
+              <form onSubmit={handleSendRootOTP}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" sx={{ color: '#818cf8', fontWeight: 700, letterSpacing: 0.5, display: 'block', mb: 0.5 }}>
+                    DESIGNATED ROOT ENVIRONMENT EMAIL
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    label="Root Administrator Email"
+                    placeholder="Enter root admin email from .env"
+                    value={rootEmail}
+                    onChange={(e) => setRootEmail(e.target.value)}
+                    autoFocus
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SecurityIcon sx={{ color: '#818cf8' }} />
+                        </InputAdornment>
+                      )
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        color: '#fff',
+                        background: '#0b0f19',
+                        borderRadius: '8px',
+                        '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+                        '&:hover fieldset': { borderColor: '#818cf8' },
+                        '&.Mui-focused fieldset': { borderColor: '#6366f1' }
+                      },
+                      '& .MuiInputLabel-root': { color: '#94a3b8' }
+                    }}
+                  />
+                  {maskedEmail && (
+                    <Typography variant="caption" sx={{ color: '#64748b', mt: 0.8, display: 'block' }}>
+                      🔒 Configured destination in .env: <strong>{maskedEmail}</strong>
+                    </Typography>
+                  )}
+                </Box>
 
-            <form onSubmit={handleLogin}>
-              {loginMode === 'masterKey' ? (
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  disabled={authLoading || !rootEmail.trim()}
+                  sx={{
+                    py: 1.5,
+                    mt: 1,
+                    borderRadius: '8px',
+                    fontWeight: 800,
+                    fontSize: '0.9rem',
+                    background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                    boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)'
+                    }
+                  }}
+                >
+                  {authLoading ? <CircularProgress size={22} color="inherit" /> : 'DISPATCH ROOT VERIFICATION CODE'}
+                </Button>
+              </form>
+            ) : (
+              /* Step 2: Enter 6-digit Root OTP */
+              <form onSubmit={handleVerifyRootOTP}>
+                <Alert
+                  severity="info"
+                  sx={{
+                    mb: 2.5,
+                    background: 'rgba(99, 102, 241, 0.15)',
+                    color: '#c7d2fe',
+                    border: '1px solid rgba(99, 102, 241, 0.3)'
+                  }}
+                >
+                  6-digit Root Passcode dispatched to: <strong style={{ color: '#fff' }}>{rootEmail}</strong>
+                </Alert>
+
                 <TextField
                   fullWidth
-                  type="password"
-                  label="Master Root Key / Passphrase"
-                  placeholder="Enter system master root key..."
-                  value={masterKey}
-                  onChange={(e) => setMasterKey(e.target.value)}
+                  label="6-Digit Verification Code"
+                  placeholder="Enter 6-digit OTP code"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   autoFocus
+                  inputProps={{
+                    maxLength: 6,
+                    style: { textAlign: 'center', letterSpacing: 8, fontSize: '1.4rem', fontWeight: 900 }
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -542,80 +631,64 @@ export default function KernelAdminPortal({ onExitToApp }) {
                     )
                   }}
                   sx={{
-                    mb: 3,
+                    mb: 2.5,
                     '& .MuiOutlinedInput-root': {
                       color: '#fff',
                       background: '#0b0f19',
                       borderRadius: '8px',
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-                      '&:hover fieldset': { borderColor: '#818cf8' },
-                      '&.Mui-focused fieldset': { borderColor: '#6366f1' }
+                      '& fieldset': { borderColor: '#818cf8' },
+                      '&:hover fieldset': { borderColor: '#6366f1' }
                     },
                     '& .MuiInputLabel-root': { color: '#94a3b8' }
                   }}
                 />
-              ) : (
-                <>
-                  <TextField
-                    fullWidth
-                    label="Administrator Email"
-                    placeholder="admin@shazusofttechnologies.org"
-                    value={adminEmail}
-                    onChange={(e) => setAdminEmail(e.target.value)}
-                    sx={{
-                      mb: 2,
-                      '& .MuiOutlinedInput-root': {
-                        color: '#fff',
-                        background: '#0b0f19',
-                        borderRadius: '8px',
-                        '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-                        '&:hover fieldset': { borderColor: '#818cf8' }
-                      },
-                      '& .MuiInputLabel-root': { color: '#94a3b8' }
-                    }}
-                  />
-                  <TextField
-                    fullWidth
-                    type="password"
-                    label="Root Passcode / Password"
-                    placeholder="Enter admin passcode"
-                    value={adminPassword}
-                    onChange={(e) => setAdminPassword(e.target.value)}
-                    sx={{
-                      mb: 3,
-                      '& .MuiOutlinedInput-root': {
-                        color: '#fff',
-                        background: '#0b0f19',
-                        borderRadius: '8px',
-                        '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-                        '&:hover fieldset': { borderColor: '#818cf8' }
-                      },
-                      '& .MuiInputLabel-root': { color: '#94a3b8' }
-                    }}
-                  />
-                </>
-              )}
 
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                disabled={authLoading}
-                sx={{
-                  py: 1.5,
-                  borderRadius: '8px',
-                  fontWeight: 800,
-                  fontSize: '0.95rem',
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                  boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)'
-                  }
-                }}
-              >
-                {authLoading ? <CircularProgress size={24} color="inherit" /> : 'INITIALIZE KERNEL ACCESS'}
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  disabled={authLoading || otpCode.length < 6}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: '8px',
+                    fontWeight: 800,
+                    fontSize: '0.9rem',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    boxShadow: '0 4px 20px rgba(16, 185, 129, 0.4)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                    }
+                  }}
+                >
+                  {authLoading ? <CircularProgress size={22} color="inherit" /> : 'VERIFY & AUTHORIZE KERNEL ACCESS'}
+                </Button>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2.5 }}>
+                  <Button
+                    size="small"
+                    onClick={() => setAuthStep(1)}
+                    sx={{ color: '#94a3b8', textTransform: 'none', fontSize: '0.8rem' }}
+                  >
+                    Change Email
+                  </Button>
+
+                  {countdown > 0 ? (
+                    <Typography variant="caption" sx={{ color: '#64748b' }}>
+                      Resend code in <strong>{countdown}s</strong>
+                    </Typography>
+                  ) : (
+                    <Button
+                      size="small"
+                      onClick={handleSendRootOTP}
+                      disabled={authLoading}
+                      sx={{ color: '#818cf8', fontWeight: 700, textTransform: 'none', fontSize: '0.8rem' }}
+                    >
+                      Resend OTP Code
+                    </Button>
+                  )}
+                </Box>
+              </form>
+            )}
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Button
