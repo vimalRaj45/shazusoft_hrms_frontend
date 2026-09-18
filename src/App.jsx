@@ -70,6 +70,7 @@ import AdminMemoManagement from './components/AdminMemoManagement';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import AIReports from './pages/AIReports';
+import KernelAdminPortal from './pages/KernelAdminPortal';
 import { attendanceAPI, reportsAPI, evaluationsAPI, leavesAPI, workDoneAPI, tasksAPI } from './services/api';
 import { format } from 'date-fns';
 
@@ -87,6 +88,40 @@ function AppContent() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     return localStorage.getItem('hrms_sidebar_collapsed') === 'true';
   });
+
+  const checkKernelUrl = () => {
+    try {
+      const pathname = (window.location.pathname || '').toLowerCase();
+      const hash = (window.location.hash || '').toLowerCase();
+      const search = (window.location.search || '').toLowerCase();
+
+      return (
+        pathname.includes('kernel') ||
+        pathname.includes('kernal') ||
+        hash.includes('kernel') ||
+        hash.includes('kernal') ||
+        search.includes('kernel') ||
+        search.includes('kernal')
+      );
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const [isKernelMode, setIsKernelMode] = useState(checkKernelUrl);
+
+  // Listen for browser URL manual changes (popstate & hashchange)
+  useEffect(() => {
+    const handleUrlChange = () => {
+      setIsKernelMode(checkKernelUrl());
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+    };
+  }, []);
 
   // Handle Service Worker notification click deep linking
   useEffect(() => {
@@ -219,6 +254,34 @@ function AppContent() {
     }
   }, [activeTab]);
 
+  // Render Dedicated Kernel Root Access Console in Isolation
+  if (isKernelMode || activeTab === 'kernel-admin') {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <KernelAdminPortal
+          onExitToApp={() => {
+            setIsKernelMode(false);
+            if (activeTab === 'kernel-admin') {
+              setActiveTab('dashboard');
+            }
+            try {
+              const url = new URL(window.location.href);
+              url.searchParams.delete('view');
+              if (url.pathname.includes('kernel') || url.pathname.includes('kernal')) {
+                url.pathname = '/';
+              }
+              if (window.location.hash.includes('kernel') || window.location.hash.includes('kernal')) {
+                window.location.hash = '';
+              }
+              window.history.replaceState({}, '', url.toString());
+            } catch (e) {}
+          }}
+        />
+      </ThemeProvider>
+    );
+  }
+
   if (loading) {
     return <SplashScreen message="Initializing secure company workspace..." />;
   }
@@ -228,7 +291,7 @@ function AppContent() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <AlertConfirmProvider>
-          <Login />
+          <Login onNavigateToKernel={() => setIsKernelMode(true)} />
         </AlertConfirmProvider>
       </ThemeProvider>
     );

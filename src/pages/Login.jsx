@@ -27,7 +27,7 @@ import { authAPI } from '../services/api';
 const GOOGLE_CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_CLIENT_ID) 
   || '962237321507-ga044e9nnncjbju1dl7if6vao4bca403.apps.googleusercontent.com';
 
-export default function Login() {
+export default function Login({ onNavigateToKernel }) {
   const { loginWithOTP, loginWithGoogle } = useAuth();
 
   // OTP Login State
@@ -536,7 +536,7 @@ export default function Login() {
             )}
 
             <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #f1f5f9', textAlign: 'center' }}>
-              <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: 11 }}>
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: 11, display: 'block' }}>
                 Protected by Encrypted Email Delivery & Location Verified Access.
               </Typography>
             </Box>

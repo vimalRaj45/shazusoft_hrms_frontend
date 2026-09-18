@@ -27,7 +27,8 @@ import {
   NotificationsOff as NotificationsOffIcon,
   Notifications as NotificationsIcon,
   HelpOutline as HelpOutlineIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  Terminal as TerminalIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
