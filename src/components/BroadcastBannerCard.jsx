@@ -18,20 +18,7 @@ import {
   Grid
 } from '@mui/material';
 import {
-  Campaign as MegaphoneIcon,
-  Cake as CakeIcon,
-  Celebration as PartyIcon,
-  EmojiEvents as TrophyIcon,
-  Warning as WarningIcon,
-  Close as CloseIcon,
-  ChevronLeft as PrevIcon,
-  ChevronRight as NextIcon,
-  AddPhotoAlternate as AddPhotoIcon,
-  CampaignOutlined as AddBroadcastIcon,
-  DeleteOutline as DeleteIcon,
-  AutoAwesome as SparklesIcon,
-  OpenInNew as ExternalLinkIcon,
-  Image as ImageIcon
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { ticketsAPI } from '../services/api';
@@ -41,8 +28,8 @@ import toast from '../utils/muiToast';
 const CATEGORY_THEMES = {
   birthday: {
     label: 'Birthday Wish',
-    icon: CakeIcon,
-    tag: 'BIRTHDAY 🎂',
+    biIcon: 'bi-gift-fill',
+    tag: 'BIRTHDAY',
     gradient: 'linear-gradient(135deg, #e11d48 0%, #be123c 50%, #881337 100%)',
     accentColor: '#ffe4e6',
     chipBg: 'rgba(255, 255, 255, 0.22)',
@@ -53,8 +40,8 @@ const CATEGORY_THEMES = {
   },
   celebration: {
     label: 'Festival & Celebration',
-    icon: PartyIcon,
-    tag: 'CELEBRATION 🎉',
+    biIcon: 'bi-stars',
+    tag: 'CELEBRATION',
     gradient: 'linear-gradient(135deg, #d97706 0%, #b45309 50%, #78350f 100%)',
     accentColor: '#fef3c7',
     chipBg: 'rgba(255, 255, 255, 0.22)',
@@ -65,8 +52,8 @@ const CATEGORY_THEMES = {
   },
   milestone: {
     label: 'Achievement & Milestone',
-    icon: TrophyIcon,
-    tag: 'MILESTONE 🏆',
+    biIcon: 'bi-trophy-fill',
+    tag: 'MILESTONE',
     gradient: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 50%, #312e81 100%)',
     accentColor: '#e0e7ff',
     chipBg: 'rgba(255, 255, 255, 0.22)',
@@ -77,8 +64,8 @@ const CATEGORY_THEMES = {
   },
   urgent: {
     label: 'Important Alert',
-    icon: WarningIcon,
-    tag: 'URGENT NOTICE ⚠️',
+    biIcon: 'bi-exclamation-octagon-fill',
+    tag: 'URGENT NOTICE',
     gradient: 'linear-gradient(135deg, #b91c1c 0%, #991b1b 50%, #7f1d1d 100%)',
     accentColor: '#fee2e2',
     chipBg: 'rgba(255, 255, 255, 0.25)',
@@ -88,8 +75,8 @@ const CATEGORY_THEMES = {
   },
   announcement: {
     label: 'Company Announcement',
-    icon: MegaphoneIcon,
-    tag: 'OFFICIAL BULLETIN 📢',
+    biIcon: 'bi-megaphone-fill',
+    tag: 'OFFICIAL BULLETIN',
     gradient: 'linear-gradient(135deg, #133829 0%, #0d281e 50%, #061711 100%)',
     accentColor: '#dcfce7',
     chipBg: 'rgba(255, 255, 255, 0.18)',
@@ -101,28 +88,32 @@ const CATEGORY_THEMES = {
 
 const TEMPLATE_PRESETS = [
   {
-    name: '🎂 Birthday Wish',
+    name: 'Birthday Wish',
+    iconClass: 'bi-gift-fill',
     category: 'birthday',
     title: 'Happy Birthday from Shazu Soft!',
     content: 'Wishing you a very Happy Birthday filled with joy, success, and prosperity! May this year bring exciting milestones.',
     imageUrl: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600&auto=format&fit=crop&q=80'
   },
   {
-    name: '🎉 Festival Celebration',
+    name: 'Festival Celebration',
+    iconClass: 'bi-stars',
     category: 'celebration',
     title: 'Festive Greetings to the Team!',
     content: 'Wishing all our team members and their families joy, peace, and vibrant celebrations on this special festive occasion.',
     imageUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80'
   },
   {
-    name: '🏆 Project Milestone',
+    name: 'Project Milestone',
+    iconClass: 'bi-trophy-fill',
     category: 'milestone',
     title: 'Kudos on Reaching Project Milestone!',
     content: 'Huge congratulations to our engineering and product teams for delivering the sprint goals ahead of schedule with 100% test coverage!',
     imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&auto=format&fit=crop&q=80'
   },
   {
-    name: '📢 Townhall / Meet',
+    name: 'Townhall / Meet',
+    iconClass: 'bi-megaphone-fill',
     category: 'announcement',
     title: 'Monthly All-Hands Meeting',
     content: 'Join us this Friday for our monthly organizational townhall covering company roadmap, wins, and team recognition.',
@@ -265,7 +256,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
 
     setSubmitting(true);
     try {
-      const res = await ticketsAPI.createBroadcast({
+      await ticketsAPI.createBroadcast({
         title: createForm.title.trim(),
         content: createForm.content.trim(),
         category: createForm.category,
@@ -338,11 +329,11 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                 justifyContent: 'center'
               }}
             >
-              <MegaphoneIcon sx={{ fontSize: 20 }} />
+              <i className="bi bi-broadcast" style={{ fontSize: 18 }}></i>
             </Box>
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                Broadcast Center • Birthday Wishes & Announcements
+                Broadcast Center • Wishes & Announcements
               </Typography>
               <Typography variant="caption" sx={{ color: '#64748b' }}>
                 Post company-wide celebratory cards with photos, flyers, or notices to all staff.
@@ -353,7 +344,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
           <Button
             size="small"
             variant="contained"
-            startIcon={<SparklesIcon />}
+            startIcon={<i className="bi bi-plus-circle-fill" style={{ fontSize: 13 }}></i>}
             sx={{
               fontWeight: 800,
               bgcolor: '#133829',
@@ -378,7 +369,6 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
   const activeBroadcast = visibleBroadcasts[currentIndex] || visibleBroadcasts[0];
   const catKey = (activeBroadcast.category || 'announcement').toLowerCase();
   const theme = CATEGORY_THEMES[catKey] || CATEGORY_THEMES.announcement;
-  const CategoryIcon = theme.icon;
   const hasImage = Boolean(activeBroadcast.image_url);
 
   function renderCreateModal() {
@@ -388,11 +378,18 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
         onClose={() => !submitting && setOpenCreateModal(false)}
         maxWidth="sm"
         fullWidth
+        scroll="paper"
         PaperProps={{
-          sx: { borderRadius: '16px', overflow: 'hidden' }
+          sx: {
+            borderRadius: '16px',
+            overflow: 'hidden',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column'
+          }
         }}
       >
-        <form onSubmit={handleCreateSubmit}>
+        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <DialogTitle
             sx={{
               bgcolor: '#133829',
@@ -401,12 +398,13 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
               py: 2,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              flexShrink: 0
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-              <SparklesIcon sx={{ color: '#86efac' }} />
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#ffffff' }}>
+              <i className="bi bi-broadcast" style={{ color: '#86efac', fontSize: 20 }}></i>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#ffffff', fontSize: '1.1rem' }}>
                 Publish Broadcast Card
               </Typography>
             </Box>
@@ -415,15 +413,16 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
             </IconButton>
           </DialogTitle>
 
-          <DialogContent dividers sx={{ p: 2.5, bgcolor: '#f8fafc' }}>
+          <DialogContent dividers sx={{ p: { xs: 2, sm: 2.5 }, bgcolor: '#f8fafc', flex: 1, overflowY: 'auto' }}>
             {/* Template Quick Selection */}
-            <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', display: 'block', mb: 1 }}>
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#64748b', display: 'block', mb: 1, letterSpacing: 0.5 }}>
               QUICK TEMPLATES
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2.5 }}>
               {TEMPLATE_PRESETS.map((tpl) => (
                 <Chip
                   key={tpl.name}
+                  icon={<i className={`bi ${tpl.iconClass}`} style={{ fontSize: 13, marginLeft: 6, color: '#133829' }}></i>}
                   label={tpl.name}
                   clickable
                   onClick={() => handleSelectTemplate(tpl)}
@@ -449,11 +448,36 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                   value={createForm.category}
                   onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
                 >
-                  <MenuItem value="birthday">🎂 Birthday Wish</MenuItem>
-                  <MenuItem value="celebration">🎉 Festival & Celebration</MenuItem>
-                  <MenuItem value="milestone">🏆 Milestone & Kudos</MenuItem>
-                  <MenuItem value="announcement">📢 Company Announcement</MenuItem>
-                  <MenuItem value="urgent">⚠️ Urgent Notice</MenuItem>
+                  <MenuItem value="birthday">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <i className="bi bi-gift-fill" style={{ color: '#e11d48' }}></i>
+                      <span>Birthday Wish</span>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="celebration">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <i className="bi bi-stars" style={{ color: '#d97706' }}></i>
+                      <span>Festival & Celebration</span>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="milestone">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <i className="bi bi-trophy-fill" style={{ color: '#4f46e5' }}></i>
+                      <span>Project Milestone</span>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="announcement">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <i className="bi bi-megaphone-fill" style={{ color: '#133829' }}></i>
+                      <span>Company Announcement</span>
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="urgent">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <i className="bi bi-exclamation-octagon-fill" style={{ color: '#b91c1c' }}></i>
+                      <span>Urgent Notice</span>
+                    </Box>
+                  </MenuItem>
                 </TextField>
               </Grid>
 
@@ -478,7 +502,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                   size="small"
                   required
                   label="Broadcast Title / Headline"
-                  placeholder="e.g., Happy Birthday Alex! 🎂"
+                  placeholder="e.g., Happy Birthday from Shazu Soft!"
                   value={createForm.title}
                   onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
                 />
@@ -505,7 +529,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                     CARD IMAGE / PHOTO (OPTIONAL)
                   </Typography>
 
-                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 1.5 }}>
+                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mb: 1.5, flexWrap: 'wrap' }}>
                     <input
                       type="file"
                       accept="image/*"
@@ -516,9 +540,9 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                     <Button
                       size="small"
                       variant="outlined"
-                      startIcon={<AddPhotoIcon />}
+                      startIcon={<i className="bi bi-image" style={{ fontSize: 14 }}></i>}
                       onClick={() => fileInputRef.current?.click()}
-                      sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 12 }}
+                      sx={{ fontWeight: 700, borderRadius: '8px', fontSize: 12, textTransform: 'none' }}
                     >
                       Upload Photo / Flyer
                     </Button>
@@ -540,7 +564,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                   />
 
                   {previewImage && (
-                    <Box sx={{ mt: 1.5, position: 'relative', width: '100%', height: 120, borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                    <Box sx={{ mt: 1.5, position: 'relative', width: '100%', height: 130, borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
                       <Box
                         component="img"
                         src={previewImage}
@@ -587,20 +611,21 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
             </Grid>
           </DialogContent>
 
-          <DialogActions sx={{ p: 2, px: 2.5, bgcolor: '#ffffff', borderTop: '1px solid #e2e8f0' }}>
-            <Button onClick={() => setOpenCreateModal(false)} disabled={submitting} sx={{ fontWeight: 700 }}>
+          <DialogActions sx={{ p: 2, px: 2.5, bgcolor: '#ffffff', borderTop: '1px solid #e2e8f0', flexShrink: 0 }}>
+            <Button onClick={() => setOpenCreateModal(false)} disabled={submitting} sx={{ fontWeight: 700, textTransform: 'none' }}>
               Cancel
             </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={submitting}
-              startIcon={submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : <MegaphoneIcon />}
+              startIcon={submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : <i className="bi bi-send-fill" style={{ fontSize: 13 }}></i>}
               sx={{
                 fontWeight: 800,
                 borderRadius: '8px',
                 bgcolor: '#133829',
                 px: 3,
+                textTransform: 'none',
                 '&:hover': { bgcolor: '#0b2319' }
               }}
             >
@@ -707,7 +732,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                     border: '1px solid rgba(255,255,255,0.3)'
                   }}
                 >
-                  <CategoryIcon sx={{ fontSize: { xs: 26, sm: 30 }, color: '#ffffff' }} />
+                  <i className={`bi ${theme.biIcon}`} style={{ fontSize: 24, color: '#ffffff' }}></i>
                 </Box>
               )}
 
@@ -715,6 +740,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
               <Box sx={{ minWidth: 0, flex: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
                   <Chip
+                    icon={<i className={`bi ${theme.biIcon}`} style={{ fontSize: 11, color: '#ffffff', marginLeft: 6 }}></i>}
                     label={theme.tag}
                     size="small"
                     sx={{
@@ -725,7 +751,8 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                       color: theme.chipColor,
                       backdropFilter: 'blur(6px)',
                       borderRadius: '5px',
-                      border: '1px solid rgba(255,255,255,0.3)'
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      '& .MuiChip-label': { px: 1 }
                     }}
                   />
 
@@ -799,7 +826,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                   variant="contained"
                   href={activeBroadcast.action_url || '#'}
                   target={activeBroadcast.action_url?.startsWith('http') ? '_blank' : '_self'}
-                  endIcon={<ExternalLinkIcon sx={{ fontSize: '14px !important' }} />}
+                  endIcon={<i className="bi bi-box-arrow-up-right" style={{ fontSize: 11 }}></i>}
                   sx={{
                     bgcolor: '#ffffff',
                     color: '#0f172a',
@@ -825,14 +852,14 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                     onClick={handlePrev}
                     sx={{ color: '#ffffff', p: 0.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
                   >
-                    <PrevIcon fontSize="small" />
+                    <i className="bi bi-chevron-left" style={{ fontSize: 13 }}></i>
                   </IconButton>
                   <IconButton
                     size="small"
                     onClick={handleNext}
                     sx={{ color: '#ffffff', p: 0.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' } }}
                   >
-                    <NextIcon fontSize="small" />
+                    <i className="bi bi-chevron-right" style={{ fontSize: 13 }}></i>
                   </IconButton>
                 </Box>
               )}
@@ -850,7 +877,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                         '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
                       }}
                     >
-                      <AddBroadcastIcon fontSize="small" />
+                      <i className="bi bi-plus-lg" style={{ fontSize: 14 }}></i>
                     </IconButton>
                   </Tooltip>
 
@@ -864,7 +891,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                         '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.4)' }
                       }}
                     >
-                      <DeleteIcon fontSize="small" />
+                      <i className="bi bi-trash3-fill" style={{ fontSize: 14 }}></i>
                     </IconButton>
                   </Tooltip>
                 </>
@@ -880,7 +907,7 @@ export default function BroadcastBannerCard({ onRefreshParent }) {
                     '&:hover': { color: '#ffffff', bgcolor: 'rgba(255,255,255,0.15)' }
                   }}
                 >
-                  <CloseIcon fontSize="small" />
+                  <i className="bi bi-x-lg" style={{ fontSize: 14 }}></i>
                 </IconButton>
               </Tooltip>
             </Box>
