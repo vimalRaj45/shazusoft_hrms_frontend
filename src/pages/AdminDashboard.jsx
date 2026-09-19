@@ -76,6 +76,7 @@ import TaskTrackerBoard from '../components/TaskTrackerBoard';
 import AdminStaffTimesheets from '../components/AdminStaffTimesheets';
 import AdminPayrollManagement from '../components/AdminPayrollManagement';
 import AdminMemoManagement from '../components/AdminMemoManagement';
+import ManageRBACModal from '../components/ManageRBACModal';
 import GeofencePunch from '../components/GeofencePunch';
 import TimePicker12h from '../components/TimePicker12h';
 import { MetricCardsSkeleton, TableRowsSkeleton, DocumentViewerSkeleton } from '../components/SkeletonLoaders';
@@ -190,6 +191,15 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
     pan_number: ''
   });
   const [salarySaving, setSalarySaving] = useState(false);
+
+  // Staff RBAC Role & Granular Permissions Modal State
+  const [openRbacModal, setOpenRbacModal] = useState(false);
+  const [selectedRbacEmp, setSelectedRbacEmp] = useState(null);
+
+  const handleOpenRbacModal = (emp) => {
+    setSelectedRbacEmp(emp);
+    setOpenRbacModal(true);
+  };
 
   // Manager Log Work & Activity Plan State
   const [openLogWorkModal, setOpenLogWorkModal] = useState(false);
@@ -2294,13 +2304,55 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         })()}
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={e.role?.toUpperCase()}
-                          size="small"
-                          color={e.role === 'admin' ? 'primary' : 'secondary'}
-                          variant="outlined"
-                          sx={{ fontWeight: 700, borderRadius: '6px' }}
-                        />
+                        {(() => {
+                          const roleKey = (e.role || 'employee').toLowerCase();
+                          let roleBadgeColor = '#475569';
+                          let roleBg = '#f1f5f9';
+                          let roleBorder = '#cbd5e1';
+                          let roleLabel = 'STAFF';
+
+                          if (roleKey === 'admin') {
+                            roleBadgeColor = '#7c3aed';
+                            roleBg = '#f5f3ff';
+                            roleBorder = '#ddd6fe';
+                            roleLabel = 'ADMIN';
+                          } else if (roleKey === 'hr_manager' || roleKey === 'hr') {
+                            roleBadgeColor = '#0284c7';
+                            roleBg = '#f0f9ff';
+                            roleBorder = '#bae6fd';
+                            roleLabel = 'HR MANAGER';
+                          } else if (roleKey === 'team_lead' || roleKey === 'lead' || roleKey === 'manager') {
+                            roleBadgeColor = '#059669';
+                            roleBg = '#ecfdf5';
+                            roleBorder = '#a7f3d0';
+                            roleLabel = 'TEAM LEAD';
+                          }
+
+                          return (
+                            <Tooltip title="Click to manage RBAC role & granular privileges">
+                              <Chip
+                                label={roleLabel}
+                                size="small"
+                                clickable
+                                onClick={() => handleOpenRbacModal(e)}
+                                sx={{
+                                  fontWeight: 800,
+                                  fontSize: '0.68rem',
+                                  bgcolor: roleBg,
+                                  color: roleBadgeColor,
+                                  border: `1px solid ${roleBorder}`,
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  '&:hover': {
+                                    filter: 'brightness(0.95)',
+                                    transform: 'scale(1.04)'
+                                  },
+                                  transition: 'all 0.15s ease'
+                                }}
+                              />
+                            </Tooltip>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Tooltip title={e.personal_info?.exit_details?.reason ? `Reason: ${e.personal_info.exit_details.reason} (Effective: ${e.personal_info.exit_details.effective_date || '--'})` : (e.status === 'resigned' ? 'Resigned staff member' : 'Active working status')}>
@@ -2436,6 +2488,26 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                               const struct = salaryStructures.find(s => s.employee_id === e.id);
                               return (parseFloat(struct?.monthly_salary) || 0) > 0 ? 'Edit Salary' : 'Set Salary';
                             })()}
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<SecurityIcon />}
+                            onClick={() => handleOpenRbacModal(e)}
+                            sx={{
+                              fontWeight: 700,
+                              borderRadius: '8px',
+                              fontSize: 11,
+                              borderColor: e.role === 'admin' ? '#c084fc' : '#94a3b8',
+                              color: e.role === 'admin' ? '#7e22ce' : '#334155',
+                              bgcolor: e.role === 'admin' ? '#faf5ff' : 'transparent',
+                              '&:hover': {
+                                bgcolor: e.role === 'admin' ? '#f3e8ff' : '#f1f5f9',
+                                borderColor: e.role === 'admin' ? '#a855f7' : '#475569'
+                              }
+                            }}
+                          >
+                            Manage RBAC
                           </Button>
                           {(e.status === 'resigned' || e.status === 'inactive') ? (
                             <Button
@@ -4405,6 +4477,16 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </DialogActions>
         </form>
       </Dialog>
+
+      {/* RBAC Role & Granular Permission Management Modal */}
+      <ManageRBACModal
+        open={openRbacModal}
+        onClose={() => setOpenRbacModal(false)}
+        employee={selectedRbacEmp}
+        onSaveSuccess={(updatedEmp) => {
+          setEmployees(prev => prev.map(emp => emp.id === updatedEmp.id ? { ...emp, ...updatedEmp } : emp));
+        }}
+      />
     </Box>
   );
 }

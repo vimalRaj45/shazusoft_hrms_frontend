@@ -156,7 +156,8 @@ export const adminAPI = {
   deleteHoliday: (date) => api.delete(`/admin/holidays/${date}`),
   getOfficeTimings: () => api.get('/admin/office-timings'),
   updateOfficeTimings: (data) => api.put('/admin/office-timings', data),
-  updateShiftSchedule: (id, data) => api.patch(`/admin/employees/${id}/shift-schedule`, data)
+  updateShiftSchedule: (id, data) => api.patch(`/admin/employees/${id}/shift-schedule`, data),
+  updateUserRBAC: (id, data) => api.patch(`/admin/employees/${id}/rbac`, data)
 };
 
 export const searchAPI = {
