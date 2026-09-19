@@ -66,6 +66,7 @@ import SystemGuide from './components/SystemGuide';
 import EmployeePayslipsViewer from './components/EmployeePayslipsViewer';
 import StaffMemosViewer from './components/StaffMemosViewer';
 import AdminMemoManagement from './components/AdminMemoManagement';
+import BroadcastBannerCard from './components/BroadcastBannerCard';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -423,6 +424,9 @@ function AppContent() {
                 }}
                 actionLabel={isAdmin ? 'Team Task Board →' : 'My Assigned Tasks →'}
               />
+
+              {/* Real-time Broadcast & Celebratory Card Spotlight Banner */}
+              <BroadcastBannerCard />
 
               {/* 4 KPI Top-Border Highlight Cards */}
               <MetricCards

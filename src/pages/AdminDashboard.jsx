@@ -77,6 +77,7 @@ import AdminStaffTimesheets from '../components/AdminStaffTimesheets';
 import AdminPayrollManagement from '../components/AdminPayrollManagement';
 import AdminMemoManagement from '../components/AdminMemoManagement';
 import ManageRBACModal from '../components/ManageRBACModal';
+import BroadcastBannerCard from '../components/BroadcastBannerCard';
 import GeofencePunch from '../components/GeofencePunch';
 import TimePicker12h from '../components/TimePicker12h';
 import { MetricCardsSkeleton, TableRowsSkeleton, DocumentViewerSkeleton } from '../components/SkeletonLoaders';
@@ -1227,6 +1228,9 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
           </Button>
         </Box>
       </Box>
+
+      {/* Real-time Broadcast & Celebratory Card Spotlight Banner */}
+      <BroadcastBannerCard onRefreshParent={fetchDashboardData} />
 
       {/* Live Presence Metric KPI Cards (4 Clean 3-col Grid) */}
       <Grid container spacing={1.5} sx={{ mb: 2.5 }} alignItems="stretch">

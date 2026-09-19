@@ -173,6 +173,7 @@ export const ticketsAPI = {
   updateStatus: (id, data) => api.patch(`/tickets/${id}/status`, data),
   getBroadcasts: () => api.get('/tickets/broadcasts/all'),
   createBroadcast: (data) => api.post('/tickets/broadcasts', data),
+  deleteBroadcast: (id) => api.delete(`/tickets/broadcasts/${id}`),
   getStaffList: () => api.get('/tickets/staff-list')
 };
 
