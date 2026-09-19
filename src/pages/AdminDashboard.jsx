@@ -78,6 +78,7 @@ import AdminPayrollManagement from '../components/AdminPayrollManagement';
 import AdminMemoManagement from '../components/AdminMemoManagement';
 import ManageRBACModal from '../components/ManageRBACModal';
 import BroadcastBannerCard from '../components/BroadcastBannerCard';
+import StaffWorkDoneViewer from '../components/StaffWorkDoneViewer';
 import GeofencePunch from '../components/GeofencePunch';
 import TimePicker12h from '../components/TimePicker12h';
 import { MetricCardsSkeleton, TableRowsSkeleton, DocumentViewerSkeleton } from '../components/SkeletonLoaders';
@@ -1699,125 +1700,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
 
           {/* TAB 3: Team Work Done & Deliverable Plans */}
           {activeTab === 3 && (
-            <Box>
-              <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 2.5,
-                p: 2,
-                bgcolor: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '10px',
-                flexWrap: 'wrap',
-                gap: 2
-              }}>
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                    Team Work Done & Future Deliverable Plans
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#64748b' }}>
-                    Managers and Admins can log completed work milestones and upcoming sprint plans directly for themselves or any team member.
-                  </Typography>
-                </Box>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenLogWorkModal()}
-                  sx={{
-                    fontWeight: 700,
-                    borderRadius: '8px',
-                    px: 2.5,
-                    py: 1,
-                    boxShadow: '0 4px 12px rgba(37,99,235,0.2)'
-                  }}
-                >
-                  Log Work & Plan Item
-                </Button>
-              </Box>
-
-              <Box sx={{ overflowX: 'auto' }}>
-                {filteredTasks.length === 0 ? (
-                  <Typography variant="body2" sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                    No tasks or work logs found matching current filters.
-                  </Typography>
-                ) : (
-                  <Table>
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                        <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Employee</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Project</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>What Was Done (Task & Details)</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Future Plan / Next Deliverables</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Est / Act Hours</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredTasks.map((t) => {
-                        let displayDesc = t.description || '';
-                        let planText = '';
-                        if (displayDesc.includes('[Plan / Next Action]:')) {
-                          const parts = displayDesc.split('[Plan / Next Action]:');
-                          displayDesc = parts[0].trim();
-                          planText = parts[1].trim();
-                        } else if (t.remarks && t.remarks.toLowerCase().includes('plan:')) {
-                          const idx = t.remarks.toLowerCase().indexOf('plan:');
-                          planText = t.remarks.substring(idx + 5).trim();
-                        }
-
-                        return (
-                          <TableRow key={t.id} hover>
-                            <TableCell sx={{ whiteSpace: 'nowrap', fontSize: 13 }}>{t.date}</TableCell>
-                            <TableCell sx={{ fontWeight: 700 }}>{t.employee_name || t.employee_id}</TableCell>
-                            <TableCell>
-                              <Chip label={t.project_name} size="small" variant="outlined" sx={{ fontWeight: 600, borderRadius: '6px' }} />
-                            </TableCell>
-                            <TableCell sx={{ maxWidth: 280 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 700 }}>{t.task_title}</Typography>
-                              {displayDesc && (
-                                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
-                                  {displayDesc}
-                                </Typography>
-                              )}
-                            </TableCell>
-                            <TableCell sx={{ maxWidth: 260 }}>
-                              {planText ? (
-                                <Box sx={{ p: 1, bgcolor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px' }}>
-                                  <Typography variant="caption" sx={{ color: '#1d4ed8', fontWeight: 700, display: 'block' }}>
-                                    Planned Next:
-                                  </Typography>
-                                  <Typography variant="caption" sx={{ color: '#1e3a8a', display: 'block', whiteSpace: 'pre-wrap' }}>
-                                    {planText}
-                                  </Typography>
-                                </Box>
-                              ) : (
-                                <Typography variant="caption" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>
-                                  --
-                                </Typography>
-                              )}
-                            </TableCell>
-                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                              <strong>{t.estimated_hours}h</strong> est / <strong>{t.actual_hours}h</strong> act
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={t.status}
-                                color={t.status === 'Completed' ? 'success' : t.status === 'In-Progress' ? 'primary' : t.status === 'Planned' ? 'info' : 'warning'}
-                                size="small"
-                                sx={{ fontWeight: 700, borderRadius: '6px' }}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                )}
-              </Box>
-            </Box>
+            <StaffWorkDoneViewer />
           )}
 
           {/* TAB 4: Leave & Permission Approvals */}

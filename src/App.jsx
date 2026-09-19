@@ -67,6 +67,7 @@ import EmployeePayslipsViewer from './components/EmployeePayslipsViewer';
 import StaffMemosViewer from './components/StaffMemosViewer';
 import AdminMemoManagement from './components/AdminMemoManagement';
 import BroadcastBannerCard from './components/BroadcastBannerCard';
+import StaffWorkDoneViewer from './components/StaffWorkDoneViewer';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -788,7 +789,12 @@ function AppContent() {
             )
           )}
 
-          {/* TAB: DAILY WORKDONE */}
+          {/* TAB: STAFF WORK DONE (MANAGER & TEAM LEADS) */}
+          {(activeTab === 'staff-workdone' || activeTab === 'team-workdone') && (
+            <StaffWorkDoneViewer />
+          )}
+
+          {/* TAB: DAILY WORKDONE (SELF) */}
           {activeTab === 'workdone' && (
             isAdmin ? (
               <AdminDashboard

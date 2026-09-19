@@ -327,7 +327,8 @@ export default function Sidebar({
 
           <List dense sx={{ p: 0, mb: isCollapsed ? 1 : 2 }}>
             {renderNavItem('task-tracker', 'Task Assign & Track', TrackerIcon, 'Workflow')}
-            {renderNavItem('workdone', 'Work Log & Daily Plan', TaskIcon)}
+            {renderNavItem('staff-workdone', 'Staff Work Done', TaskIcon, 'Team')}
+            {renderNavItem('workdone', isAdmin ? 'My Work Log & Plan' : 'Work Log & Daily Plan', TaskIcon)}
             {renderNavItem('chat-hub', 'Issue Resolution & Chat', ChatIcon, 'Live')}
             {!isAdmin && renderNavItem('attendance', 'Office Attendance', GpsIcon)}
             {!isAdmin && renderNavItem('memos', 'Official Memos', MemoIcon, 'Notices')}
