@@ -83,7 +83,7 @@ import GeofencePunch from '../components/GeofencePunch';
 import TimePicker12h from '../components/TimePicker12h';
 import { MetricCardsSkeleton, TableRowsSkeleton, DocumentViewerSkeleton } from '../components/SkeletonLoaders';
 import { format } from 'date-fns';
-import { formatTime12h } from '../utils/timeUtils';
+import { formatTime12h, formatDuration } from '../utils/timeUtils';
 
 const REJECTION_TEMPLATES = [
   'Operational crunch / critical project sprint milestone in progress',
@@ -1587,7 +1587,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                         <TableCell sx={{ fontWeight: 600 }}>{formatTime12h(emp.loginTime)}</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>{formatTime12h(emp.logoutTime)}</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
-                          {emp.netHours ? `${emp.netHours} hrs` : '--'}
+                          {emp.netHours && emp.netHours !== '0' && emp.netHours !== '0.00' ? formatDuration(emp.netHours) : '--'}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1815,7 +1815,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                             <TableCell sx={{ fontWeight: 700 }}>{p.employee_name || p.employee_id}</TableCell>
                             <TableCell sx={{ fontWeight: 600, fontSize: 13 }}>{p.date}</TableCell>
                             <TableCell sx={{ fontSize: 13 }}>{p.start_time} - {p.end_time}</TableCell>
-                            <TableCell sx={{ fontWeight: 700 }}>{p.duration_hours} hrs</TableCell>
+                            <TableCell sx={{ fontWeight: 700 }}>{formatDuration(p.duration_hours)}</TableCell>
                             <TableCell sx={{ color: 'text.secondary', fontSize: 13, maxWidth: 240 }}>
                               <div>{p.reason}</div>
                               {p.review_remarks && (
@@ -3603,7 +3603,7 @@ export default function AdminDashboard({ initialTab = 0, onTabChange, onStatsUpd
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
                   {rejectionTarget.type === 'leave' && `Leave Request: ${rejectionTarget.item.leave_type} (${rejectionTarget.item.start_date} to ${rejectionTarget.item.end_date} • ${rejectionTarget.item.total_days} days)`}
-                  {rejectionTarget.type === 'permission' && `Permission Pass: ${rejectionTarget.item.date} (${formatTime12h(rejectionTarget.item.start_time)} - ${formatTime12h(rejectionTarget.item.end_time)} • ${rejectionTarget.item.duration_hours} hrs)`}
+                  {rejectionTarget.type === 'permission' && `Permission Pass: ${rejectionTarget.item.date} (${formatTime12h(rejectionTarget.item.start_time)} - ${formatTime12h(rejectionTarget.item.end_time)} • ${formatDuration(rejectionTarget.item.duration_hours)})`}
                   {rejectionTarget.type === 'regularization' && `Attendance Regularization: ${rejectionTarget.item.date} (${formatTime12h(rejectionTarget.item.requested_login_time)} to ${rejectionTarget.item.requested_logout_time ? formatTime12h(rejectionTarget.item.requested_logout_time) : 'EOD'})`}
                 </Typography>
                 {rejectionTarget.item.reason && (

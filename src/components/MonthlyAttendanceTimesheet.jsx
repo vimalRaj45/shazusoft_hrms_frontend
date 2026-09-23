@@ -37,24 +37,10 @@ import {
 } from '@mui/icons-material';
 import { attendanceAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { formatTime12h } from '../utils/timeUtils';
+import { formatTime12h, formatDuration } from '../utils/timeUtils';
 import toast from '../utils/muiToast';
 import AttendanceRegularizationModal from './AttendanceRegularizationModal';
 import { format } from 'date-fns';
-
-/** Convert decimal hours → precise "Xh Ym" or "Ym Zs" label */
-function formatDuration(decimalHours) {
-  if (decimalHours === null || decimalHours === undefined || decimalHours === '' || isNaN(Number(decimalHours))) {
-    return '0h 0m';
-  }
-  const totalSeconds = Math.round(Number(decimalHours) * 3600);
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m ${s}s`;
-  return `${s}s`;
-}
 
 export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
   const { user } = useAuth();

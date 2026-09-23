@@ -102,5 +102,42 @@ export function timeTo24h(timeStr, defaultFallback = '09:30') {
   return defaultFallback;
 }
 
+/**
+ * Formats decimal hours or duration (e.g. 3.80, 1.5, "3.80") into clean "Xh Ym" format (e.g. "3h 48m", "1h 30m")
+ */
+export function formatDuration(decimalHours, { showZero = false, includeSeconds = false } = {}) {
+  if (
+    decimalHours === null ||
+    decimalHours === undefined ||
+    decimalHours === '' ||
+    decimalHours === '--' ||
+    decimalHours === '—'
+  ) {
+    return showZero ? '0h 0m' : '--';
+  }
+
+  const num = typeof decimalHours === 'number' ? decimalHours : parseFloat(String(decimalHours).replace(/[^0-9.-]/g, ''));
+  if (isNaN(num)) {
+    return showZero ? '0h 0m' : '--';
+  }
+
+  if (num <= 0) {
+    return showZero ? '0h 0m' : '--';
+  }
+
+  const totalSeconds = Math.round(num * 3600);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+
+  if (h > 0) {
+    return m > 0 ? `${h}h ${m}m` : `${h}h 0m`;
+  }
+  if (m > 0) {
+    return includeSeconds && s > 0 ? `${m}m ${s}s` : `${m}m`;
+  }
+  return includeSeconds && s > 0 ? `${s}s` : '0m';
+}
+
 export const formatTime24h = timeTo24h;
 export default formatTime12h;

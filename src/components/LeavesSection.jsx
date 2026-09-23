@@ -38,6 +38,7 @@ import { leavesAPI, adminAPI } from '../services/api';
 import TimePicker12h from './TimePicker12h';
 import { useAuth } from '../context/AuthContext';
 import { TableRowsSkeleton } from './SkeletonLoaders';
+import { formatDuration } from '../utils/timeUtils';
 
 export default function LeavesSection() {
   const { isAdmin } = useAuth();
@@ -464,7 +465,7 @@ export default function LeavesSection() {
                     <TableRow key={p.id} hover>
                       <TableCell sx={{ fontWeight: 600 }}>{p.date}</TableCell>
                       <TableCell>{p.start_time} - {p.end_time}</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>{p.duration_hours} hrs</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{formatDuration(p.duration_hours)}</TableCell>
                       <TableCell sx={{ color: '#475569', fontSize: 13, maxWidth: 240 }}>
                         <div>{p.reason}</div>
                         {p.review_remarks && (

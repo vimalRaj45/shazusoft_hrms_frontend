@@ -38,7 +38,7 @@ import {
 } from '@mui/icons-material';
 import { generateCorporatePDFReport } from '../utils/pdfReportGenerator';
 import toast from '../utils/muiToast';
-import { formatTime12h } from '../utils/timeUtils';
+import { formatTime12h, formatDuration } from '../utils/timeUtils';
 
 export default function EmployeeReportViewer({ reportData }) {
   const [activeTab, setActiveTab] = useState(0);
@@ -512,7 +512,7 @@ export default function EmployeeReportViewer({ reportData }) {
                           />
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
-                          {day.netHours} hrs
+                          {formatDuration(day.netHours)}
                         </TableCell>
                         <TableCell>
                           {day.tasks.length === 0 ? (
@@ -617,9 +617,9 @@ export default function EmployeeReportViewer({ reportData }) {
                         <TableCell sx={{ fontWeight: 600 }}>{att.date}</TableCell>
                         <TableCell>{formatTime12h(att.login_time)}</TableCell>
                         <TableCell>{att.logout_time ? formatTime12h(att.logout_time) : 'Not punched out'}</TableCell>
-                        <TableCell>{att.total_hours || '0'} hrs</TableCell>
+                        <TableCell>{formatDuration(att.total_hours)}</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>
-                          {att.net_hours || '0'} hrs
+                          {formatDuration(att.net_hours)}
                         </TableCell>
                         <TableCell>
                           <Chip
@@ -692,7 +692,7 @@ export default function EmployeeReportViewer({ reportData }) {
                       {leaveSummary.permissionsList.map((p) => (
                         <TableRow key={p.id}>
                           <TableCell sx={{ fontWeight: 600 }}>{p.date}</TableCell>
-                          <TableCell>{p.duration_hours}h</TableCell>
+                          <TableCell>{formatDuration(p.duration_hours)}</TableCell>
                           <TableCell sx={{ color: 'text.secondary' }}>{p.reason}</TableCell>
                           <TableCell>
                             <Chip label={p.status} size="small" color={p.status === 'Approved' ? 'success' : 'warning'} sx={{ fontWeight: 700 }} />

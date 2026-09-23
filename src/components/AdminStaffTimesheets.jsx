@@ -51,7 +51,7 @@ import { format, addMonths, subMonths } from 'date-fns';
 import { attendanceAPI, adminAPI, reportsAPI } from '../services/api';
 import toast from '../utils/muiToast';
 import { generateExecutivePDFReport } from '../utils/pdfReportGenerator';
-import { formatTime12h, timeTo24h } from '../utils/timeUtils';
+import { formatTime12h, timeTo24h, formatDuration } from '../utils/timeUtils';
 import TimePicker12h from './TimePicker12h';
 
 export default function AdminStaffTimesheets({ initialEmployeeId, employees = [], onRefreshParent }) {
@@ -738,8 +738,8 @@ export default function AdminStaffTimesheets({ initialEmployeeId, employees = []
                             {formatTime12h(day.logout_time)}
                           </TableCell>
 
-                          <TableCell sx={{ fontWeight: 800, color: day.net_hours && day.net_hours !== '0' ? '#133829' : '#94a3b8' }}>
-                            {day.net_hours && day.net_hours !== '0' ? `${day.net_hours} hrs` : '--'}
+                          <TableCell sx={{ fontWeight: 800, color: day.net_hours && day.net_hours !== '0' && day.net_hours !== '0.00' ? '#133829' : '#94a3b8' }}>
+                            {day.net_hours && day.net_hours !== '0' && day.net_hours !== '0.00' ? formatDuration(day.net_hours) : '--'}
                           </TableCell>
 
                           <TableCell>
