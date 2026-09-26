@@ -68,6 +68,8 @@ import StaffMemosViewer from './components/StaffMemosViewer';
 import AdminMemoManagement from './components/AdminMemoManagement';
 import BroadcastBannerCard from './components/BroadcastBannerCard';
 import StaffWorkDoneViewer from './components/StaffWorkDoneViewer';
+import LivePresenceBoard from './components/LivePresenceBoard';
+import AdminStaffTimesheets from './components/AdminStaffTimesheets';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -77,7 +79,8 @@ import { attendanceAPI, reportsAPI, evaluationsAPI, leavesAPI, workDoneAPI, task
 import { format } from 'date-fns';
 
 function AppContent() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, canViewAllAttendance, isTeamLeadOrManager } = useAuth();
+  const [selectedStaffTimesheetId, setSelectedStaffTimesheetId] = useState('');
   const [activeTab, setActiveTab] = useState(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -792,6 +795,24 @@ function AppContent() {
           {/* TAB: STAFF WORK DONE (MANAGER & TEAM LEADS) */}
           {(activeTab === 'staff-workdone' || activeTab === 'team-workdone') && (
             <StaffWorkDoneViewer />
+          )}
+
+          {/* TAB: STAFF ATTENDANCE TIMESHEETS (TEAM LEADERS & MANAGERS) */}
+          {(activeTab === 'staff-attendance' || activeTab === 'staff-timesheets') && (
+            <AdminStaffTimesheets
+              initialEmployeeId={selectedStaffTimesheetId}
+              onRefreshParent={fetchDashboardMetrics}
+            />
+          )}
+
+          {/* TAB: LIVE PRESENCE BOARD (TEAM LEADERS & MANAGERS) */}
+          {(activeTab === 'live-presence' || activeTab === 'staff-presence') && (
+            <LivePresenceBoard
+              onSelectEmployeeTimesheet={(empId) => {
+                setSelectedStaffTimesheetId(empId);
+                setActiveTab('staff-attendance');
+              }}
+            />
           )}
 
           {/* TAB: DAILY WORKDONE (SELF) */}

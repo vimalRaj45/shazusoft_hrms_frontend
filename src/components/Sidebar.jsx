@@ -45,7 +45,7 @@ export default function Sidebar({
   onToggleCollapse,
   adminStats = {}
 }) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, canViewAllAttendance, isTeamLeadOrManager } = useAuth();
 
   const handleItemClick = (tabKey) => {
     onSelectTab(tabKey);
@@ -328,6 +328,12 @@ export default function Sidebar({
           <List dense sx={{ p: 0, mb: isCollapsed ? 1 : 2 }}>
             {renderNavItem('task-tracker', 'Task Assign & Track', TrackerIcon, 'Workflow')}
             {renderNavItem('staff-workdone', 'Staff Work Done', TaskIcon, 'Team')}
+            {(canViewAllAttendance || isTeamLeadOrManager) && !isAdmin && (
+              <>
+                {renderNavItem('staff-attendance', 'Staff Timesheets', ReportIcon, 'Team')}
+                {renderNavItem('live-presence', 'Live Presence Board', TeamIcon, 'Live')}
+              </>
+            )}
             {renderNavItem('workdone', isAdmin ? 'My Work Log & Plan' : 'Work Log & Daily Plan', TaskIcon)}
             {renderNavItem('chat-hub', 'Issue Resolution & Chat', ChatIcon, 'Live')}
             {!isAdmin && renderNavItem('attendance', 'Office Attendance', GpsIcon)}

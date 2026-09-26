@@ -35,15 +35,16 @@ import {
   Search as SearchIcon,
   Clear as ClearIcon
 } from '@mui/icons-material';
-import { attendanceAPI } from '../services/api';
+import { attendanceAPI, adminAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { formatTime12h, formatDuration } from '../utils/timeUtils';
 import toast from '../utils/muiToast';
 import AttendanceRegularizationModal from './AttendanceRegularizationModal';
 import { format } from 'date-fns';
+import { MenuItem } from '@mui/material';
 
-export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
-  const { user } = useAuth();
+export default function MonthlyAttendanceTimesheet({ onRefreshParent, defaultEmployeeId = '' }) {
+  const { user, canViewAllAttendance, isTeamLeadOrManager, isAdmin } = useAuth();
   const cachedUser = user || (() => {
     try {
       return JSON.parse(localStorage.getItem('shazusoft_user') || '{}');
@@ -58,6 +59,18 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
   const [loading, setLoading] = useState(false);
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'PRESENT' | 'LATE' | 'LEAVE_ABSENT'
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(defaultEmployeeId || cachedUser?.id || '');
+  const [employeesList, setEmployeesList] = useState([]);
+
+  // If team lead/manager or admin, load staff directory for switching
+  useEffect(() => {
+    if (canViewAllAttendance || isTeamLeadOrManager || isAdmin) {
+      adminAPI.getEmployees().then(res => {
+        const emps = res.data?.employees || [];
+        setEmployeesList(emps);
+      }).catch(() => {});
+    }
+  }, [canViewAllAttendance, isTeamLeadOrManager, isAdmin]);
 
   const isPartTime = Boolean(
     ['part_time', 'parttime', 'internship'].includes(String(timesheetData?.employment_type || '').toLowerCase()) ||
@@ -76,10 +89,15 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
   const [openRegModal, setOpenRegModal] = useState(false);
   const [selectedPastDate, setSelectedPastDate] = useState('');
 
-  const fetchMonthlyTimesheet = async (monthKey) => {
+  const fetchMonthlyTimesheet = async (monthKey, empId = selectedEmployeeId) => {
     setLoading(true);
     try {
-      const res = await attendanceAPI.getMyMonthlyHistory(monthKey);
+      let res;
+      if (empId && empId !== cachedUser?.id && (canViewAllAttendance || isTeamLeadOrManager || isAdmin)) {
+        res = await attendanceAPI.getStaffMonthlyHistory({ employee_id: empId, month: monthKey });
+      } else {
+        res = await attendanceAPI.getMyMonthlyHistory(monthKey);
+      }
       setTimesheetData(res.data);
     } catch (err) {
       console.error('Error fetching monthly timesheet:', err);
@@ -90,8 +108,8 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
   };
 
   useEffect(() => {
-    fetchMonthlyTimesheet(selectedMonth);
-  }, [selectedMonth]);
+    fetchMonthlyTimesheet(selectedMonth, selectedEmployeeId);
+  }, [selectedMonth, selectedEmployeeId]);
 
   const handleMonthChange = (e) => {
     const val = e.target.value;
@@ -166,12 +184,37 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
                 )}
               </Box>
               <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
-                Daily login and logout timestamps • Verified strictly for past calendar days
+                {timesheetData?.employee?.name ? `${timesheetData.employee.name} (${timesheetData.employee.id}) • ` : ''}Daily login and logout timestamps • Verified strictly for past calendar days
               </Typography>
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            {(canViewAllAttendance || isTeamLeadOrManager || isAdmin) && employeesList.length > 0 && (
+              <TextField
+                select
+                size="small"
+                label="Viewing Attendance For"
+                value={selectedEmployeeId || cachedUser?.id || ''}
+                onChange={(e) => setSelectedEmployeeId(e.target.value)}
+                sx={{
+                  minWidth: 220,
+                  bgcolor: '#f8fafc',
+                  borderRadius: '8px',
+                  '& .MuiOutlinedInput-root': { borderRadius: '8px', fontWeight: 700 }
+                }}
+              >
+                <MenuItem value={cachedUser?.id || ''} sx={{ fontWeight: 800, color: '#133829' }}>
+                  ⭐ Myself ({cachedUser?.name || 'Self'})
+                </MenuItem>
+                {employeesList.filter(e => e.id !== cachedUser?.id).map((emp) => (
+                  <MenuItem key={emp.id} value={emp.id}>
+                    {emp.name} ({emp.id}) • {emp.department || 'Staff'}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+
             <TextField
               size="small"
               type="month"
@@ -186,7 +229,7 @@ export default function MonthlyAttendanceTimesheet({ onRefreshParent }) {
             />
             <Tooltip title="Refresh timesheet">
               <IconButton
-                onClick={() => fetchMonthlyTimesheet(selectedMonth)}
+                onClick={() => fetchMonthlyTimesheet(selectedMonth, selectedEmployeeId)}
                 sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}
               >
                 <RefreshIcon fontSize="small" />

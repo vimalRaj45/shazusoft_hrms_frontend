@@ -86,6 +86,12 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const userRole = (user?.role || '').toLowerCase();
+  const userPerms = user?.permissions || user?.permissions_json || {};
+  const isTeamLeadOrManager = ['admin', 'manager', 'hr_manager', 'hr', 'team_lead', 'team_leader', 'lead', 'leader', 'management'].includes(userRole) ||
+    Boolean(userPerms['attendance.view_team'] || userPerms['tasks.assign'] || userPerms['workdone.review_team']);
+  const canViewAllAttendance = userRole === 'admin' || isTeamLeadOrManager;
+
   const value = {
     user,
     token,
@@ -99,7 +105,13 @@ export const AuthProvider = ({ children }) => {
     updateUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
-    isEmployee: user?.role === 'employee'
+    isEmployee: user?.role === 'employee',
+    isTeamLeadOrManager,
+    canViewAllAttendance,
+    hasPermission: (key) => {
+      if (user?.role === 'admin') return true;
+      return Boolean(userPerms[key]);
+    }
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -112,6 +124,11 @@ export const useAuth = () => {
     const user = savedUser ? JSON.parse(savedUser) : null;
     const token = typeof window !== 'undefined' ? localStorage.getItem('shazusoft_token') : null;
     const themeMode = (typeof window !== 'undefined' ? localStorage.getItem('shazusoft_theme') : null) || 'light';
+    const userRole = (user?.role || '').toLowerCase();
+    const userPerms = user?.permissions || user?.permissions_json || {};
+    const isTeamLeadOrManager = ['admin', 'manager', 'hr_manager', 'hr', 'team_lead', 'team_leader', 'lead', 'leader', 'management'].includes(userRole) ||
+      Boolean(userPerms['attendance.view_team'] || userPerms['tasks.assign'] || userPerms['workdone.review_team']);
+    const canViewAllAttendance = userRole === 'admin' || isTeamLeadOrManager;
 
     return {
       user,
@@ -125,7 +142,13 @@ export const useAuth = () => {
       updateUser: () => {},
       isAuthenticated: !!user,
       isAdmin: user?.role === 'admin',
-      isEmployee: user?.role === 'employee'
+      isEmployee: user?.role === 'employee',
+      isTeamLeadOrManager,
+      canViewAllAttendance,
+      hasPermission: (key) => {
+        if (user?.role === 'admin') return true;
+        return Boolean(userPerms[key]);
+      }
     };
   }
   return context;
