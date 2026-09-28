@@ -70,6 +70,7 @@ import BroadcastBannerCard from './components/BroadcastBannerCard';
 import StaffWorkDoneViewer from './components/StaffWorkDoneViewer';
 import LivePresenceBoard from './components/LivePresenceBoard';
 import AdminStaffTimesheets from './components/AdminStaffTimesheets';
+import StaffRegularizationsViewer from './components/StaffRegularizationsViewer';
 
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
@@ -803,6 +804,11 @@ function AppContent() {
               initialEmployeeId={selectedStaffTimesheetId}
               onRefreshParent={fetchDashboardMetrics}
             />
+          )}
+
+          {/* TAB: STAFF ATTENDANCE REGULARIZATIONS (TEAM LEADERS & MANAGERS) */}
+          {(activeTab === 'staff-regularizations' || activeTab === 'team-regularizations' || (activeTab === 'admin-regularizations' && !isAdmin)) && (
+            <StaffRegularizationsViewer onStatsUpdate={setAdminStats} />
           )}
 
           {/* TAB: LIVE PRESENCE BOARD (TEAM LEADERS & MANAGERS) */}

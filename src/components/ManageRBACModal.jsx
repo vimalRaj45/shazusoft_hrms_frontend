@@ -115,10 +115,10 @@ const ROLE_PRESETS = [
     color: '#059669',
     bgColor: '#ecfdf5',
     borderColor: '#a7f3d0',
-    description: 'Assign tasks to team members, review daily work done logs, monitor progress, and review monthly performance appraisals.',
+    description: 'Assign tasks to team members, review daily work done logs, review & approve attendance regularizations, and monitor progress.',
     permissions: {
       'attendance.view_team': true,
-      'attendance.regularize': false,
+      'attendance.regularize': true,
       'attendance.override': false,
       'attendance.shift_config': false,
       'leaves.apply': true,

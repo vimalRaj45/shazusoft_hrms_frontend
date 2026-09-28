@@ -144,7 +144,11 @@ export function resolveNotificationTargetTab(item, isAdmin) {
     msg.includes('regulariz') ||
     msg.includes('missing punch')
   ) {
-    return isAdmin ? 'admin-regularizations' : 'attendance';
+    if (isAdmin) return 'admin-regularizations';
+    if (msg.includes('submitted') || title.includes('request') || rawTab === 'admin-regularizations') {
+      return 'staff-regularizations';
+    }
+    return 'attendance';
   }
 
   // 6. ATTENDANCE / LIVE PRESENCE / GEOFENCE / PUNCH
@@ -249,6 +253,7 @@ export function resolveNotificationTargetTab(item, isAdmin) {
       if (rawTab === 'admin-live') return 'attendance';
       if (rawTab === 'admin-evals') return 'self-eval';
       if (rawTab === 'admin-weekly') return 'weekly-report';
+      if (rawTab === 'admin-regularizations') return 'staff-regularizations';
     }
     return rawTab;
   }

@@ -45,7 +45,7 @@ export default function Sidebar({
   onToggleCollapse,
   adminStats = {}
 }) {
-  const { isAdmin, canViewAllAttendance, isTeamLeadOrManager } = useAuth();
+  const { isAdmin, canViewAllAttendance, isTeamLeadOrManager, canReviewRegularizations } = useAuth();
 
   const handleItemClick = (tabKey) => {
     onSelectTab(tabKey);
@@ -328,9 +328,10 @@ export default function Sidebar({
           <List dense sx={{ p: 0, mb: isCollapsed ? 1 : 2 }}>
             {renderNavItem('task-tracker', 'Task Assign & Track', TrackerIcon, 'Workflow')}
             {renderNavItem('staff-workdone', 'Staff Work Done', TaskIcon, 'Team')}
-            {(canViewAllAttendance || isTeamLeadOrManager) && !isAdmin && (
+            {(canViewAllAttendance || isTeamLeadOrManager || canReviewRegularizations) && !isAdmin && (
               <>
                 {renderNavItem('staff-attendance', 'Staff Timesheets', ReportIcon, 'Team')}
+                {renderNavItem('staff-regularizations', 'Regularizations', RegularizeIcon, adminStats.pendingRegs > 0 ? `${adminStats.pendingRegs} New` : null)}
                 {renderNavItem('live-presence', 'Live Presence Board', TeamIcon, 'Live')}
               </>
             )}

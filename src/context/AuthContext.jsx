@@ -89,8 +89,11 @@ export const AuthProvider = ({ children }) => {
   const userRole = (user?.role || '').toLowerCase();
   const userPerms = user?.permissions || user?.permissions_json || {};
   const isTeamLeadOrManager = ['admin', 'manager', 'hr_manager', 'hr', 'team_lead', 'team_leader', 'lead', 'leader', 'management'].includes(userRole) ||
-    Boolean(userPerms['attendance.view_team'] || userPerms['tasks.assign'] || userPerms['workdone.review_team']);
+    Boolean(userPerms['attendance.view_team'] || userPerms['tasks.assign'] || userPerms['workdone.review_team'] || userPerms['attendance.regularize']);
   const canViewAllAttendance = userRole === 'admin' || isTeamLeadOrManager;
+  const canReviewRegularizations = userRole === 'admin' ||
+    ['manager', 'hr_manager', 'hr', 'team_lead', 'team_leader', 'lead', 'leader', 'management'].includes(userRole) ||
+    Boolean(userPerms['attendance.regularize']);
 
   const value = {
     user,
@@ -108,6 +111,7 @@ export const AuthProvider = ({ children }) => {
     isEmployee: user?.role === 'employee',
     isTeamLeadOrManager,
     canViewAllAttendance,
+    canReviewRegularizations,
     hasPermission: (key) => {
       if (user?.role === 'admin') return true;
       return Boolean(userPerms[key]);
@@ -127,8 +131,11 @@ export const useAuth = () => {
     const userRole = (user?.role || '').toLowerCase();
     const userPerms = user?.permissions || user?.permissions_json || {};
     const isTeamLeadOrManager = ['admin', 'manager', 'hr_manager', 'hr', 'team_lead', 'team_leader', 'lead', 'leader', 'management'].includes(userRole) ||
-      Boolean(userPerms['attendance.view_team'] || userPerms['tasks.assign'] || userPerms['workdone.review_team']);
+      Boolean(userPerms['attendance.view_team'] || userPerms['tasks.assign'] || userPerms['workdone.review_team'] || userPerms['attendance.regularize']);
     const canViewAllAttendance = userRole === 'admin' || isTeamLeadOrManager;
+    const canReviewRegularizations = userRole === 'admin' ||
+      ['manager', 'hr_manager', 'hr', 'team_lead', 'team_leader', 'lead', 'leader', 'management'].includes(userRole) ||
+      Boolean(userPerms['attendance.regularize']);
 
     return {
       user,
@@ -145,6 +152,7 @@ export const useAuth = () => {
       isEmployee: user?.role === 'employee',
       isTeamLeadOrManager,
       canViewAllAttendance,
+      canReviewRegularizations,
       hasPermission: (key) => {
         if (user?.role === 'admin') return true;
         return Boolean(userPerms[key]);
