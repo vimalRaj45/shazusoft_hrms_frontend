@@ -925,13 +925,22 @@ function AppContent() {
 
               {/* Outside Window Notice */}
               {!monthlyStatus?.isWindowOpen && myEvaluations.length === 0 && (
-                <Card sx={{ p: 4, textAlign: 'center', border: '1.5px dashed #cbd5e1', borderRadius: '10px', bgcolor: '#ffffff', mb: 3 }}>
+                <Card sx={{ p: 4, textAlign: 'center', border: '1.5px dashed #cbd5e1', borderRadius: '12px', bgcolor: '#ffffff', mb: 3 }}>
                   <AnnouncementIcon sx={{ fontSize: 48, color: '#f59e0b', mb: 1.5 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.5 }}>
                     Monthly Appraisal Window Currently Closed
                   </Typography>
+                  {monthlyStatus?.daysRemainingToOpen > 0 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Chip
+                        label={`⏳ Opens in ${monthlyStatus.daysRemainingToOpen} Day(s) — on ${monthlyStatus.windowOpensOn}`}
+                        color="warning"
+                        sx={{ fontWeight: 800, px: 1, py: 0.5, fontSize: 13, borderRadius: '8px' }}
+                      />
+                    </Box>
+                  )}
                   <Typography variant="body2" sx={{ color: '#64748b', maxWidth: 560, mx: 'auto', mb: 2.5, lineHeight: 1.6 }}>
-                    The 13-section monthly self-evaluation opens automatically in the <strong>final 5 days of each month</strong> ({monthlyStatus?.windowOpensOn ? `on ${monthlyStatus.windowOpensOn}` : 'approx. day 26 to month-end'}). In the meantime, please use the <strong>Weekly Check-in</strong> to keep your goals and challenge logs up to date!
+                    The 13-section monthly self-evaluation unlocks automatically in the <strong>final 5 days of each month</strong> ({monthlyStatus?.windowOpensOn ? `from ${monthlyStatus.windowOpensOn}` : 'approx. day 26 to month-end'}) through the 3rd of the new month. In the meantime, please use the <strong>Weekly Check-in</strong> to keep your goals and challenge logs up to date!
                   </Typography>
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5 }}>
                     <Button
