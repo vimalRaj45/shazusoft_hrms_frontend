@@ -794,12 +794,12 @@ function AppContent() {
           )}
 
           {/* TAB: STAFF WORK DONE (MANAGER & TEAM LEADS) */}
-          {(activeTab === 'staff-workdone' || activeTab === 'team-workdone') && (
+          {(activeTab === 'staff-workdone' || activeTab === 'team-workdone' || (activeTab === 'admin-workdone' && !isAdmin)) && (
             <StaffWorkDoneViewer />
           )}
 
           {/* TAB: STAFF ATTENDANCE TIMESHEETS (TEAM LEADERS & MANAGERS) */}
-          {(activeTab === 'staff-attendance' || activeTab === 'staff-timesheets') && (
+          {(activeTab === 'staff-attendance' || activeTab === 'staff-timesheets' || (activeTab === 'admin-timesheets' && !isAdmin)) && (
             <AdminStaffTimesheets
               initialEmployeeId={selectedStaffTimesheetId}
               onRefreshParent={fetchDashboardMetrics}
@@ -812,7 +812,7 @@ function AppContent() {
           )}
 
           {/* TAB: LIVE PRESENCE BOARD (TEAM LEADERS & MANAGERS) */}
-          {(activeTab === 'live-presence' || activeTab === 'staff-presence') && (
+          {(activeTab === 'live-presence' || activeTab === 'staff-presence' || (activeTab === 'admin-live' && !isAdmin)) && (
             <LivePresenceBoard
               onSelectEmployeeTimesheet={(empId) => {
                 setSelectedStaffTimesheetId(empId);
