@@ -8,7 +8,7 @@ export const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.e
       window.location.hostname.includes('onrender.com') ||
       window.location.hostname.includes('netlify.app')
     )
-    ? 'https://shazusoft-hrms-backend.onrender.com/api'
+    ? 'https://shazusoft-hrms-backend-3646.onrender.com/api'
     : '/api');
 
 const api = axios.create({

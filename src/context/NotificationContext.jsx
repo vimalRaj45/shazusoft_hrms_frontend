@@ -192,7 +192,7 @@ export const NotificationProvider = ({ children }) => {
         window.location.hostname.includes('onrender.com') ||
         window.location.hostname.includes('netlify.app')
       )) {
-        baseUrl = 'https://shazusoft-hrms-backend.onrender.com/api';
+        baseUrl = 'https://shazusoft-hrms-backend-3646.onrender.com/api';
       }
       const endpoint = baseUrl.endsWith('/api')
         ? `${baseUrl}/notifications/stream`
