@@ -83,7 +83,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
                 onClick={() => setActiveTab('ai-reports')}
                 sx={{ ml: 0.5 }}
               >
-                Reports & Analytics
+                Reports & Analytic
               </Button>
             </>
           )}
